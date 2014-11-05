@@ -7,11 +7,11 @@ if(!class_exists('FLUpdater') && FL_BUILDER_LITE !== true) {
 	define('FL_UPDATER_DIR', trailingslashit(dirname(__FILE__)));
 	
 	/* Classes */
-	require_once FL_UPDATER_DIR . 'classes/class-fl-updater.php';
+	require_once FL_UPDATER_DIR . 'classes/FLUpdater.php';
 	
 	/* Actions */
 	add_action('fl_themes_license_form', 'FLUpdater::render_form');
 	
-	/* Initialize the updater. */
+	/* Run the updater. */
 	FLUpdater::init();
 }
