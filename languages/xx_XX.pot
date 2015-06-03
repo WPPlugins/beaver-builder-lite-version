@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: {FL_BUILDER_NAME}\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-15 14:59-0800\n"
-"PO-Revision-Date: 2015-04-15 15:00-0800\n"
+"POT-Creation-Date: 2015-05-18 10:56-0800\n"
+"PO-Revision-Date: 2015-05-18 10:57-0800\n"
 "Last-Translator: Alessandro Curci <hantarex@gmail.com>\n"
 "Language-Team: \n"
 "Language: en_US\n"
@@ -51,7 +51,7 @@ msgid "Modules"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin-settings.php:159 includes/ui.php:47
+#: classes/class-fl-builder-admin-settings.php:159 includes/ui.php:58
 msgid "Templates"
 msgstr ""
 
@@ -96,32 +96,32 @@ msgid "Uninstall"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin-settings.php:450
+#: classes/class-fl-builder-admin-settings.php:439
 msgid "Error! You must have at least one icon set enabled."
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin-settings.php:492
+#: classes/class-fl-builder-admin-settings.php:481
 msgid "Error! Could not unzip file."
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin-settings.php:526
+#: classes/class-fl-builder-admin-settings.php:515
 msgid "Error! Please upload an icon set from either Icomoon or Fontello."
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin-settings.php:648
+#: classes/class-fl-builder-admin-settings.php:618
 msgid "Error! Please enter an iframe for the video embed code."
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin-settings.php:666
+#: classes/class-fl-builder-admin-settings.php:636
 msgid "Error! You must have at least one feature of the help button enabled."
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin.php:40
+#: classes/class-fl-builder-admin.php:45
 #, php-format
 msgid ""
 "This version of the <strong>Page Builder</strong> plugin is not compatible "
@@ -130,32 +130,32 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin.php:50
+#: classes/class-fl-builder-admin.php:55
 msgid ""
 "The <strong>Page Builder</strong> plugin requires WordPress version 3.5 or "
 "greater. Please update WordPress before activating the plugin."
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin.php:96
+#: classes/class-fl-builder-admin.php:112
 #, php-format
 msgid "Page Builder activated! <a%s>Click here</a> to enable remote updates."
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin.php:191
+#: classes/class-fl-builder-admin.php:238
 msgctxt "Plugin action link label."
 msgid "Upgrade"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-admin.php:202
-#: classes/class-fl-builder-model.php:2606
+#: classes/class-fl-builder-admin.php:253
+#: classes/class-fl-builder-model.php:3113
 msgid "Page Builder"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-model.php:1394
+#: classes/class-fl-builder-model.php:1605
 #, php-format
 msgctxt "%s stands for the module filename"
 msgid ""
@@ -164,16 +164,16 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-model.php:1452
-#: classes/class-fl-builder-model.php:1506 modules/heading/heading.php:16
+#: classes/class-fl-builder-model.php:1652
+#: classes/class-fl-builder-model.php:1710 modules/heading/heading.php:16
 #: modules/photo/photo.php:27 modules/rich-text/rich-text.php:16
 #: modules/separator/separator.php:16 modules/video/video.php:21
 msgid "Basic Modules"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-model.php:1453
-#: classes/class-fl-builder-model.php:1507 modules/accordion/accordion.php:16
+#: classes/class-fl-builder-model.php:1653
+#: classes/class-fl-builder-model.php:1711 modules/accordion/accordion.php:16
 #: modules/button/button.php:16 modules/callout/callout.php:16
 #: modules/contact-form/contact-form.php:16
 #: modules/content-slider/content-slider.php:16 modules/cta/cta.php:16
@@ -190,46 +190,62 @@ msgid "Advanced Modules"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-model.php:1454
-#: classes/class-fl-builder-model.php:1508
+#: classes/class-fl-builder-model.php:1654
+#: classes/class-fl-builder-model.php:1712
 msgid "Other Modules"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-model.php:1455
-#: classes/class-fl-builder-model.php:1509
-#: includes/admin-settings-modules.php:32 includes/ui.php:88
+#: classes/class-fl-builder-model.php:1655
+#: classes/class-fl-builder-model.php:1713
+#: includes/admin-settings-modules.php:32 includes/ui.php:99
 #: modules/widget/widget.php:16
 msgid "WordPress Widgets"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-model.php:2018
+#: classes/class-fl-builder-model.php:2302
 #, php-format
 msgctxt "%s stands for post/page title."
 msgid "Copy of %s"
 msgstr ""
 
+#: classes/class-fl-builder-model.php:2715
+msgctxt "Default user template category."
+msgid "Uncategorized"
+msgstr ""
+
 # @ fl-builder
-#: classes/class-fl-builder-photo.php:78 classes/class-fl-builder-photo.php:83
+#: classes/class-fl-builder-model.php:3070
+msgid "Home Pages"
+msgstr ""
+
+# @ fl-builder
+#: classes/class-fl-builder-model.php:3071
+msgid "Content Pages"
+msgstr ""
+
+# @ fl-builder
+#: classes/class-fl-builder-photo.php:95
+#: classes/class-fl-builder-photo.php:100
 msgctxt "Image size."
 msgid "Full Size"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-photo.php:84
+#: classes/class-fl-builder-photo.php:101
 msgctxt "Image size."
 msgid "Large"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-photo.php:85
+#: classes/class-fl-builder-photo.php:102
 msgctxt "Image size."
 msgid "Medium"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder-photo.php:86
+#: classes/class-fl-builder-photo.php:103
 msgctxt "Image size."
 msgid "Thumbnail"
 msgstr ""
@@ -260,10 +276,12 @@ msgstr ""
 #: classes/class-fl-builder-service-constant-contact.php:156
 #: classes/class-fl-builder-service-getresponse.php:154
 #: classes/class-fl-builder-service-icontact.php:207
+#: classes/class-fl-builder-service-infusionsoft.php:204
 #: classes/class-fl-builder-service-madmimi.php:178
 #: classes/class-fl-builder-service-mailchimp.php:154
 #: classes/class-fl-builder-service-mailpoet.php:92
-#: classes/class-fl-builder-services.php:263 includes/service-settings.php:21
+#: classes/class-fl-builder-service-sendinblue.php:161
+#: classes/class-fl-builder-services.php:278 includes/service-settings.php:21
 #: modules/woocommerce/woocommerce.php:60
 msgid "Choose..."
 msgstr ""
@@ -273,9 +291,11 @@ msgstr ""
 #: classes/class-fl-builder-service-constant-contact.php:166
 #: classes/class-fl-builder-service-getresponse.php:164
 #: classes/class-fl-builder-service-icontact.php:217
+#: classes/class-fl-builder-service-infusionsoft.php:214
 #: classes/class-fl-builder-service-madmimi.php:188
 #: classes/class-fl-builder-service-mailchimp.php:164
 #: classes/class-fl-builder-service-mailpoet.php:102
+#: classes/class-fl-builder-service-sendinblue.php:171
 msgctxt "An email list from a third party provider."
 msgid "List"
 msgstr ""
@@ -297,6 +317,8 @@ msgstr ""
 #: classes/class-fl-builder-service-campaign-monitor.php:55
 #: classes/class-fl-builder-service-constant-contact.php:48
 #: classes/class-fl-builder-service-getresponse.php:67
+#: classes/class-fl-builder-service-hatchbuck.php:48
+#: classes/class-fl-builder-service-infusionsoft.php:79
 #: classes/class-fl-builder-service-madmimi.php:73
 #: classes/class-fl-builder-service-mailchimp.php:67
 msgid "Error: You must provide an API key."
@@ -306,12 +328,15 @@ msgstr ""
 #: classes/class-fl-builder-service-campaign-monitor.php:129
 #: classes/class-fl-builder-service-getresponse.php:76
 #: classes/class-fl-builder-service-getresponse.php:132
+#: classes/class-fl-builder-service-hatchbuck.php:63
 msgid "Error: Please check your API key."
 msgstr ""
 
 #: classes/class-fl-builder-service-campaign-monitor.php:88
 #: classes/class-fl-builder-service-constant-contact.php:88
 #: classes/class-fl-builder-service-getresponse.php:100
+#: classes/class-fl-builder-service-hatchbuck.php:87
+#: classes/class-fl-builder-service-infusionsoft.php:129
 #: classes/class-fl-builder-service-madmimi.php:121
 #: classes/class-fl-builder-service-mailchimp.php:100
 msgid "API Key"
@@ -397,6 +422,32 @@ msgstr ""
 msgid "There was an error subscribing to GetResponse. %s"
 msgstr ""
 
+#: classes/class-fl-builder-service-hatchbuck.php:88
+msgid ""
+"Your API key can be found in your Hatchbuck account under Account Settings > "
+"Web API."
+msgstr ""
+
+#: classes/class-fl-builder-service-hatchbuck.php:134
+msgctxt "A tag to add to contacts in Hatchbuck when they subscribe."
+msgid "Tag"
+msgstr ""
+
+#: classes/class-fl-builder-service-hatchbuck.php:161
+msgid ""
+"There was an error subscribing to Hatchbuck. The account is no longer "
+"connected."
+msgstr ""
+
+#: classes/class-fl-builder-service-hatchbuck.php:190
+msgid "There was an error subscribing to Hatchbuck. The API key is invalid."
+msgstr ""
+
+#: classes/class-fl-builder-service-hatchbuck.php:200
+#: classes/class-fl-builder-service-hatchbuck.php:232
+msgid "There was an error subscribing to Hatchbuck."
+msgstr ""
+
 #: classes/class-fl-builder-service-icontact.php:75
 msgid "Error: You must provide a username."
 msgstr ""
@@ -424,6 +475,7 @@ msgid "Your iContact username."
 msgstr ""
 
 #: classes/class-fl-builder-service-icontact.php:136
+#: classes/class-fl-builder-service-infusionsoft.php:118
 msgid "App ID"
 msgstr ""
 
@@ -455,6 +507,39 @@ msgstr ""
 #: classes/class-fl-builder-service-icontact.php:280
 #, php-format
 msgid "There was an error subscribing to iContact. %s"
+msgstr ""
+
+#: classes/class-fl-builder-service-infusionsoft.php:49
+#, php-format
+msgid "There was an error connecting to Infusionsoft. %s"
+msgstr ""
+
+#: classes/class-fl-builder-service-infusionsoft.php:83
+msgid "Error: You must provide an app ID."
+msgstr ""
+
+#: classes/class-fl-builder-service-infusionsoft.php:119
+msgid ""
+"Your App ID can be found in the URL for your account. For example, if the "
+"URL for your account is myaccount.infusionsoft.com, your App ID would be "
+"<strong>myaccount</strong>."
+msgstr ""
+
+#: classes/class-fl-builder-service-infusionsoft.php:130
+msgid ""
+"Your API key can be found in your Infusionsoft account under Admin > "
+"Settings > Application > API > Encrypted Key."
+msgstr ""
+
+#: classes/class-fl-builder-service-infusionsoft.php:242
+msgid ""
+"There was an error subscribing to Infusionsoft. The account is no longer "
+"connected."
+msgstr ""
+
+#: classes/class-fl-builder-service-infusionsoft.php:291
+#, php-format
+msgid "There was an error subscribing to Infusionsoft. %s"
 msgstr ""
 
 #: classes/class-fl-builder-service-madmimi.php:69
@@ -504,7 +589,7 @@ msgid ""
 "connected."
 msgstr ""
 
-#: classes/class-fl-builder-service-mailchimp.php:219
+#: classes/class-fl-builder-service-mailchimp.php:221
 #, php-format
 msgid "There was an error subscribing to MailChimp. %s"
 msgstr ""
@@ -517,133 +602,220 @@ msgstr ""
 msgid "There was an error subscribing. MailPoet is not installed."
 msgstr ""
 
-#: classes/class-fl-builder-services.php:133
+#: classes/class-fl-builder-service-sendinblue.php:67
+msgid "Error: You must provide an Access Key."
+msgstr ""
+
+#: classes/class-fl-builder-service-sendinblue.php:76
+#: classes/class-fl-builder-service-sendinblue.php:136
+msgid "There was an error connecting to SendinBlue. Please try again."
+msgstr ""
+
+#: classes/class-fl-builder-service-sendinblue.php:79
+#: classes/class-fl-builder-service-sendinblue.php:139
+#, php-format
+msgid "Error: Could not connect to SendinBlue. %s"
+msgstr ""
+
+#: classes/class-fl-builder-service-sendinblue.php:103
+msgid "Access Key"
+msgstr ""
+
+#: classes/class-fl-builder-service-sendinblue.php:104
+msgid ""
+"Your Access Key can be found in your SendinBlue account under API & "
+"Integration > Manager Your Keys > Version 2.0 > Access Key."
+msgstr ""
+
+#: classes/class-fl-builder-service-sendinblue.php:198
+msgid ""
+"There was an error subscribing to SendinBlue. The account is no longer "
+"connected."
+msgstr ""
+
+#: classes/class-fl-builder-service-sendinblue.php:220
+msgid "There was an error subscribing to SendinBlue. Please try again."
+msgstr ""
+
+#: classes/class-fl-builder-service-sendinblue.php:223
+#, php-format
+msgid "Error: Could not subscribe to SendinBlue. %s"
+msgstr ""
+
+#: classes/class-fl-builder-services.php:148
 msgctxt "Third party service such as MailChimp."
 msgid "Error: Missing service type."
 msgstr ""
 
-#: classes/class-fl-builder-services.php:136
+#: classes/class-fl-builder-services.php:151
 msgctxt "Connection data such as an API key."
 msgid "Error: Missing service data."
 msgstr ""
 
-#: classes/class-fl-builder-services.php:139
+#: classes/class-fl-builder-services.php:154
 msgctxt "Account name for a third party service such as MailChimp."
 msgid "Error: Missing account name."
 msgstr ""
 
-#: classes/class-fl-builder-services.php:148
+#: classes/class-fl-builder-services.php:163
 msgctxt "Account name for a third party service such as MailChimp."
 msgid "Error: An account with that name already exists."
 msgstr ""
 
-#: classes/class-fl-builder-services.php:228
+#: classes/class-fl-builder-services.php:243
 msgid "Account Name"
 msgstr ""
 
-#: classes/class-fl-builder-services.php:229
+#: classes/class-fl-builder-services.php:244
 msgid ""
 "Used to identify this connection within the accounts list and can be "
 "anything you like."
 msgstr ""
 
-#: classes/class-fl-builder-services.php:242
+#: classes/class-fl-builder-services.php:257
 msgid "Connect"
 msgstr ""
 
-#: classes/class-fl-builder-services.php:270
+#: classes/class-fl-builder-services.php:285
 msgid "Add Account..."
 msgstr ""
 
-#: classes/class-fl-builder-services.php:277
+#: classes/class-fl-builder-services.php:292
 msgid "Account"
 msgstr ""
 
-#: classes/class-fl-builder-templates.php:28
+#: classes/class-fl-builder-template-settings.php:33
 msgid "Page Builder Templates"
 msgstr ""
 
+#: classes/class-fl-builder-templates-override.php:46
+msgid "Error! Please enter a number for the site ID."
+msgstr ""
+
+#: classes/class-fl-builder-templates-override.php:50
+msgid "Error! A site with that ID doesn't exist."
+msgstr ""
+
 # @ fl-builder
-#: classes/class-fl-builder.php:713
+#: classes/class-fl-builder.php:811
 #, php-format
 msgctxt "Field name to add."
 msgid "Add %s"
 msgstr ""
 
-# @ fl-builder
-#: classes/class-fl-builder.php:776 classes/class-fl-builder.php:778
+#: classes/class-fl-builder.php:901 classes/class-fl-builder.php:903
 msgctxt "Custom post type label."
-msgid "Layout Templates"
+msgid "Templates"
+msgstr ""
+
+#: classes/class-fl-builder.php:902 classes/class-fl-builder.php:904
+msgctxt "Custom post type label."
+msgid "Template"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder.php:777 classes/class-fl-builder.php:779
-msgctxt "Custom post type label."
-msgid "Layout Template"
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:780
+#: classes/class-fl-builder.php:905
 msgctxt "Custom post type label."
 msgid "Add New"
 msgstr ""
 
-# @ fl-builder
-#: classes/class-fl-builder.php:781
+#: classes/class-fl-builder.php:906
 msgctxt "Custom post type label."
-msgid "Add New Layout Template"
+msgid "Add New Template"
+msgstr ""
+
+#: classes/class-fl-builder.php:907
+msgctxt "Custom post type label."
+msgid "New Template"
+msgstr ""
+
+#: classes/class-fl-builder.php:908
+msgctxt "Custom post type label."
+msgid "Edit Template"
+msgstr ""
+
+#: classes/class-fl-builder.php:909
+msgctxt "Custom post type label."
+msgid "View Template"
+msgstr ""
+
+#: classes/class-fl-builder.php:910
+msgctxt "Custom post type label."
+msgid "All Templates"
+msgstr ""
+
+#: classes/class-fl-builder.php:911
+msgctxt "Custom post type label."
+msgid "Search Templates"
+msgstr ""
+
+#: classes/class-fl-builder.php:912
+msgctxt "Custom post type label."
+msgid "Parent Templates:"
+msgstr ""
+
+#: classes/class-fl-builder.php:913
+msgctxt "Custom post type label."
+msgid "No templates found."
+msgstr ""
+
+#: classes/class-fl-builder.php:914
+msgctxt "Custom post type label."
+msgid "No templates found in Trash."
+msgstr ""
+
+#: classes/class-fl-builder.php:927 classes/class-fl-builder.php:937
+msgctxt "Custom taxonomy label."
+msgid "Categories"
+msgstr ""
+
+#: classes/class-fl-builder.php:928
+msgctxt "Custom taxonomy label."
+msgid "Category"
+msgstr ""
+
+#: classes/class-fl-builder.php:929
+msgctxt "Custom taxonomy label."
+msgid "Search Categories"
+msgstr ""
+
+#: classes/class-fl-builder.php:930
+msgctxt "Custom taxonomy label."
+msgid "All Categories"
+msgstr ""
+
+#: classes/class-fl-builder.php:931
+msgctxt "Custom taxonomy label."
+msgid "Parent Category"
+msgstr ""
+
+#: classes/class-fl-builder.php:932
+msgctxt "Custom taxonomy label."
+msgid "Parent Category:"
+msgstr ""
+
+#: classes/class-fl-builder.php:933
+msgctxt "Custom taxonomy label."
+msgid "Edit Category"
+msgstr ""
+
+#: classes/class-fl-builder.php:934
+msgctxt "Custom taxonomy label."
+msgid "Update Category"
+msgstr ""
+
+#: classes/class-fl-builder.php:935
+msgctxt "Custom taxonomy label."
+msgid "Add New Category"
+msgstr ""
+
+#: classes/class-fl-builder.php:936
+msgctxt "Custom taxonomy label."
+msgid "New Category Name"
 msgstr ""
 
 # @ fl-builder
-#: classes/class-fl-builder.php:782
-msgctxt "Custom post type label."
-msgid "New Layout Template"
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:783
-msgctxt "Custom post type label."
-msgid "Edit Layout Template"
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:784
-msgctxt "Custom post type label."
-msgid "View Layout Template"
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:785
-msgctxt "Custom post type label."
-msgid "All Layout Templates"
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:786
-msgctxt "Custom post type label."
-msgid "Search Layout Templates"
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:787
-msgctxt "Custom post type label."
-msgid "Parent Layout Templates:"
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:788
-msgctxt "Custom post type label."
-msgid "No layout templates found."
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:789
-msgctxt "Custom post type label."
-msgid "No layout templates found in Trash."
-msgstr ""
-
-# @ fl-builder
-#: classes/class-fl-builder.php:1160 includes/js-config.php:69
+#: classes/class-fl-builder.php:1389 includes/js-config.php:69
 #, php-format
 msgctxt "%s stands for module name."
 msgid "%s Settings"
@@ -654,11 +826,12 @@ msgstr ""
 msgid "Text Editor"
 msgstr ""
 
-# @ fl-builder
 #: includes/admin-posts.php:7
 #, php-format
-msgctxt "%s stands for custom branded \"Page Builder\" name."
-msgid "%s is currently active for this page."
+msgctxt ""
+"The first %s stands for custom branded \"Page Builder\" name. The second %s "
+"stands for the post type name."
+msgid "%s is currently active for this %s."
 msgstr ""
 
 # @ fl-builder
@@ -727,7 +900,7 @@ msgstr ""
 #: includes/admin-settings-editing.php:10 includes/admin-settings-icons.php:27
 #: includes/admin-settings-modules.php:10
 #: includes/admin-settings-post-types.php:10
-#: includes/admin-settings-templates.php:10
+#: includes/admin-settings-templates.php:16
 msgid "Override network settings?"
 msgstr ""
 
@@ -901,37 +1074,68 @@ msgstr ""
 msgid "Save Post Types"
 msgstr ""
 
+#: includes/admin-settings-templates-override.php:2
+#: includes/admin-settings-templates-override.php:8
+#: includes/admin-settings-templates-override.php:13
+msgid "Override Core Templates"
+msgstr ""
+
+#: includes/admin-settings-templates-override.php:3
+msgid ""
+"Enter the ID of a site on the network whose templates should override core "
+"builder templates. Leave this field blank if you do not wish to override "
+"core templates."
+msgstr ""
+
+#: includes/admin-settings-templates-override.php:9
+msgid ""
+"Use this setting to override core builder templates with your templates."
+msgstr ""
+
 # @ fl-builder
-#: includes/admin-settings-templates.php:3 includes/template-settings.php:4
+#: includes/admin-settings-templates.php:9 includes/template-settings.php:4
 msgid "Template Settings"
 msgstr ""
 
-# @ fl-builder
-#: includes/admin-settings-templates.php:16
-msgid "Enable or disable templates using the options below."
+#: includes/admin-settings-templates.php:22
+msgid "Enable Templates"
 msgstr ""
 
-# @ fl-builder
 #: includes/admin-settings-templates.php:23
-msgid "Enable All Templates"
-msgstr ""
-
-# @ fl-builder
-#: includes/admin-settings-templates.php:24
-msgid "Enable Core Templates Only"
+msgid ""
+"Use this setting to enable or disable templates in the builder interface."
 msgstr ""
 
 # @ fl-builder
 #: includes/admin-settings-templates.php:25
-msgid "Enable User Templates Only"
+msgid "Enable All Templates"
 msgstr ""
 
 # @ fl-builder
 #: includes/admin-settings-templates.php:26
+msgid "Enable Core Templates Only"
+msgstr ""
+
+# @ fl-builder
+#: includes/admin-settings-templates.php:27
+msgid "Enable User Templates Only"
+msgstr ""
+
+# @ fl-builder
+#: includes/admin-settings-templates.php:28
 msgid "Disable All Templates"
 msgstr ""
 
-#: includes/admin-settings-templates.php:30
+#: includes/admin-settings-templates.php:31
+#: includes/admin-settings-templates.php:36
+msgid "Enable Templates Admin"
+msgstr ""
+
+#: includes/admin-settings-templates.php:32
+msgid "Use this setting to edit builder templates in the WordPress admin."
+msgstr ""
+
+#: includes/admin-settings-templates.php:50
 msgid "Save Template Settings"
 msgstr ""
 
@@ -986,9 +1190,9 @@ msgid "Image"
 msgstr ""
 
 # @ fl-builder
-#: includes/admin-templates-edit.php:16 includes/row-settings.php:155
-#: includes/template-settings.php:23 modules/callout/callout.php:353
-#: modules/callout/callout.php:373
+#: includes/admin-templates-edit.php:16 includes/column-settings.php:114
+#: includes/row-settings.php:155 includes/template-settings.php:23
+#: modules/callout/callout.php:353 modules/callout/callout.php:373
 #: modules/content-slider/content-slider.php:472
 #: modules/post-grid/post-grid.php:127
 msgid "Position"
@@ -1011,15 +1215,15 @@ msgstr ""
 #: modules/content-slider/content-slider.php:266
 #: modules/content-slider/content-slider.php:537
 #: modules/icon-group/icon-group.php:80 modules/icon/icon.php:111
-#: modules/slideshow/slideshow.php:315 modules/slideshow/slideshow.php:325
-#: modules/slideshow/slideshow.php:376 modules/slideshow/slideshow.php:417
-#: modules/slideshow/slideshow.php:439 modules/slideshow/slideshow.php:488
-#: modules/slideshow/slideshow.php:497 modules/slideshow/slideshow.php:506
-#: modules/slideshow/slideshow.php:515 modules/slideshow/slideshow.php:524
-#: modules/slideshow/slideshow.php:533 modules/slideshow/slideshow.php:542
-#: modules/slideshow/slideshow.php:556 modules/slideshow/slideshow.php:571
-#: modules/slideshow/slideshow.php:606 modules/slideshow/slideshow.php:618
-#: modules/slideshow/slideshow.php:630 modules/slideshow/slideshow.php:642
+#: modules/slideshow/slideshow.php:316 modules/slideshow/slideshow.php:326
+#: modules/slideshow/slideshow.php:377 modules/slideshow/slideshow.php:418
+#: modules/slideshow/slideshow.php:440 modules/slideshow/slideshow.php:489
+#: modules/slideshow/slideshow.php:498 modules/slideshow/slideshow.php:507
+#: modules/slideshow/slideshow.php:516 modules/slideshow/slideshow.php:525
+#: modules/slideshow/slideshow.php:534 modules/slideshow/slideshow.php:543
+#: modules/slideshow/slideshow.php:557 modules/slideshow/slideshow.php:572
+#: modules/slideshow/slideshow.php:607 modules/slideshow/slideshow.php:619
+#: modules/slideshow/slideshow.php:631 modules/slideshow/slideshow.php:643
 #: modules/social-buttons/social-buttons.php:111
 #: modules/social-buttons/social-buttons.php:120
 #: modules/social-buttons/social-buttons.php:129
@@ -1042,15 +1246,15 @@ msgstr ""
 #: modules/content-slider/content-slider.php:267
 #: modules/content-slider/content-slider.php:538
 #: modules/icon-group/icon-group.php:81 modules/icon/icon.php:112
-#: modules/slideshow/slideshow.php:316 modules/slideshow/slideshow.php:326
-#: modules/slideshow/slideshow.php:377 modules/slideshow/slideshow.php:418
-#: modules/slideshow/slideshow.php:440 modules/slideshow/slideshow.php:489
-#: modules/slideshow/slideshow.php:498 modules/slideshow/slideshow.php:507
-#: modules/slideshow/slideshow.php:516 modules/slideshow/slideshow.php:525
-#: modules/slideshow/slideshow.php:534 modules/slideshow/slideshow.php:543
-#: modules/slideshow/slideshow.php:557 modules/slideshow/slideshow.php:572
-#: modules/slideshow/slideshow.php:607 modules/slideshow/slideshow.php:619
-#: modules/slideshow/slideshow.php:631 modules/slideshow/slideshow.php:643
+#: modules/slideshow/slideshow.php:317 modules/slideshow/slideshow.php:327
+#: modules/slideshow/slideshow.php:378 modules/slideshow/slideshow.php:419
+#: modules/slideshow/slideshow.php:441 modules/slideshow/slideshow.php:490
+#: modules/slideshow/slideshow.php:499 modules/slideshow/slideshow.php:508
+#: modules/slideshow/slideshow.php:517 modules/slideshow/slideshow.php:526
+#: modules/slideshow/slideshow.php:535 modules/slideshow/slideshow.php:544
+#: modules/slideshow/slideshow.php:558 modules/slideshow/slideshow.php:573
+#: modules/slideshow/slideshow.php:608 modules/slideshow/slideshow.php:620
+#: modules/slideshow/slideshow.php:632 modules/slideshow/slideshow.php:644
 #: modules/social-buttons/social-buttons.php:110
 #: modules/social-buttons/social-buttons.php:119
 #: modules/social-buttons/social-buttons.php:128
@@ -1100,12 +1304,12 @@ msgstr ""
 
 # @ fl-builder
 #: includes/admin-templates.php:25 includes/field-photo.php:12
-#: includes/template-selector.php:83
+#: includes/template-selector.php:70
 msgid "Edit"
 msgstr ""
 
 # @ fl-builder
-#: includes/admin-templates.php:27 includes/template-selector.php:84
+#: includes/admin-templates.php:27 includes/template-selector.php:71
 msgid "Delete"
 msgstr ""
 
@@ -1152,8 +1356,8 @@ msgid "Text"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:30 includes/column-settings.php:43
-#: includes/column-settings.php:100 includes/row-settings.php:52
+#: includes/column-settings.php:30 includes/column-settings.php:69
+#: includes/column-settings.php:199 includes/row-settings.php:52
 #: includes/row-settings.php:109 includes/row-settings.php:403
 #: modules/callout/callout.php:391
 #: modules/content-slider/content-slider.php:337
@@ -1163,7 +1367,43 @@ msgid "Color"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:39 includes/row-settings.php:105
+#: includes/column-settings.php:39 includes/row-settings.php:61
+msgid "Background"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:43 includes/column-settings.php:166
+#: includes/row-settings.php:65 includes/row-settings.php:370
+#: modules/callout/callout.php:474
+#: modules/content-slider/content-slider.php:331
+#: modules/content-slider/content-slider.php:378
+#: modules/content-slider/content-slider.php:596
+#: modules/content-slider/content-slider.php:729
+#: modules/slideshow/slideshow.php:340
+msgid "Type"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:46 includes/row-settings.php:68
+#: modules/content-slider/content-slider.php:338
+msgctxt "Background type."
+msgid "None"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:47 includes/row-settings.php:69
+msgctxt "Background type."
+msgid "Color"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:48 includes/row-settings.php:70
+msgctxt "Background type."
+msgid "Photo"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:65 includes/row-settings.php:105
 #: modules/button/button.php:115 modules/callout/callout.php:404
 #: modules/callout/callout.php:508
 #: modules/content-slider/content-slider.php:363
@@ -1174,118 +1414,268 @@ msgid "Background Color"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:51 includes/column-settings.php:108
+#: includes/column-settings.php:77 includes/column-settings.php:207
 #: includes/row-settings.php:117 includes/row-settings.php:411
 #: modules/separator/separator.php:44
 msgid "Opacity"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:63 includes/row-settings.php:366
+#: includes/column-settings.php:88 includes/row-settings.php:129
+#: modules/content-slider/content-slider.php:359
+msgid "Background Photo"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:92 includes/row-settings.php:133
+#: includes/row-settings.php:321 modules/callout/callout.php:316
+#: modules/callout/callout.php:332 modules/callout/callout.php:336
+#: modules/content-slider/content-slider.php:335
+#: modules/content-slider/content-slider.php:404
+#: modules/content-slider/content-slider.php:745 modules/photo/photo.php:25
+#: modules/photo/photo.php:392
+msgid "Photo"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:99 includes/row-settings.php:140
+msgid "Repeat"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:102 includes/row-settings.php:143
+msgctxt "Background repeat."
+msgid "None"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:103 includes/row-settings.php:144
+msgctxt "Background repeat."
+msgid "Tile"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:104 includes/row-settings.php:145
+msgctxt "Background repeat."
+msgid "Horizontal"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:105 includes/row-settings.php:146
+msgctxt "Background repeat."
+msgid "Vertical"
+msgstr ""
+
+#: includes/column-settings.php:107 includes/row-settings.php:148
+msgid ""
+"Repeat applies to how the image should display in the background. Choosing "
+"none will display the image as uploaded. Tile will repeat the image as many "
+"times as needed to fill the background horizontally and vertically. You can "
+"also specify the image to only repeat horizontally or vertically."
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:117 includes/row-settings.php:158
+msgid "Left Top"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:118 includes/row-settings.php:159
+msgid "Left Center"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:119 includes/row-settings.php:160
+msgid "Left Bottom"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:120 includes/row-settings.php:161
+msgid "Right Top"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:121 includes/row-settings.php:162
+msgid "Right Center"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:122 includes/row-settings.php:163
+msgid "Right Bottom"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:123 includes/row-settings.php:164
+msgid "Center Top"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:124 includes/row-settings.php:165
+#: modules/button/button.php:218 modules/callout/callout.php:251
+#: modules/content-slider/content-slider.php:477 modules/cta/cta.php:126
+#: modules/heading/heading.php:90 modules/heading/heading.php:162
+#: modules/icon-group/icon-group.php:110 modules/icon/icon.php:133
+#: modules/photo/photo.php:418 modules/social-buttons/social-buttons.php:100
+msgid "Center"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:125 includes/row-settings.php:166
+msgid "Center Bottom"
+msgstr ""
+
+#: includes/column-settings.php:127 includes/row-settings.php:168
+msgid "Position will tell the image where it should sit in the background."
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:134 includes/row-settings.php:175
+msgid "Attachment"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:137 includes/row-settings.php:178
+#: modules/post-grid/post-grid.php:75
+msgid "Scroll"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:138 includes/global-settings.php:69
+#: includes/global-settings.php:83 includes/row-settings.php:19
+#: includes/row-settings.php:37 includes/row-settings.php:179
+msgid "Fixed"
+msgstr ""
+
+#: includes/column-settings.php:140 includes/row-settings.php:181
+msgid ""
+"Attachment will specify how the image reacts when scrolling a page. When "
+"scrolling is selected, the image will scroll with page scrolling. This is "
+"the default setting. Fixed will allow the image to scroll within the "
+"background if fill is selected in the scale setting."
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:147 includes/row-settings.php:188
+msgid "Scale"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:150 includes/row-settings.php:191
+msgctxt "Background scale."
+msgid "None"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:151 includes/row-settings.php:192
+msgid "Fit"
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:152 includes/row-settings.php:193
+msgid "Fill"
+msgstr ""
+
+#: includes/column-settings.php:154 includes/row-settings.php:195
+msgid ""
+"Scale applies to how the image should display in the background. You can "
+"select either fill or fit to the background."
+msgstr ""
+
+# @ fl-builder
+#: includes/column-settings.php:162 includes/row-settings.php:366
 msgid "Border"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:67 includes/row-settings.php:65
-#: includes/row-settings.php:370 modules/callout/callout.php:474
-#: modules/content-slider/content-slider.php:331
-#: modules/content-slider/content-slider.php:378
-#: modules/content-slider/content-slider.php:596
-#: modules/content-slider/content-slider.php:729
-#: modules/slideshow/slideshow.php:339
-msgid "Type"
-msgstr ""
-
-# @ fl-builder
-#: includes/column-settings.php:69 includes/row-settings.php:372
+#: includes/column-settings.php:168 includes/row-settings.php:372
 msgid ""
 "The type of border to use. Double borders must have a width of at least 3px "
 "to render properly."
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:71 includes/row-settings.php:374
+#: includes/column-settings.php:170 includes/row-settings.php:374
 msgctxt "Border type."
 msgid "None"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:72 includes/row-settings.php:375
+#: includes/column-settings.php:171 includes/row-settings.php:375
 #: modules/separator/separator.php:75
 msgctxt "Border type."
 msgid "Solid"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:73 includes/row-settings.php:376
+#: includes/column-settings.php:172 includes/row-settings.php:376
 #: modules/separator/separator.php:76
 msgctxt "Border type."
 msgid "Dashed"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:74 includes/row-settings.php:377
+#: includes/column-settings.php:173 includes/row-settings.php:377
 #: modules/separator/separator.php:77
 msgctxt "Border type."
 msgid "Dotted"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:75 includes/row-settings.php:378
+#: includes/column-settings.php:174 includes/row-settings.php:378
 #: modules/separator/separator.php:78
 msgctxt "Border type."
 msgid "Double"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:119 includes/row-settings.php:422
+#: includes/column-settings.php:218 includes/row-settings.php:422
 msgid "Top Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:131 includes/row-settings.php:434
+#: includes/column-settings.php:230 includes/row-settings.php:434
 msgid "Bottom Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:143 includes/row-settings.php:446
+#: includes/column-settings.php:242 includes/row-settings.php:446
 msgid "Left Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:155 includes/row-settings.php:458
+#: includes/column-settings.php:254 includes/row-settings.php:458
 msgid "Right Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:170 includes/module-settings.php:6
+#: includes/column-settings.php:269 includes/module-settings.php:6
 #: includes/row-settings.php:473 modules/content-slider/content-slider.php:273
 msgid "Advanced"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:173 includes/global-settings.php:41
+#: includes/column-settings.php:272 includes/global-settings.php:41
 #: includes/global-settings.php:94 includes/module-settings.php:9
 #: includes/row-settings.php:476
 msgid "Margins"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:177 includes/column-settings.php:230
+#: includes/column-settings.php:276 includes/column-settings.php:329
 #: includes/module-settings.php:13 includes/row-settings.php:480
-#: includes/row-settings.php:533 modules/slideshow/slideshow.php:475
+#: includes/row-settings.php:533 modules/slideshow/slideshow.php:476
 msgid "Top"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:189 includes/column-settings.php:242
+#: includes/column-settings.php:288 includes/column-settings.php:341
 #: includes/module-settings.php:25 includes/row-settings.php:492
-#: includes/row-settings.php:545 modules/slideshow/slideshow.php:474
+#: includes/row-settings.php:545 modules/slideshow/slideshow.php:475
 msgid "Bottom"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:201 includes/column-settings.php:254
+#: includes/column-settings.php:300 includes/column-settings.php:353
 #: includes/module-settings.php:37 includes/row-settings.php:504
 #: includes/row-settings.php:557 modules/button/button.php:219
 #: modules/callout/callout.php:252
@@ -1297,7 +1687,7 @@ msgid "Left"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:213 includes/column-settings.php:266
+#: includes/column-settings.php:312 includes/column-settings.php:365
 #: includes/module-settings.php:49 includes/row-settings.php:516
 #: includes/row-settings.php:569 modules/button/button.php:220
 #: modules/callout/callout.php:253
@@ -1309,7 +1699,7 @@ msgid "Right"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:226 includes/global-settings.php:49
+#: includes/column-settings.php:325 includes/global-settings.php:49
 #: includes/row-settings.php:529 modules/button/button.php:233
 #: modules/callout/callout.php:598
 #: modules/content-slider/content-slider.php:703 modules/cta/cta.php:345
@@ -1318,70 +1708,70 @@ msgid "Padding"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:279 includes/global-settings.php:103
+#: includes/column-settings.php:378 includes/global-settings.php:103
 #: includes/module-settings.php:62 includes/row-settings.php:582
 msgid "Responsive Layout"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:283 includes/module-settings.php:66
-#: includes/row-settings.php:586 modules/slideshow/slideshow.php:290
+#: includes/column-settings.php:382 includes/module-settings.php:66
+#: includes/row-settings.php:586 modules/slideshow/slideshow.php:291
 msgid "Display"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:285 includes/module-settings.php:68
+#: includes/column-settings.php:384 includes/module-settings.php:68
 #: includes/row-settings.php:588
 msgid "Always"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:286 includes/module-settings.php:69
+#: includes/column-settings.php:385 includes/module-settings.php:69
 #: includes/row-settings.php:589
 msgid "Large Devices Only"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:287 includes/module-settings.php:70
+#: includes/column-settings.php:386 includes/module-settings.php:70
 #: includes/row-settings.php:590
 msgid "Large &amp; Medium Devices Only"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:288 includes/module-settings.php:71
+#: includes/column-settings.php:387 includes/module-settings.php:71
 #: includes/row-settings.php:591
 msgid "Medium Devices Only"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:289 includes/module-settings.php:72
+#: includes/column-settings.php:388 includes/module-settings.php:72
 #: includes/row-settings.php:592
 msgid "Medium &amp; Small Devices Only"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:290 includes/module-settings.php:73
+#: includes/column-settings.php:389 includes/module-settings.php:73
 #: includes/row-settings.php:593
 msgid "Small Devices Only"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:292
+#: includes/column-settings.php:391
 msgid "Choose whether to show or hide this column at different device sizes."
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:299
+#: includes/column-settings.php:398
 msgid "Medium Device Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:300
+#: includes/column-settings.php:399
 msgid "The width of this column on medium devices such as tablets."
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:302 includes/column-settings.php:330
+#: includes/column-settings.php:401 includes/column-settings.php:429
 #: modules/callout/callout.php:283
 #: modules/content-slider/content-slider.php:448 modules/cta/cta.php:167
 #: modules/heading/heading.php:117 modules/heading/heading.php:144
@@ -1390,7 +1780,7 @@ msgid "Default"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:303 includes/column-settings.php:331
+#: includes/column-settings.php:402 includes/column-settings.php:430
 #: modules/button/button.php:193 modules/callout/callout.php:284
 #: modules/content-slider/content-slider.php:449 modules/cta/cta.php:168
 #: modules/heading/heading.php:118 modules/heading/heading.php:145
@@ -1400,51 +1790,51 @@ msgid "Custom"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:316
+#: includes/column-settings.php:415
 msgid "Custom Medium Device Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:327
+#: includes/column-settings.php:426
 msgid "Small Device Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:328
+#: includes/column-settings.php:427
 msgid "The width of this column on small devices such as phones."
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:344
+#: includes/column-settings.php:443
 msgid "Custom Small Device Width"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:356 includes/module-settings.php:115
+#: includes/column-settings.php:455 includes/module-settings.php:115
 #: includes/row-settings.php:603
 msgid "CSS Selectors"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:360 includes/loop-settings.php:28
+#: includes/column-settings.php:459 includes/loop-settings.php:28
 #: includes/module-settings.php:119 includes/row-settings.php:607
 msgid "ID"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:361
+#: includes/column-settings.php:460
 msgid ""
 "A unique ID that will be applied to this column's HTML. Must start with a "
 "letter and only contain dashes, underscores, letters or numbers. No spaces."
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:368
+#: includes/column-settings.php:467
 msgid "CSS Class"
 msgstr ""
 
 # @ fl-builder
-#: includes/column-settings.php:369
+#: includes/column-settings.php:468
 msgid ""
 "A class that will be applied to this column's HTML. Must start with a letter "
 "and only contain dashes, underscores, letters or numbers. Separate multiple "
@@ -1490,7 +1880,7 @@ msgstr ""
 # @ fl-builder
 #: includes/field-link.php:7 includes/icon-selector.php:28
 #: includes/js-config.php:19 includes/settings.php:63
-#: includes/template-selector.php:102 includes/ui.php:11
+#: includes/template-selector.php:92
 msgid "Cancel"
 msgstr ""
 
@@ -1544,7 +1934,7 @@ msgstr ""
 #: modules/icon/icon.php:27 modules/map/map.php:26 modules/photo/photo.php:368
 #: modules/pricing-table/pricing-table.php:87
 #: modules/rich-text/rich-text.php:26 modules/separator/separator.php:27
-#: modules/sidebar/sidebar.php:27 modules/slideshow/slideshow.php:256
+#: modules/sidebar/sidebar.php:27 modules/slideshow/slideshow.php:257
 #: modules/social-buttons/social-buttons.php:64
 #: modules/subscribe-form/subscribe-form.php:86 modules/tabs/tabs.php:77
 #: modules/testimonials/testimonials.php:30
@@ -1608,13 +1998,6 @@ msgstr ""
 # @ fl-builder
 #: includes/global-settings.php:66
 msgid "Default Row Width"
-msgstr ""
-
-# @ fl-builder
-#: includes/global-settings.php:69 includes/global-settings.php:83
-#: includes/row-settings.php:19 includes/row-settings.php:37
-#: includes/row-settings.php:179
-msgid "Fixed"
 msgstr ""
 
 # @ fl-builder
@@ -1731,17 +2114,17 @@ msgid ""
 msgstr ""
 
 #: includes/js-config.php:31
-msgid "Discard Draft"
+msgid "Discard Changes"
 msgstr ""
 
 #: includes/js-config.php:32
 msgid ""
-"Do you really want to discard this draft? All of your changes that are not "
-"published will be lost."
+"Do you really want to discard these changes? All of your changes that are "
+"not published will be lost."
 msgstr ""
 
 # @ fl-builder
-#: includes/js-config.php:33 includes/ui.php:44
+#: includes/js-config.php:33 includes/ui.php:20 includes/ui.php:55
 msgid "Done"
 msgstr ""
 
@@ -1875,8 +2258,7 @@ msgid "Save Core Template"
 msgstr ""
 
 # @ fl-builder
-#: includes/js-config.php:65 includes/ui.php:10
-#: includes/user-template-settings.php:4
+#: includes/js-config.php:65 includes/user-template-settings.php:4
 msgid "Save Template"
 msgstr ""
 
@@ -1945,7 +2327,7 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: includes/js-config.php:84 includes/ui.php:49
+#: includes/js-config.php:84 includes/ui.php:22 includes/ui.php:60
 msgid "Add Content"
 msgstr ""
 
@@ -2208,8 +2590,8 @@ msgstr ""
 #: includes/module-settings.php:106 includes/row-settings.php:266
 #: includes/row-settings.php:297 modules/content-slider/content-slider.php:233
 #: modules/content-slider/content-slider.php:250
-#: modules/slideshow/slideshow.php:385 modules/slideshow/slideshow.php:410
-#: modules/slideshow/slideshow.php:581
+#: modules/slideshow/slideshow.php:386 modules/slideshow/slideshow.php:411
+#: modules/slideshow/slideshow.php:582
 #: modules/testimonials/testimonials.php:95
 #: modules/testimonials/testimonials.php:112
 msgctxt "Value unit for form field of time in seconds. Such as: \"5 seconds\""
@@ -2267,29 +2649,6 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:61
-msgid "Background"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:68 modules/content-slider/content-slider.php:338
-msgctxt "Background type."
-msgid "None"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:69
-msgctxt "Background type."
-msgid "Color"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:70
-msgctxt "Background type."
-msgid "Photo"
-msgstr ""
-
-# @ fl-builder
 #: includes/row-settings.php:71
 msgctxt "Background type."
 msgid "Video"
@@ -2305,162 +2664,6 @@ msgstr ""
 #: includes/row-settings.php:77
 msgctxt "Background type."
 msgid "Parallax"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:129 modules/content-slider/content-slider.php:359
-msgid "Background Photo"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:133 includes/row-settings.php:321
-#: modules/callout/callout.php:316 modules/callout/callout.php:332
-#: modules/callout/callout.php:336
-#: modules/content-slider/content-slider.php:335
-#: modules/content-slider/content-slider.php:404
-#: modules/content-slider/content-slider.php:745 modules/photo/photo.php:25
-#: modules/photo/photo.php:392
-msgid "Photo"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:140
-msgid "Repeat"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:143
-msgctxt "Background repeat."
-msgid "None"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:144
-msgctxt "Background repeat."
-msgid "Tile"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:145
-msgctxt "Background repeat."
-msgid "Horizontal"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:146
-msgctxt "Background repeat."
-msgid "Vertical"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:148
-msgid ""
-"Repeat applies to how the image should display in the row background. "
-"Choosing none will display the image as uploaded. Tile will repeat the image "
-"as many times as needed to fill the row horizontally and vertically. You can "
-"also specify the image to only repeat horizontally or vertically."
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:158
-msgid "Left Top"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:159
-msgid "Left Center"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:160
-msgid "Left Bottom"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:161
-msgid "Right Top"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:162
-msgid "Right Center"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:163
-msgid "Right Bottom"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:164
-msgid "Center Top"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:165 modules/button/button.php:218
-#: modules/callout/callout.php:251
-#: modules/content-slider/content-slider.php:477 modules/cta/cta.php:126
-#: modules/heading/heading.php:90 modules/heading/heading.php:162
-#: modules/icon-group/icon-group.php:110 modules/icon/icon.php:133
-#: modules/photo/photo.php:418 modules/social-buttons/social-buttons.php:100
-msgid "Center"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:166
-msgid "Center Bottom"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:168
-msgid "Position will tell the image where it should sit in the row background."
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:175
-msgid "Attachment"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:178 modules/post-grid/post-grid.php:75
-msgid "Scroll"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:181
-msgid ""
-"Attachment will specify how the image reacts when scrolling a page. When "
-"scrolling is selected, the image will scroll with page scrolling. This is "
-"the default setting. Fixed will allow the image to scroll within the row "
-"background if fill is selected in the scale setting."
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:188
-msgid "Scale"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:191
-msgctxt "Background scale."
-msgid "None"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:192
-msgid "Fit"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:193
-msgid "Fill"
-msgstr ""
-
-# @ fl-builder
-#: includes/row-settings.php:195
-msgid ""
-"Scale applies to how the image should display in the row background. You can "
-"select either fill or fit to the row background."
 msgstr ""
 
 # @ fl-builder
@@ -2498,20 +2701,20 @@ msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:228 modules/gallery/gallery.php:234
-#: modules/slideshow/slideshow.php:263
+#: modules/slideshow/slideshow.php:264
 msgid "Source"
 msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:231 modules/gallery/gallery.php:237
-#: modules/photo/photo.php:378 modules/slideshow/slideshow.php:266
+#: modules/photo/photo.php:378 modules/slideshow/slideshow.php:267
 #: modules/video/video.php:86
 msgid "Media Library"
 msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:234 modules/gallery/gallery.php:240
-#: modules/slideshow/slideshow.php:269
+#: modules/slideshow/slideshow.php:270
 msgid ""
 "Pull images from the WordPress media library or a gallery on your SmugMug "
 "site by inserting the RSS feed URL from SmugMug. The RSS feed URL can be "
@@ -2520,25 +2723,25 @@ msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:249 modules/gallery/gallery.php:252
-#: modules/slideshow/slideshow.php:281
+#: modules/slideshow/slideshow.php:282
 msgid "Photos"
 msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:256 modules/gallery/gallery.php:256
-#: modules/slideshow/slideshow.php:285
+#: modules/slideshow/slideshow.php:286
 msgid "Feed URL"
 msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:263 includes/row-settings.php:328
-#: modules/slideshow/slideshow.php:382
+#: modules/slideshow/slideshow.php:383
 msgid "Speed"
 msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:273 modules/content-slider/content-slider.php:237
-#: modules/slideshow/slideshow.php:389
+#: modules/slideshow/slideshow.php:390
 #: modules/testimonials/testimonials.php:99
 msgid "Transition"
 msgstr ""
@@ -2551,65 +2754,65 @@ msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:277 modules/content-slider/content-slider.php:241
-#: modules/slideshow/slideshow.php:393
+#: modules/slideshow/slideshow.php:394
 #: modules/testimonials/testimonials.php:103
 msgid "Fade"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:278 modules/slideshow/slideshow.php:394
+#: includes/row-settings.php:278 modules/slideshow/slideshow.php:395
 msgid "Ken Burns"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:279 modules/slideshow/slideshow.php:395
+#: includes/row-settings.php:279 modules/slideshow/slideshow.php:396
 msgid "Slide Horizontal"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:280 modules/slideshow/slideshow.php:396
+#: includes/row-settings.php:280 modules/slideshow/slideshow.php:397
 msgid "Slide Vertical"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:281 modules/slideshow/slideshow.php:397
+#: includes/row-settings.php:281 modules/slideshow/slideshow.php:398
 msgid "Blinds"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:282 modules/slideshow/slideshow.php:398
+#: includes/row-settings.php:282 modules/slideshow/slideshow.php:399
 msgid "Bars"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:283 modules/slideshow/slideshow.php:399
+#: includes/row-settings.php:283 modules/slideshow/slideshow.php:400
 msgid "Random Bars"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:284 modules/slideshow/slideshow.php:400
+#: includes/row-settings.php:284 modules/slideshow/slideshow.php:401
 msgid "Boxes"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:285 modules/slideshow/slideshow.php:401
+#: includes/row-settings.php:285 modules/slideshow/slideshow.php:402
 msgid "Random Boxes"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:286 modules/slideshow/slideshow.php:402
+#: includes/row-settings.php:286 modules/slideshow/slideshow.php:403
 msgid "Boxes Grow"
 msgstr ""
 
 # @ fl-builder
 #: includes/row-settings.php:294 modules/content-slider/content-slider.php:246
-#: modules/slideshow/slideshow.php:407
+#: modules/slideshow/slideshow.php:408
 #: modules/testimonials/testimonials.php:108
 msgid "Transition Speed"
 msgstr ""
 
 # @ fl-builder
-#: includes/row-settings.php:304 modules/slideshow/slideshow.php:414
+#: includes/row-settings.php:304 modules/slideshow/slideshow.php:415
 msgid "Randomize Photos"
 msgstr ""
 
@@ -2679,36 +2882,26 @@ msgid "Save"
 msgstr ""
 
 # @ fl-builder
-#: includes/template-selector.php:3
+#: includes/template-selector.php:4
 msgid "Layout Templates"
 msgstr ""
 
 # @ fl-builder
-#: includes/template-selector.php:8
-msgid "Home Pages"
-msgstr ""
-
-# @ fl-builder
-#: includes/template-selector.php:9
-msgid "Content Pages"
-msgstr ""
-
-# @ fl-builder
-#: includes/template-selector.php:13
+#: includes/template-selector.php:17
 msgid "Your Templates"
 msgstr ""
 
 # @ fl-builder
-#: includes/template-selector.php:47 includes/template-selector.php:77
-msgctxt "Template name."
-msgid "Blank"
-msgstr ""
-
-# @ fl-builder
-#: includes/template-selector.php:72
+#: includes/template-selector.php:53
 msgid ""
 "You haven't saved any templates yet! To do so, create a layout and save it "
 "as a template under <strong>Tools &rarr; Save Template</strong>."
+msgstr ""
+
+# @ fl-builder
+#: includes/template-selector.php:58
+msgctxt "Template name."
+msgid "Blank"
 msgstr ""
 
 # @ fl-builder
@@ -2728,93 +2921,93 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: includes/ui.php:7
+#: includes/ui.php:8 includes/ui.php:13
 #, php-format
 msgid "Template: %s"
 msgstr ""
 
 # @ fl-builder
-#: includes/ui.php:23
-msgid "Page Builder Demo"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:40
-msgid "Buy Now!"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:42
-msgid "Upgrade!"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:45
+#: includes/ui.php:21 includes/ui.php:56
 msgid "Tools"
 msgstr ""
 
 # @ fl-builder
-#: includes/ui.php:67
-msgid "Row Layouts"
+#: includes/ui.php:34
+msgid "Page Builder Demo"
 msgstr ""
 
 # @ fl-builder
-#: includes/ui.php:71
-msgid "1 Column"
+#: includes/ui.php:51
+msgid "Buy Now!"
 msgstr ""
 
 # @ fl-builder
-#: includes/ui.php:72
-msgid "2 Columns"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:73
-msgid "3 Columns"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:74
-msgid "4 Columns"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:75
-msgid "5 Columns"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:76
-msgid "6 Columns"
-msgstr ""
-
-# @ fl-builder
-#: includes/ui.php:77
-msgid "Left Sidebar"
+#: includes/ui.php:53
+msgid "Upgrade!"
 msgstr ""
 
 # @ fl-builder
 #: includes/ui.php:78
+msgid "Row Layouts"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:82
+msgid "1 Column"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:83
+msgid "2 Columns"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:84
+msgid "3 Columns"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:85
+msgid "4 Columns"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:86
+msgid "5 Columns"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:87
+msgid "6 Columns"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:88
+msgid "Left Sidebar"
+msgstr ""
+
+# @ fl-builder
+#: includes/ui.php:89
 msgid "Right Sidebar"
 msgstr ""
 
 # @ fl-builder
-#: includes/ui.php:79
+#: includes/ui.php:90
 msgid "Left &amp; Right Sidebar"
 msgstr ""
 
 # @ fl-builder
-#: includes/updater/classes/class-fl-updater.php:107
+#: includes/updater/classes/class-fl-updater.php:132
 msgid "<strong>UPDATE UNAVAILABLE!</strong>"
 msgstr ""
 
 # @ fl-builder
-#: includes/updater/classes/class-fl-updater.php:109
+#: includes/updater/classes/class-fl-updater.php:134
 msgid "Please subscribe to enable automatic updates for this plugin."
 msgstr ""
 
 # @ fl-builder
-#: includes/updater/classes/class-fl-updater.php:111
+#: includes/updater/classes/class-fl-updater.php:136
 #: includes/updater/includes/form.php:6
 msgid "Subscribe Now"
 msgstr ""
@@ -2980,7 +3173,7 @@ msgstr ""
 #: modules/content-slider/content-slider.php:600 modules/cta/cta.php:240
 #: modules/heading/heading.php:43 modules/heading/heading.php:47
 #: modules/icon-group/icon-group.php:139 modules/icon/icon.php:43
-#: modules/slideshow/slideshow.php:343
+#: modules/slideshow/slideshow.php:344
 msgid "Link"
 msgstr ""
 
@@ -3192,7 +3385,7 @@ msgstr ""
 
 # @ fl-builder
 #: modules/callout/callout.php:340 modules/photo/photo.php:401
-#: modules/slideshow/slideshow.php:312
+#: modules/slideshow/slideshow.php:313
 msgid "Crop"
 msgstr ""
 
@@ -3504,7 +3697,7 @@ msgstr ""
 
 # @ fl-builder
 #: modules/content-slider/content-slider.php:197 modules/map/map.php:41
-#: modules/separator/separator.php:58 modules/slideshow/slideshow.php:294
+#: modules/separator/separator.php:58 modules/slideshow/slideshow.php:295
 msgid "Height"
 msgstr ""
 
@@ -3517,7 +3710,7 @@ msgstr ""
 
 # @ fl-builder
 #: modules/content-slider/content-slider.php:206
-#: modules/slideshow/slideshow.php:373
+#: modules/slideshow/slideshow.php:374
 #: modules/testimonials/testimonials.php:82 modules/video/video.php:108
 msgid "Auto Play"
 msgstr ""
@@ -3881,7 +4074,7 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: modules/gallery/gallery.php:289 modules/slideshow/slideshow.php:335
+#: modules/gallery/gallery.php:289 modules/slideshow/slideshow.php:336
 msgid "Click Action"
 msgstr ""
 
@@ -4041,7 +4234,7 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: modules/photo/photo.php:471 modules/slideshow/slideshow.php:356
+#: modules/photo/photo.php:471 modules/slideshow/slideshow.php:357
 msgid "Link URL"
 msgstr ""
 
@@ -4359,31 +4552,31 @@ msgid "Display multiple photos in a slideshow view."
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:302
+#: modules/slideshow/slideshow.php:303
 msgid "Skin Color"
-msgstr ""
-
-# @ fl-builder
-#: modules/slideshow/slideshow.php:305
-msgctxt "Color."
-msgid "Light"
 msgstr ""
 
 # @ fl-builder
 #: modules/slideshow/slideshow.php:306
 msgctxt "Color."
+msgid "Light"
+msgstr ""
+
+# @ fl-builder
+#: modules/slideshow/slideshow.php:307
+msgctxt "Color."
 msgid "Dark"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:308
+#: modules/slideshow/slideshow.php:309
 msgid ""
 "If your overall theme/images are lighter in color, light will display "
 "buttons in a darker color scheme and vice versa for dark."
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:318
+#: modules/slideshow/slideshow.php:319
 msgid ""
 "Crop set to no will fit the slideshow images to the height you specify and "
 "keep the width proportional, whereas crop set to yes will fit the slideshow "
@@ -4392,39 +4585,39 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:322
+#: modules/slideshow/slideshow.php:323
 msgid "Disable Right-Click"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:342
+#: modules/slideshow/slideshow.php:343
 msgctxt "Click action type."
 msgid "None"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:366
+#: modules/slideshow/slideshow.php:367
 msgid "Playback"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:392
+#: modules/slideshow/slideshow.php:393
 msgctxt "Slideshow transition."
 msgid "None"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:429
+#: modules/slideshow/slideshow.php:430
 msgid "Controls"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:436 modules/slideshow/slideshow.php:485
+#: modules/slideshow/slideshow.php:437 modules/slideshow/slideshow.php:486
 msgid "Navigation Arrows"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:442
+#: modules/slideshow/slideshow.php:443
 msgid ""
 "Navigational arrows allow the visitor to freely move through the images in "
 "your slideshow. These are larger arrows that overlay your slideshow images "
@@ -4432,132 +4625,132 @@ msgid ""
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:447
+#: modules/slideshow/slideshow.php:448
 msgid "Control Bar"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:451
+#: modules/slideshow/slideshow.php:452
 msgid "Nav Type"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:454
+#: modules/slideshow/slideshow.php:455
 msgctxt "Nav type."
 msgid "None"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:455
+#: modules/slideshow/slideshow.php:456
 msgid "Buttons"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:456 modules/slideshow/slideshow.php:586
+#: modules/slideshow/slideshow.php:457 modules/slideshow/slideshow.php:587
 msgid "Thumbs"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:471
+#: modules/slideshow/slideshow.php:472
 msgid "Nav Position"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:481
+#: modules/slideshow/slideshow.php:482
 msgid "Control Bar Buttons"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:494
+#: modules/slideshow/slideshow.php:495
 msgid "Play Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:503
+#: modules/slideshow/slideshow.php:504
 msgid "Fullscreen Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:512
+#: modules/slideshow/slideshow.php:513
 msgid "Photo Count"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:521
+#: modules/slideshow/slideshow.php:522
 msgid "Thumbs Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:530
+#: modules/slideshow/slideshow.php:531
 msgid "Caption Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:539
+#: modules/slideshow/slideshow.php:540
 msgid "Social Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:549
+#: modules/slideshow/slideshow.php:550
 msgid "Control Bar Overlay"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:553
+#: modules/slideshow/slideshow.php:554
 msgid "Overlay Enabled"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:564
+#: modules/slideshow/slideshow.php:565
 msgid ""
 "Control bar overlay specifies if the control bar buttons you choose overlay "
 "your slideshow images or site below the slideshow completely."
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:568
+#: modules/slideshow/slideshow.php:569
 msgid "Overlay Hide"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:574
+#: modules/slideshow/slideshow.php:575
 msgid ""
 "Overlay hide will hide the control bar after however many seconds you "
 "specify below. They will reappear upon mouse over."
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:578
+#: modules/slideshow/slideshow.php:579
 msgid "Overlay Hide Delay"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:590
+#: modules/slideshow/slideshow.php:591
 msgid "Thumbs Size"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:599
+#: modules/slideshow/slideshow.php:600
 msgid "Social"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:603
+#: modules/slideshow/slideshow.php:604
 msgid "Facebook Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:615
+#: modules/slideshow/slideshow.php:616
 msgid "Twitter Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:627
+#: modules/slideshow/slideshow.php:628
 msgid "Google Plus Button"
 msgstr ""
 
 # @ fl-builder
-#: modules/slideshow/slideshow.php:639
+#: modules/slideshow/slideshow.php:640
 msgid "Pinterest Button"
 msgstr ""
 
