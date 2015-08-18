@@ -1,3 +1,19 @@
+<h4>1.6.2 - 08/16/2015</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>The Menu module is now out of beta! Be sure to check out <a href="https://www.wpbeaverbuilder.com/the-menu-module-is-now-in-beta/" target="_blank">the blog post</a> for more info on how that works.</li>
+	<li>Added opacity settings for menu background colors in the Menu module.</li>
+	<li>Added vertical and horizontal spacing settings for menu items in the Menu module.</li>
+	<li>Added Polish translation.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed an issue with the Menu module when an empty menu is selected.</li>
+	<li>Fixed an issue with the Menu module when resizing from desktop to mobile.</li>
+	<li>Fixed an issue with the width of the Menu module accordion layout.</li>
+	<li>Fixed an issue with widgets such as the Master Slider widget that only register their scripts in the wp_enqueue_scripts action instead of enqueuing them there.</li>
+</ul>
+
 <h4>1.6.1.1 - 08/11/2015</h4>
 <p><strong>Enhancements</strong></p>
 <ul>
