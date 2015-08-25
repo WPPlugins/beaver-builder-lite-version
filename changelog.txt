@@ -1,3 +1,18 @@
+<h4>1.6.2.1 - 08/25/2015</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Replaced image arrows with SVG arrows in the Content Slider module.</li>
+	<li>Added a setting to the Post Slider module for selecting the thumbnail size.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a rendering issue with widgets that output styles in wp_enqueue_script.</li>
+	<li>Fixed an issue with the edit_url method so all urls get set_url_scheme.</li>
+	<li>Fixed styling issues with the Menu module.</li>
+	<li>Fixed styling issues with the Posts module.</li>
+	<li>Fixed broken arrows in the Posts Slider module.</li>
+</ul>
+
 <h4>1.6.2 - 08/16/2015</h4>
 <p><strong>Enhancements</strong></p>
 <ul>

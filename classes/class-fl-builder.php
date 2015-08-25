@@ -580,7 +580,9 @@ final class FLBuilder {
 		
 		// Do the wp_enqueue_scripts action here to register any scripts or 
 		// styles that might need to be registered for shortcodes or widgets.
+		ob_start();
 		do_action( 'wp_enqueue_scripts' );
+		ob_end_clean();
 
 		// Dequeue scripts and styles so we can capture only those
 		// enqueued by shortcodes or widgets.
