@@ -670,6 +670,7 @@
 			$('body').delegate('.fl-photo-field .fl-photo-select', 'click', FLBuilder._selectSinglePhoto);
 			$('body').delegate('.fl-photo-field .fl-photo-edit', 'click', FLBuilder._selectSinglePhoto);
 			$('body').delegate('.fl-photo-field .fl-photo-replace', 'click', FLBuilder._selectSinglePhoto);
+			$('body').delegate('.fl-photo-field .fl-photo-remove', 'click', FLBuilder._singlePhotoRemoved);
 			
 			/* Multiple Photo Fields */
 			$('body').delegate('.fl-multiple-photos-field .fl-multiple-photos-select', 'click', FLBuilder._selectMultiplePhotos);
@@ -698,6 +699,9 @@
 			
 			/* Loop Builder Fields */
 			$('body').delegate('.fl-loop-builder select[name=post_type]', 'change', FLBuilder._loopBuilderPostTypeChange);
+
+			/* Text Fields - Add Value Selector */
+			$('body').delegate('.fl-select-add-value', 'change', FLBuilder._textFieldAddValueSelectChange);
 		},
 		
 		/**
@@ -4917,6 +4921,27 @@
 		},
 		
 		/**
+		 * Clears a photo that has been selected in a single photo field.
+		 *
+		 * @since 1.6.4.3
+		 * @access private
+		 * @method _singlePhotoRemoved
+		 */ 
+		_singlePhotoRemoved: function()
+		{
+			var selection   = FLBuilder._singlePhotoSelector.state().get('selection'),
+				wrap        = $(this).closest('.fl-photo-field'),
+				photoField  = wrap.find('input[type=hidden]'),
+				srcSelect   = wrap.find('select');
+				
+			selection.reset();
+			wrap.addClass('fl-photo-empty');
+			photoField.val('');
+			srcSelect.html('');
+			srcSelect.trigger('change');
+		},
+		
+		/**
 		 * Returns the src URL for a photo.
 		 *
 		 * @since 1.0
@@ -4952,6 +4977,7 @@
 			var html     = '',
 				size     = null,
 				selected = null,
+				title    = '',
 				titles = {
 					full      : FLBuilderStrings.fullSize,
 					large     : FLBuilderStrings.large,
@@ -4965,8 +4991,19 @@
 			else {
 				
 				for(size in photo.sizes) {
+					
+					if ( 'undefined' != typeof titles[ size ] ) {
+						title = titles[ size ] + ' - ';
+					}
+					else if ( 'undefined' != typeof FLBuilderConfig.customImageSizeTitles[ size ] ) {
+						title = FLBuilderConfig.customImageSizeTitles[ size ] + ' - ';
+					}
+					else {
+						title = '';
+					}
+					
 					selected = size == 'full' ? ' selected="selected"' : '';
-					html += '<option value="' + photo.sizes[size].url + '"' + selected + '>' + titles[size]  + ' - ' + photo.sizes[size].width + ' x ' + photo.sizes[size].height + '</option>';
+					html += '<option value="' + photo.sizes[size].url + '"' + selected + '>' + title + photo.sizes[size].width + ' x ' + photo.sizes[size].height + '</option>';
 				}
 			}
 			
@@ -5619,6 +5656,40 @@
 			
 			$('.fl-loop-builder-filter').hide();
 			$('.fl-loop-builder-' + val + '-filter').show();
+		},
+
+		/* Text Fields - Add Value Selector
+		----------------------------------------------------------*/
+
+		/**
+		 * Callback for when "add value" selectors for text fields changes.
+		 *
+		 * @since  1.6.5
+		 * @access private
+		 * @method _textFieldAddValueSelectChange
+		 */
+		_textFieldAddValueSelectChange: function()
+		{
+
+			var dropdown     = $( this ),
+			    textField    = $( 'input[name="' + dropdown.data( 'target' ) + '"]' ),
+			    currentValue = textField.val(),
+			    addingValue  = dropdown.val();
+
+			// Adding selected value to target text field only once
+
+				if ( -1 == currentValue.indexOf( addingValue ) ) {
+
+					textField
+						.attr( 'value', ( currentValue.trim() + ' ' + addingValue.trim() ) );
+
+				}
+
+			// Resetting the selector
+
+				dropdown
+					.val( '' );
+
 		},
 		
 		/* AJAX

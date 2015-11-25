@@ -8,6 +8,14 @@
 final class FLBuilder {
 
 	/**
+	 * The ID of a post that is currently being rendered.
+	 *
+	 * @since 1.6.4.2
+	 * @var int $post_rendering
+	 */
+	static public $post_rendering = null;
+
+	/**
 	 * Localization
 	 *
 	 * Load the translation file for current language. Checks the default WordPress
@@ -324,6 +332,7 @@ final class FLBuilder {
 		wp_register_script('jquery-bxslider',       $js_url . 'jquery.bxslider.min.js', array('jquery-easing', 'jquery-fitvids'), $ver, true);
 		wp_register_script('jquery-easing',         $js_url . 'jquery.easing.1.3.js', array('jquery'), '1.3', true);
 		wp_register_script('jquery-fitvids',        $js_url . 'jquery.fitvids.js', array('jquery'), $ver, true);
+		wp_register_script('jquery-imagesloaded', 	$js_url . 'jquery.imagesloaded.js', array('jquery'), $ver, true);
 		wp_register_script('jquery-infinitescroll', $js_url . 'jquery.infinitescroll.js', array('jquery'), $ver, true);
 		wp_register_script('jquery-magnificpopup',  $js_url . 'jquery.magnificpopup.min.js', array('jquery'), $ver, true);
 		wp_register_script('jquery-mosaicflow',     $js_url . 'jquery.mosaicflow.min.js', array('jquery'), $ver, true);
@@ -352,10 +361,10 @@ final class FLBuilder {
 
 			$posts = get_posts(array(
 				'post__in' 			=> $post_ids, 
-				'post_type' 		=> 'any',
+				'post_type' 		=> get_post_types(),
 				'posts_per_page'	=> -1
 			));
-
+			
 			foreach($posts as $post) {
 				self::enqueue_layout_styles_scripts($post->ID);
 			}
@@ -386,6 +395,9 @@ final class FLBuilder {
 					wp_enqueue_script('yui3');
 					wp_enqueue_script('fl-slideshow');
 					wp_enqueue_style('fl-slideshow');
+				}
+				else if($row->settings->bg_type == 'video') {
+					wp_enqueue_script('jquery-imagesloaded');
 				}
 			}
 
@@ -819,11 +831,15 @@ final class FLBuilder {
 	{
 		$post_id        = FLBuilderModel::get_post_id();
 		$enabled        = FLBuilderModel::is_builder_enabled();
+		$rendering      = $post_id === self::$post_rendering;
 		$ajax           = defined( 'DOING_AJAX' );
 		$in_loop        = in_the_loop();
 		$is_global      = in_array( $post_id, FLBuilderModel::get_global_posts() );
 
-		if( $enabled && ! $ajax && ( $in_loop || $is_global ) ) {
+		if( $enabled && ! $rendering && ! $ajax && ( $in_loop || $is_global ) ) {
+			
+			// Set the post rendering ID.
+			self::$post_rendering = $post_id;
 
 			// Remove the builder's render_content filter so it's not called again.
 			remove_filter( 'the_content', 'FLBuilder::render_content' );
@@ -835,13 +851,16 @@ final class FLBuilder {
 			echo '</div>';
 			$content = ob_get_clean();
 			
+			// Reapply the builder's render_content filter.
+			add_filter( 'the_content', 'FLBuilder::render_content' );
+			
 			// Do shortcodes here since letting the WP filter run can cause an infinite loop.
 			$pattern = get_shortcode_regex();
 			$content = preg_replace_callback( "/$pattern/s", 'FLBuilder::double_escape_shortcodes', $content );
 			$content = do_shortcode( $content );
 			
-			// Reapply the builder's render_content filter.
-			add_filter( 'the_content', 'FLBuilder::render_content' );
+			// Clear the post rendering ID.
+			self::$post_rendering = null;
 		}
 
 		return $content;
@@ -1018,6 +1037,7 @@ final class FLBuilder {
 	 */
 	static public function render_settings_field($name, $field, $settings = null)
 	{
+		$field              = apply_filters( 'fl_builder_render_settings_field', $field, $name, $settings ); // Allow field settings filtering first
 		$i                  = null;
 		$is_multiple        = isset($field['multiple']) && $field['multiple'] === true;
 		$supports_multiple  = $field['type'] != 'editor' && $field['type'] != 'photo' && $field['type'] != 'service';
@@ -1270,15 +1290,15 @@ final class FLBuilder {
 	 * @param string $template The current template to be loaded.
 	 * @return string
 	 */
-	static public function render_template($template)
+	static public function render_template( $template )
 	{
 		global $post;
+		
+		if ( 'string' == gettype( $template ) && $post && $post->post_type == 'fl-builder-template' ) {
 
-		if($post && $post->post_type == 'fl-builder-template') {
+			$page = locate_template( array( 'page.php' ) );
 
-			$page = locate_template(array('page.php'));
-
-			if(!empty($page)) {
+			if ( ! empty( $page ) ) {
 				return $page;
 			}
 		}
@@ -1863,7 +1883,7 @@ final class FLBuilder {
 		echo ' data-node="' . $module->node . '" ';
 		echo ' data-animation-delay="' . $module->settings->animation_delay . '" ';
 
-		if ( FLBuilderModel::is_builder_active() ) {
+		if ( $active ) {
 			echo ' data-parent="' . $module->parent . '" ';
 			echo ' data-type="' . $module->settings->type . '" ';
 			echo ' data-name="' . $module->name . '" ';

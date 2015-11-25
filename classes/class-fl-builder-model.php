@@ -1951,6 +1951,13 @@ final class FLBuilderModel {
 	static public function get_categorized_modules( $show_disabled = false )
 	{
 		$enabled_modules = self::get_enabled_modules();
+		$widgets		 = null;
+		$categories		 = array();
+		
+		// Add any predefined custom categories.
+		foreach ( apply_filters( 'fl_builder_module_categories', array() ) as $custom_category ) {
+			$categories[ $custom_category ] = array();
+		}
 		
 		// Get the core category keys. 
 		$basic_key		 = __('Basic Modules', 'fl-builder');
@@ -1959,11 +1966,9 @@ final class FLBuilderModel {
 		$widgets_key	 = __('WordPress Widgets', 'fl-builder');
 
 		// Build the default category arrays. 
-		$categories = array();
 		$categories[ $basic_key ] = array();
 		$categories[ $advanced_key ] = array();
 		$categories[ $other_key ] = array();
-		$categories[ $widgets_key ] = array();
 
 		// Build the categories array.
 		foreach(self::$modules as $module) {
@@ -1975,7 +1980,7 @@ final class FLBuilderModel {
 				continue;
 			}
 			else if($module->slug == 'widget') {
-				$categories[$widgets_key] = self::get_wp_widgets();
+				$widgets = self::get_wp_widgets();
 			}
 			else if(isset($module->category)) {
 
@@ -1988,6 +1993,11 @@ final class FLBuilderModel {
 			else {
 				$categories[$other_key][$module->name] = $module;
 			}
+		}
+		
+		// Add widgets if we have them.
+		if ( $widgets ) {
+			$categories[$widgets_key] = $widgets;
 		}
 
 		// Sort the modules.
@@ -2410,7 +2420,7 @@ final class FLBuilderModel {
 	 */
 	static public function register_settings_form($id, $form)
 	{
-		self::$settings_forms[$id] = $form;
+		self::$settings_forms[$id] = apply_filters( 'fl_builder_register_settings_form', $form, $id );
 	}
 
 	/**
@@ -4274,6 +4284,26 @@ final class FLBuilderModel {
 	}
 
 	/**
+	 * Returns the custom branding data for the builder theme.
+	 *
+	 * @since 1.6.4.3
+	 * @return array
+	 */
+	static public function get_theme_branding()
+	{
+		$value = self::get_admin_settings_option( '_fl_builder_theme_branding', false );
+		$defaults = array(
+			'name' 				=> '',
+			'description' 		=> '',
+			'company_name' 		=> '',
+			'company_url' 		=> '',
+			'screenshot_url' 	=> '',
+		);
+		
+		return ! $value ? $defaults : $value;
+	}
+
+	/**
 	 * Returns an array of slugs for all enabled icon sets.
 	 *
 	 * @since 1.4.6
@@ -4496,6 +4526,7 @@ final class FLBuilderModel {
 			delete_option('_fl_builder_enabled_icons');
 			delete_option('_fl_builder_branding');
 			delete_option('_fl_builder_branding_icon');
+			delete_option('_fl_builder_theme_branding');
 			delete_option('_fl_builder_editing_capability');
 			delete_option('_fl_builder_global_templates_editing_capability');
 			delete_option('_fl_builder_help_button');

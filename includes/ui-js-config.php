@@ -1,6 +1,8 @@
 <script>
 
 var FLBuilderConfig = {
+	colorPresets: <?php echo json_encode( $color_presets ); ?>,
+	customImageSizeTitles: <?php echo json_encode( apply_filters( 'image_size_names_choose', array() ) ); ?>,
 	debug: <?php if( defined( 'WP_DEBUG' ) && WP_DEBUG ) echo 'true'; else echo 'false'; ?>,
 	enabledTemplates: '<?php echo $enabled_templates; ?>',
 	help: <?php echo json_encode( $help_button ); ?>,
@@ -14,8 +16,7 @@ var FLBuilderConfig = {
 	simpleUi: <?php if(!current_user_can(FLBuilderModel::get_editing_capability())) echo 'true'; else echo 'false'; ?>,
 	upgradeUrl: '<?php if(FL_BUILDER_LITE === true) $campaign = 'upgrade-button'; else $campaign = 'buy-button'; echo FLBuilderModel::get_upgrade_url( array( 'utm_source' => 'external', 'utm_medium' => 'builder', 'utm_campaign' => $campaign ) ); ?>',
 	userCanEditGlobalTemplates: <?php if(current_user_can(FLBuilderModel::get_global_templates_editing_capability())) echo 'true'; else echo 'false'; ?>,
-	userTemplateType: '<?php echo FLBuilderModel::get_user_template_type(); ?>',
-	colorPresets: <?php echo json_encode( $color_presets ); ?>
+	userTemplateType: '<?php echo FLBuilderModel::get_user_template_type(); ?>'
 };
 
 var FLBuilderStrings = {

@@ -191,7 +191,7 @@
  * iPad with portrait orientation.
  */
 @media all and (device-width: 768px) and (device-height: 1024px) and (orientation:portrait){
-  .fl-row-full-height .fl-row-content{
+  .fl-row-full-height .fl-row-content-wrap{
     height: 1024px;
   }
 }
@@ -199,8 +199,8 @@
 /** 
  * iPad with landscape orientation.
  */
-@media all and (device-width: 768px) and (device-height: 1024px) and (orientation:landscape){
-  .fl-row-full-height .fl-row-content{
+@media all and (device-width: 1024px) and (device-height: 768px) and (orientation:landscape){
+  .fl-row-full-height .fl-row-content-wrap{
     height: 768px;
   }
 }
@@ -210,7 +210,7 @@
  * You can also target devices with aspect ratio.
  */
 @media screen and (device-aspect-ratio: 40/71) {
-  .fl-row-full-height .fl-row-content {
+  .fl-row-full-height .fl-row-content-wrap {
     height: 500px;
   }
 }
@@ -244,6 +244,8 @@
     -webkit-flex-direction: column;
         -ms-flex-direction: column;
             flex-direction: column;
+			   flex-shrink: 1;
+			     min-width: 1px;
             	 max-width: 100%;
             	 	 width: 100%;
 }
