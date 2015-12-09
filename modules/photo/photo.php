@@ -19,59 +19,23 @@ class FLPhotoModule extends FLBuilderModule {
 	/**
 	 * @method __construct
 	 */
-	public function __construct() {
+	public function __construct()
+	{
 		parent::__construct(array(
-			'name'            => __( 'Photo', 'fl-builder' ),
-			'description'     => __( 'Upload a photo or display one from the media library.', 'fl-builder' ),
-			'category'        => __( 'Basic', 'fl-builder' ),
-			'icon'            => 'format-image.svg',
-			'partial_refresh' => true,
-			'include_wrapper' => false,
-			'element_setting' => false,
+			'name'          => __('Photo', 'fl-builder'),
+			'description'   => __('Upload a photo or display one from the media library.', 'fl-builder'),
+			'category'      => __('Basic Modules', 'fl-builder')
 		));
-	}
-
-	/**
-	 * Ensure backwards compatibility with old settings.
-	 *
-	 * @since 2.2
-	 * @param object $settings A module settings object.
-	 * @param object $helper A settings compatibility helper.
-	 * @return object
-	 */
-	public function filter_settings( $settings, $helper ) {
-
-		// Handle old link fields.
-		if ( isset( $settings->link_target ) ) {
-			$settings->link_url_target = $settings->link_target;
-			unset( $settings->link_target );
-		}
-		if ( isset( $settings->link_nofollow ) ) {
-			$settings->link_url_nofollow = $settings->link_nofollow;
-			unset( $settings->link_nofollow );
-		}
-
-		return $settings;
 	}
 
 	/**
 	 * @method enqueue_scripts
 	 */
-	public function enqueue_scripts() {
-		/**
-		 * Whether to use a custom lightbox instead of the builder's built-in lightbox in the Photo module.
-		 */
-		$override_lightbox = apply_filters( 'fl_builder_override_lightbox', false );
-
-		if ( $this->settings && 'lightbox' == $this->settings->link_type ) {
-			if ( ! $override_lightbox ) {
-				$this->add_js( 'jquery-magnificpopup' );
-				$this->add_css( 'font-awesome-5' );
-				$this->add_css( 'jquery-magnificpopup' );
-			} else {
-				wp_dequeue_script( 'jquery-magnificpopup' );
-				wp_dequeue_style( 'jquery-magnificpopup' );
-			}
+	public function enqueue_scripts()
+	{
+		if($this->settings && $this->settings->link_type == 'lightbox') {
+			$this->add_js('jquery-magnificpopup');
+			$this->add_css('jquery-magnificpopup');
 		}
 	}
 
@@ -79,14 +43,19 @@ class FLPhotoModule extends FLBuilderModule {
 	 * @method update
 	 * @param $settings {object}
 	 */
-	public function update( $settings ) {
+	public function update($settings)
+	{
 		// Make sure we have a photo_src property.
-		if ( ! isset( $settings->photo_src ) ) {
+		if(!isset($settings->photo_src)) {
 			$settings->photo_src = '';
 		}
 
 		// Cache the attachment data.
-		$settings->data = FLBuilderPhoto::get_attachment_data( $settings->photo );
+		$data = FLBuilderPhoto::get_attachment_data($settings->photo);
+
+		if($data) {
+			$settings->data = $data;
+		}
 
 		// Save a crop if necessary.
 		$this->crop();
@@ -97,31 +66,29 @@ class FLPhotoModule extends FLBuilderModule {
 	/**
 	 * @method delete
 	 */
-	public function delete() {
+	public function delete()
+	{
 		$cropped_path = $this->_get_cropped_path();
 
-		if ( fl_builder_filesystem()->file_exists( $cropped_path['path'] ) ) {
-			fl_builder_filesystem()->unlink( $cropped_path['path'] );
-			/**
-			 * Fires after a builder-generated cropped image file has been deleted.
-			 */
-			do_action( 'fl_builder_cropped_image_deleted', $cropped_path );
+		if(file_exists($cropped_path['path'])) {
+			unlink($cropped_path['path']);
 		}
 	}
 
 	/**
 	 * @method crop
 	 */
-	public function crop() {
+	public function crop()
+	{
 		// Delete an existing crop if it exists.
 		$this->delete();
 
 		// Do a crop.
-		if ( ! empty( $this->settings->crop ) && ! isset( $_GET['safemode'] ) ) {
+		if(!empty($this->settings->crop)) {
 
 			$editor = $this->_get_editor();
 
-			if ( ! $editor || is_wp_error( $editor ) ) {
+			if(!$editor || is_wp_error($editor)) {
 				return false;
 			}
 
@@ -131,51 +98,43 @@ class FLPhotoModule extends FLBuilderModule {
 			$new_height   = $size['height'];
 
 			// Get the crop ratios.
-			if ( 'landscape' == $this->settings->crop ) {
+			if($this->settings->crop == 'landscape') {
 				$ratio_1 = 1.43;
 				$ratio_2 = .7;
-			} elseif ( 'panorama' == $this->settings->crop ) {
+			}
+			elseif($this->settings->crop == 'panorama') {
 				$ratio_1 = 2;
 				$ratio_2 = .5;
-			} elseif ( 'portrait' == $this->settings->crop ) {
+			}
+			elseif($this->settings->crop == 'portrait') {
 				$ratio_1 = .7;
 				$ratio_2 = 1.43;
-			} elseif ( 'square' == $this->settings->crop ) {
+			}
+			elseif($this->settings->crop == 'square') {
 				$ratio_1 = 1;
 				$ratio_2 = 1;
-			} elseif ( 'circle' == $this->settings->crop ) {
+			}
+			elseif($this->settings->crop == 'circle') {
 				$ratio_1 = 1;
 				$ratio_2 = 1;
 			}
 
 			// Get the new width or height.
-			if ( $size['width'] / $size['height'] < $ratio_1 ) {
+			if($size['width'] / $size['height'] < $ratio_1) {
 				$new_height = $size['width'] * $ratio_2;
-			} else {
+			}
+			else {
 				$new_width = $size['height'] * $ratio_1;
 			}
 
 			// Make sure we have enough memory to crop.
-			wp_raise_memory_limit( 'image' );
+			@ini_set('memory_limit', '300M');
 
 			// Crop the photo.
-			$editor->resize( $new_width, $new_height, true );
+			$editor->resize($new_width, $new_height, true);
 
-			// Save the photo. FLBuilderPhotoCrop writes to a temp file then moves it into
-			// place so a concurrent reader of the cache directory never sees a partially
-			// written file. Returning false on failure makes get_src() fall back to the
-			// uncropped URL rather than handing out a URL to a file that was never written.
-			$saved = FLBuilderPhotoCrop::save( $editor, $cropped_path['path'] );
-
-			if ( is_wp_error( $saved ) ) {
-				return false;
-			}
-
-			/**
-			 * Let third party media plugins hook in.
-			 * @see fl_builder_photo_cropped
-			 */
-			do_action( 'fl_builder_photo_cropped', $cropped_path, $editor );
+			// Save the photo.
+			$editor->save($cropped_path['path']);
 
 			// Return the new url.
 			return $cropped_path['url'];
@@ -187,258 +146,188 @@ class FLPhotoModule extends FLBuilderModule {
 	/**
 	 * @method get_data
 	 */
-	public function get_data() {
-		if ( ! $this->data ) {
+	public function get_data()
+	{
+		if(!$this->data) {
 
 			// Photo source is set to "url".
-			if ( 'url' == $this->settings->photo_source ) {
-				$this->data                = new stdClass();
-				$this->data->alt           = $this->settings->caption;
-				$this->data->caption       = $this->settings->caption;
-				$this->data->link          = $this->settings->photo_url;
-				$this->data->url           = $this->settings->photo_url;
+			if($this->settings->photo_source == 'url') {
+				$this->data = new stdClass();
+				$this->data->alt = $this->settings->caption;
+				$this->data->caption = $this->settings->caption;
+				$this->data->link = $this->settings->photo_url;
+				$this->data->url = $this->settings->photo_url;
 				$this->settings->photo_src = $this->settings->photo_url;
-				$this->data->title         = ( '' !== $this->settings->url_title ) ? $this->settings->url_title : basename( $this->settings->photo_url );
-			} elseif ( is_object( $this->settings->photo ) ) {
+			}
+
+			// Photo source is set to "library".
+			else if(is_object($this->settings->photo)) {
 				$this->data = $this->settings->photo;
-			} else {
-				$this->data = FLBuilderPhoto::get_attachment_data( $this->settings->photo );
+			}
+			else {
+				$this->data = FLBuilderPhoto::get_attachment_data($this->settings->photo);
 			}
 
 			// Data object is empty, use the settings cache.
-			if ( ! $this->data && isset( $this->settings->data ) ) {
+			if(!$this->data && isset($this->settings->data)) {
 				$this->data = $this->settings->data;
 			}
 		}
-		/**
-		 * Make photo data filterable.
-		 * @since 2.2.6
-		 * @see fl_builder_photo_data
-		 */
-		return apply_filters( 'fl_builder_photo_data', $this->data, $this->settings, $this->node );
-	}
 
-	/**
-	 * @method get_wrapper_classes
-	 */
-	public function get_wrapper_classes() {
-		$classes = [
-			'fl-photo',
-			'fl-photo-align-' . sanitize_html_class( $this->settings->align ),
-		];
-
-		if ( ! empty( $this->settings->crop ) ) {
-			$classes[] = 'fl-photo-crop-' . sanitize_html_class( $this->settings->crop );
-		}
-
-		// Implode and return early for v1 photo modules.
-		if ( ! $this->version || 1 === $this->version ) {
-			return implode( ' ', $classes );
-		}
-
-		return $classes;
-	}
-
-	/**
-	 * @method get_classes
-	 */
-	public function get_classes() {
-		$classes = array( 'fl-photo-img' );
-
-		if ( 'library' == $this->settings->photo_source && ! empty( $this->settings->photo ) ) {
-
-			$data = self::get_data();
-
-			if ( is_object( $data ) ) {
-
-				if ( isset( $data->id ) ) {
-					$classes[] = 'wp-image-' . $data->id;
-				}
-
-				$is_svg = ! empty( $data->mime ) && 'image/svg+xml' === $data->mime;
-
-				if ( $is_svg ) {
-					$classes[] = 'size-full';
-				}
-
-				if ( isset( $data->sizes ) && ! $is_svg ) {
-					foreach ( $data->sizes as $key => $size ) {
-						if ( $size->url == $this->settings->photo_src ) {
-							$classes[] = 'size-' . $key;
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		/**
-		 * Array of CSS classes added to the photo module wrapper element.
-		 */
-		return implode( ' ', apply_filters( 'fl_builder_photo_classes', $classes, $this->settings, $this->node ) );
+		return $this->data;
 	}
 
 	/**
 	 * @method get_src
 	 */
-	public function get_src() {
+	public function get_src()
+	{
 		$src = $this->_get_uncropped_url();
 
 		// Return a cropped photo.
-		if ( $this->_has_source() && ! empty( $this->settings->crop ) ) {
+		if($this->_has_source() && !empty($this->settings->crop)) {
 
 			$cropped_path = $this->_get_cropped_path();
 
-			if ( fl_builder_filesystem()->file_exists( $cropped_path['path'] ) ) {
-				// An existing cropped photo exists.
+			// See if the cropped photo already exists.
+			if(file_exists($cropped_path['path'])) {
 				$src = $cropped_path['url'];
-			} else {
+			}
+			// It doesn't, check if this is a demo image.
+			elseif(stristr($src, FL_BUILDER_DEMO_URL) && !stristr(FL_BUILDER_DEMO_URL, $_SERVER['HTTP_HOST'])) {
+				$src = $this->_get_cropped_demo_url();
+			}
+			// It doesn't, check if this is a OLD demo image.
+			elseif(stristr($src, FL_BUILDER_OLD_DEMO_URL)) {
+				$src = $this->_get_cropped_demo_url();
+			}
+			// A cropped photo doesn't exist, try to create one.
+			else {
 
-				// A cropped photo doesn't exist, check demo sites then try to create one.
-				$demo_domain = FL_BUILDER_DEMO_DOMAIN;
+				$url = $this->crop();
 
-				if ( stristr( $src, $demo_domain ) && ! stristr( $_SERVER['HTTP_HOST'], $demo_domain ) ) {
-					$src = $this->_get_cropped_demo_url();
-				} elseif ( stristr( $src, FL_BUILDER_OLD_DEMO_URL ) ) {
-					$src = $this->_get_cropped_demo_url();
-				} else {
-					$url = $this->crop();
-					$src = $url ? $url : $src;
-					/**
-					 * @see fl_builder_photo_module_cropped_url
-					 * @since 2.8.3
-					 */
-					$src = apply_filters( 'fl_builder_photo_module_cropped_url', $src, $cropped_path, $this );
+				if($url) {
+					$src = $url;
 				}
 			}
 		}
-		/**
-		 * @see fl_builder_photo_module_url
-		 * @since 2.8.3
-		 */
-		$src = apply_filters( 'fl_builder_photo_module_url', $src, $this );
-		return esc_url( do_shortcode( $src ) );
+
+		return $src;
+	}
+
+	/**
+	 * @method get_srcset
+	 */
+	public function get_srcset()
+	{
+		$attrs 	= '';
+		$srcset = array();
+		
+		// Cropped photos only have one URL, so we can't use srcset.
+		// Photo source URL only has one URL, so we can't use srcset.
+		// If don't have photo data, we can't use srcset.
+		if ( empty( $this->settings->crop ) && $this->settings->photo_source == 'library' && ! empty( $this->settings->photo ) ) {
+			
+			// Get the photo data.
+			$data = self::get_data();
+			
+			// Proceed if we have photo data and sizes.
+			if ( is_object( $data ) && isset( $data->sizes ) ) {
+				
+				// Loop through the sizes and build the $srcset array.
+				foreach ( $data->sizes as $key => $size ) {
+					
+					if ( 'thumbnail' == $key ) {
+						continue;
+					}
+					
+					$srcset[] = $size->url . ' ' . $size->width . 'w';
+				}
+				
+				// Build the srcset string if we don't have an empty $srcset array.
+				if ( count( $srcset ) > 0 ) {
+					$attrs = 'srcset="' . implode( ',', $srcset ) . '"';
+					$attrs .= ' sizes="(max-width: ' . $data->width . 'px) 100vw, ' . $data->width . 'px"';
+				}
+			}
+		}
+		
+		return $attrs;
 	}
 
 	/**
 	 * @method get_link
 	 */
-	public function get_link() {
+	public function get_link()
+	{
 		$photo = $this->get_data();
 
-		if ( 'url' == $this->settings->link_type ) {
+		if($this->settings->link_type == 'url') {
 			$link = $this->settings->link_url;
-		} elseif ( isset( $photo ) && 'lightbox' == $this->settings->link_type ) {
+		}
+		else if($this->settings->link_type == 'lightbox') {
 			$link = $photo->url;
-		} elseif ( isset( $photo ) && 'file' == $this->settings->link_type ) {
+		}
+		else if($this->settings->link_type == 'file') {
 			$link = $photo->url;
-		} elseif ( isset( $photo ) && 'page' == $this->settings->link_type ) {
+		}
+		else if($this->settings->link_type == 'page') {
 			$link = $photo->link;
-		} else {
+		}
+		else {
 			$link = '';
 		}
 
-		/**
-		 * URL used as the photo link href.
-		 */
-		$this->settings->link_url = apply_filters( 'fl_builder_photo_link', $link, $this->settings );
-		return $this->settings->link_url;
+		return $link;
 	}
 
 	/**
 	 * @method get_alt
 	 */
-	public function get_alt() {
+	public function get_alt()
+	{
 		$photo = $this->get_data();
 
-		if ( ! empty( $photo->alt ) ) {
-			return htmlspecialchars( $photo->alt );
-		} elseif ( ! empty( $photo->description ) ) {
-			return htmlspecialchars( $photo->description );
-		} elseif ( ! empty( $photo->caption ) ) {
-			return htmlspecialchars( $photo->caption );
-		} elseif ( ! empty( $photo->title ) ) {
-			return htmlspecialchars( $photo->title );
+		if(!empty($photo->alt)) {
+			return htmlspecialchars($photo->alt);
 		}
-	}
-
-	/**
-	 * @method get_caption
-	 */
-	public function get_caption() {
-		$photo   = $this->get_data();
-		$caption = '';
-
-		if ( ! empty( $this->settings->show_caption ) && ! empty( $this->settings->caption ) ) {
-			return esc_html( $this->settings->caption );
+		else if(!empty($photo->description)) {
+			return htmlspecialchars($photo->description);
 		}
-
-		if ( $photo && ! empty( $this->settings->show_caption ) && ! empty( $photo->caption ) ) {
-			if ( ! empty( $photo->data_source ) && 'smugmug' === $photo->data_source ) {
-				$caption = esc_html( $photo->caption );
-			} elseif ( isset( $photo->id ) ) {
-				$caption = wp_kses_post( wp_get_attachment_caption( $photo->id ) );
-			} else {
-				$caption = esc_html( $photo->caption );
-			}
+		else if(!empty($photo->caption)) {
+			return htmlspecialchars($photo->caption);
 		}
-
-		return $caption;
+		else if(!empty($photo->title)) {
+			return htmlspecialchars($photo->title);
+		}
 	}
 
 	/**
 	 * @method get_attributes
 	 */
-	public function get_attributes() {
-		$photo = $this->get_data();
+	public function get_attributes()
+	{
 		$attrs = '';
-
+		
 		if ( isset( $this->settings->attributes ) ) {
 			foreach ( $this->settings->attributes as $key => $val ) {
 				$attrs .= $key . '="' . $val . '" ';
 			}
 		}
-
-		$is_svg = ! empty( $photo->mime ) && 'image/svg+xml' === $photo->mime;
-
-		if ( $is_svg && isset( $photo->sizes ) ) {
-			if ( isset( $photo->sizes->full->height ) && isset( $photo->sizes->full->width ) ) {
-				$attrs .= 'height="' . $photo->sizes->full->height . '" width="' . $photo->sizes->full->width . '" ';
-			}
-		}
-
-		if ( is_object( $photo ) && isset( $photo->sizes ) && ! $is_svg ) {
-			foreach ( $photo->sizes as $size ) {
-				if ( $size->url == $this->settings->photo_src && isset( $size->width ) && isset( $size->height ) ) {
-					$attrs .= 'height="' . $size->height . '" width="' . $size->width . '" ';
-				}
-			}
-		}
-
-		if ( ! empty( $photo->title ) ) {
-			$attrs .= 'title="' . htmlspecialchars( $photo->title ) . '" ';
-		}
-
-		if ( FLBuilderModel::is_builder_active() ) {
-			$attrs .= 'onerror="this.style.display=\'none\'" ';
-		}
-
-		/**
-		 * Filter image attributes as a string.
-		 * @since 2.2.3
-		 * @see fl_builder_photo_attributes
-		 */
-		return apply_filters( 'fl_builder_photo_attributes', $attrs );
+		
+		return $attrs;
 	}
 
 	/**
 	 * @method _has_source
 	 * @protected
 	 */
-	protected function _has_source() {
-		if ( 'url' == $this->settings->photo_source && ! empty( $this->settings->photo_url ) ) {
+	protected function _has_source()
+	{
+		if($this->settings->photo_source == 'url' && !empty($this->settings->photo_url)) {
 			return true;
-		} elseif ( 'library' == $this->settings->photo_source && ! empty( $this->settings->photo_src ) ) {
+		}
+		else if($this->settings->photo_source == 'library' && !empty($this->settings->photo_src)) {
 			return true;
 		}
 
@@ -449,127 +338,73 @@ class FLPhotoModule extends FLBuilderModule {
 	 * @method _get_editor
 	 * @protected
 	 */
-	protected function _get_editor() {
-		if ( $this->_has_source() && null === $this->_editor ) {
+	protected function _get_editor()
+	{
+		if($this->_has_source() && $this->_editor === null) {
 
 			$url_path  = $this->_get_uncropped_url();
-			$file_path = $this->_get_file_path( $url_path );
+			$file_path = str_ireplace(home_url(), ABSPATH, $url_path);
 
-			if ( is_multisite() && ! is_subdomain_install() ) {
-				// take the original url_path and make a cleaner one, then rebuild file_path
-
-				$subsite_path          = get_blog_details()->path;
-				$url_parsed_path       = wp_parse_url( $url_path, PHP_URL_PATH );
-				$url_parsed_path_parts = explode( '/', $url_parsed_path );
-
-				if ( isset( $url_parsed_path_parts[1] ) && "/{$url_parsed_path_parts[1]}/" === $subsite_path ) {
-
-					$path_right_half  = wp_make_link_relative( $url_path );
-					$path_left_half   = str_replace( $path_right_half, '', $url_path );
-					$path_right_half2 = str_replace( $subsite_path, '', $path_right_half );
-
-					// rebuild file_path using a cleaner URL as input
-					$url_path2 = $path_left_half . '/' . $path_right_half2;
-					$file_path = $this->_get_file_path( $url_path2 );
-				}
+			if(file_exists($file_path)) {
+				$this->_editor = wp_get_image_editor($file_path);
 			}
-
-			if ( file_exists( $file_path ) ) {
-				$this->_editor = wp_get_image_editor( $file_path );
-			} else {
-				if ( ! is_wp_error( wp_safe_remote_head( $url_path, array( 'timeout' => 5 ) ) ) ) {
-					$this->_editor = wp_get_image_editor( $url_path );
-				}
+			else {
+				$this->_editor = wp_get_image_editor($url_path);
 			}
 		}
-		return $this->_editor;
-	}
 
-	/**
-	 * Make path filterable.
-	 * @since 2.5
-	 */
-	public static function _get_file_path( $url_path ) {
-		$home_url = trailingslashit( preg_replace( '/\/?(\?.*$)/', '', home_url() ) );
-		/**
-		 * Filesystem path derived from a photo URL, used when cropping images.
-		 */
-		return apply_filters( 'fl_builder_photo_crop_path', str_ireplace( $home_url, ABSPATH, $url_path ), $url_path );
+		return $this->_editor;
 	}
 
 	/**
 	 * @method _get_cropped_path
 	 * @protected
 	 */
-	protected function _get_cropped_path() {
-		$crop      = empty( $this->settings->crop ) ? 'none' : $this->settings->crop;
-		$url       = $this->_get_uncropped_url();
-		$cache_dir = FLBuilderModel::get_cache_dir();
-		$is_demo   = $this->_is_demo_url( $url ) || stristr( $_SERVER['HTTP_HOST'], FL_BUILDER_DEMO_DOMAIN );
-		$cache_id  = ! $is_demo ? sprintf( '-%s-%s', md5( $url ), $this->node ) : '';
-		if ( empty( $url ) ) {
-			$filename = FLBuilderModel::uniqid(); // Return a file that doesn't exist.
-		} else {
+	protected function _get_cropped_path()
+	{
+		$crop        = empty($this->settings->crop) ? 'none' : $this->settings->crop;
+		$url         = $this->_get_uncropped_url();
+		$cache_dir   = FLBuilderModel::get_cache_dir();
 
+		if(empty($url)) {
+			$filename    = uniqid(); // Return a file that doesn't exist.
+		}
+		else {
+			
 			if ( stristr( $url, '?' ) ) {
 				$parts = explode( '?', $url );
 				$url   = $parts[0];
 			}
-
-			$pathinfo = pathinfo( $url );
-
-			if ( isset( $pathinfo['extension'] ) ) {
-				$dir      = $pathinfo['dirname'];
-				$ext      = $pathinfo['extension'];
-				$name     = wp_basename( $url, ".$ext" );
-				$new_ext  = strtolower( $ext );
-				$filename = "{$name}-{$crop}{$cache_id}.{$new_ext}";
-			} else {
-				$filename = $pathinfo['filename'] . "-{$crop}{$cache_id}.png";
-			}
-		}
-
-		// upgrade, remove duplicate file if it exists without the cacheid
-		$oldfile = str_replace( $cache_id, '', $filename );
-		if ( file_exists( $cache_dir['path'] . $oldfile ) ) {
-			fl_builder_filesystem()->unlink( $cache_dir['path'] . $oldfile );
+			
+			$pathinfo    = pathinfo($url);
+			$dir         = $pathinfo['dirname'];
+			$ext         = $pathinfo['extension'];
+			$name        = wp_basename($url, ".$ext");
+			$new_ext     = strtolower($ext);
+			$filename    = "{$name}-{$crop}.{$new_ext}";
 		}
 
 		return array(
 			'filename' => $filename,
 			'path'     => $cache_dir['path'] . $filename,
-			'url'      => $cache_dir['url'] . $filename,
+			'url'      => $cache_dir['url'] . $filename
 		);
-	}
-
-	/**
-	 * @method _is_demo_url
-	 * @protected
-	 */
-	protected function _is_demo_url( $url ) {
-		if ( stristr( $url, FL_BUILDER_DEMO_DOMAIN ) ) {
-			return true;
-		} elseif ( stristr( $url, FL_BUILDER_OLD_DEMO_URL ) ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
 	 * @method _get_uncropped_url
 	 * @protected
 	 */
-	protected function _get_uncropped_url() {
-		if ( 'url' == $this->settings->photo_source ) {
+	protected function _get_uncropped_url()
+	{
+		if($this->settings->photo_source == 'url') {
 			$url = $this->settings->photo_url;
-		} elseif ( ! empty( $this->settings->photo_src ) ) {
+		}
+		else if(!empty($this->settings->photo_src)) {
 			$url = $this->settings->photo_src;
-		} else {
-			/**
-			 * URL of the placeholder image shown when no photo has been selected.
-			 */
-			$url = apply_filters( 'fl_builder_photo_noimage', FLBuilder::plugin_url() . 'img/pixel.png' );
+		}
+		else {
+			$url = FL_BUILDER_URL . 'img/pixel.png';
 		}
 
 		return $url;
@@ -579,27 +414,11 @@ class FLPhotoModule extends FLBuilderModule {
 	 * @method _get_cropped_demo_url
 	 * @protected
 	 */
-	protected function _get_cropped_demo_url() {
+	protected function _get_cropped_demo_url()
+	{
 		$info = $this->_get_cropped_path();
-		$src  = $this->settings->photo_src;
 
-		// Pull from a demo subsite.
-		if ( stristr( $src, '/uploads/sites/' ) ) {
-			$url_parts  = explode( '/uploads/sites/', $src );
-			$site_parts = explode( '/', $url_parts[1] );
-			return $url_parts[0] . '/uploads/sites/' . $site_parts[0] . '/bb-plugin/cache/' . $info['filename'];
-		}
-
-		// Pull from the demo main site.
 		return FL_BUILDER_DEMO_CACHE_URL . $info['filename'];
-	}
-
-	public function filter_classes( $classes = [] ) {
-		// Object-fit support
-		if ( is_array( $this->settings->fill_container ) && ! empty( $this->settings->fill_container['fit'] ) ) {
-			$classes[] = 'fl-fill-container';
-		}
-		return $classes;
 	}
 }
 
@@ -607,265 +426,129 @@ class FLPhotoModule extends FLBuilderModule {
  * Register the module and its form settings.
  */
 FLBuilder::register_module('FLPhotoModule', array(
-	'general' => array( // Tab
-		'title'    => __( 'General', 'fl-builder' ), // Tab title
-		'sections' => array( // Tab Sections
-			'general' => array( // Section
-				'title'  => '', // Section Title
-				'fields' => array( // Section Fields
-					'photo_source' => array(
-						'type'    => 'select',
-						'label'   => __( 'Photo Source', 'fl-builder' ),
-						'default' => 'library',
-						'options' => array(
-							'library' => __( 'Media Library', 'fl-builder' ),
-							'url'     => __( 'URL', 'fl-builder' ),
+	'general'       => array( // Tab
+		'title'         => __('General', 'fl-builder'), // Tab title
+		'sections'      => array( // Tab Sections
+			'general'       => array( // Section
+				'title'         => '', // Section Title
+				'fields'        => array( // Section Fields
+					'photo_source'  => array(
+						'type'          => 'select',
+						'label'         => __('Photo Source', 'fl-builder'),
+						'default'       => 'library',
+						'options'       => array(
+							'library'       => __('Media Library', 'fl-builder'),
+							'url'           => __('URL', 'fl-builder')
 						),
-						'toggle'  => array(
-							'library' => array(
-								'fields' => array( 'photo' ),
+						'toggle'        => array(
+							'library'       => array(
+								'fields'        => array('photo')
 							),
-							'url'     => array(
-								'fields' => array( 'photo_url', 'url_title' ),
-							),
-						),
-						'preview' => array(
-							'type' => 'none',
-						),
+							'url'           => array(
+								'fields'        => array('photo_url', 'caption')
+							)
+						)
 					),
-					'photo'        => array(
-						'type'        => 'photo',
-						'label'       => __( 'Photo', 'fl-builder' ),
-						'connections' => array( 'photo' ),
-						'show_remove' => true,
-						'preview'     => array(
-							'type' => 'none',
-						),
+					'photo'         => array(
+						'type'          => 'photo',
+						'label'         => __('Photo', 'fl-builder')
 					),
-					'photo_url'    => array(
-						'type'        => 'text',
-						'label'       => __( 'Photo URL', 'fl-builder' ),
-						'placeholder' => 'https://www.example.com/my-photo.jpg',
-						'preview'     => array(
-							'type' => 'none',
-						),
-						'connections' => array( 'url' ),
+					'photo_url'     => array(
+						'type'          => 'text',
+						'label'         => __('Photo URL', 'fl-builder'),
+						'placeholder'   => __( 'http://www.example.com/my-photo.jpg', 'fl-builder' )
 					),
-					'title_hover'  => array(
-						'type'    => 'select',
-						'label'   => __( 'Show title attribute on mouse hover', 'fl-builder' ),
-						'default' => 'no',
-						'options' => array(
-							'no'  => __( 'No', 'fl-builder' ),
-							'yes' => __( 'Yes', 'fl-builder' ),
-						),
+					'crop'          => array(
+						'type'          => 'select',
+						'label'         => __('Crop', 'fl-builder'),
+						'default'       => '',
+						'options'       => array(
+							''              => _x( 'None', 'Photo Crop.', 'fl-builder' ),
+							'landscape'     => __('Landscape', 'fl-builder'),
+							'panorama'      => __('Panorama', 'fl-builder'),
+							'portrait'      => __('Portrait', 'fl-builder'),
+							'square'        => __('Square', 'fl-builder'),
+							'circle'        => __('Circle', 'fl-builder')
+						)
 					),
-					'url_title'    => array(
-						'type'        => 'text',
-						'label'       => __( 'Image title attribute', 'fl-builder' ),
-						'default'     => '',
-						'placeholder' => __( 'Use image filename if left blank', 'fl-builder' ),
-						'connections' => array( 'string' ),
-					),
-				),
+					'align'         => array(
+						'type'          => 'select',
+						'label'         => __('Alignment', 'fl-builder'),
+						'default'       => 'center',
+						'options'       => array(
+							'left'          => __('Left', 'fl-builder'),
+							'center'        => __('Center', 'fl-builder'),
+							'right'         => __('Right', 'fl-builder')
+						)
+					)
+				)
 			),
-			'caption' => array(
-				'title'  => __( 'Caption', 'fl-builder' ),
-				'fields' => array(
-					'show_caption' => array(
-						'type'    => 'select',
-						'label'   => __( 'Show Caption', 'fl-builder' ),
-						'default' => '0',
-						'options' => array(
-							'0'     => __( 'Never', 'fl-builder' ),
-							'hover' => __( 'On Hover', 'fl-builder' ),
-							'below' => __( 'Below Photo', 'fl-builder' ),
-						),
-
-						'toggle'  => array(
-							''      => array(),
-							'hover' => array(
-								'fields' => array( 'caption', 'caption_typography' ),
-							),
-
-							'below' => array(
-								'fields' => array( 'caption', 'caption_typography' ),
-							),
-						),
-						'preview' => array(
-							'type' => 'none',
-						),
+			'caption'       => array(
+				'title'         => __('Caption', 'fl-builder'),
+				'fields'        => array(
+					'show_caption'  => array(
+						'type'          => 'select',
+						'label'         => __('Show Caption', 'fl-builder'),
+						'default'       => '0',
+						'options'       => array(
+							'0'             => __('Never', 'fl-builder'),
+							'hover'         => __('On Hover', 'fl-builder'),
+							'below'         => __('Below Photo', 'fl-builder')
+						)
 					),
-					'caption'      => array(
-						'type'        => 'text',
-						'label'       => __( 'Caption', 'fl-builder' ),
-						'preview'     => array(
-							'type' => 'none',
-						),
-						'connections' => array( 'string' ),
-					),
-				),
+					'caption'       => array(
+						'type'          => 'text',
+						'label'         => __('Caption', 'fl-builder')
+					)
+				)
 			),
-			'link'    => array(
-				'title'  => __( 'Link', 'fl-builder' ),
-				'fields' => array(
-					'link_type'           => array(
-						'type'    => 'select',
-						'label'   => __( 'Link Type', 'fl-builder' ),
-						'options' => array(
-							''         => _x( 'None', 'Link type.', 'fl-builder' ),
-							'url'      => __( 'URL', 'fl-builder' ),
-							'lightbox' => __( 'Lightbox', 'fl-builder' ),
-							'file'     => __( 'Photo File', 'fl-builder' ),
-							'page'     => __( 'Photo Page', 'fl-builder' ),
+			'link'          => array(
+				'title'         => 'Link',
+				'fields'        => array(
+					'link_type'     => array(
+						'type'          => 'select',
+						'label'         => __('Link Type', 'fl-builder'),
+						'options'       => array(
+							''              => _x( 'None', 'Link type.', 'fl-builder' ),
+							'url'           => __('URL', 'fl-builder'),
+							'lightbox'      => __('Lightbox', 'fl-builder'),
+							'file'          => __('Photo File', 'fl-builder'),
+							'page'          => __('Photo Page', 'fl-builder')
 						),
-						'toggle'  => array(
-							''         => array(),
-							'url'      => array(
-								'fields' => array( 'link_url' ),
+						'toggle'        => array(
+							''              => array(),
+							'url'           => array(
+								'fields'        => array('link_url', 'link_target')
 							),
-							'lightbox' => array(
-								'fields' => array( 'lightbox_image_size' ),
-							),
-							'file'     => array(),
-							'page'     => array(),
+							'file'          => array(),
+							'page'          => array()
 						),
-						'help'    => __( 'Link type applies to how the image should be linked on click. You can choose a specific URL, the individual photo or a separate page with the photo.', 'fl-builder' ),
-						'preview' => array(
-							'type' => 'none',
-						),
+						'help'          => __('Link type applies to how the image should be linked on click. You can choose a specific URL, the individual photo or a separate page with the photo.', 'fl-builder'),
+						'preview'         => array(
+							'type'            => 'none'
+						)
 					),
-					'link_url'            => array(
+					'link_url'     => array(
 						'type'          => 'link',
-						'label'         => __( 'Link URL', 'fl-builder' ),
-						'show_target'   => true,
-						'show_nofollow' => true,
-						'show_download' => true,
-						'preview'       => array(
-							'type' => 'none',
-						),
-						'connections'   => array( 'url' ),
+						'label'         => __('Link URL', 'fl-builder'),
+						'preview'         => array(
+							'type'            => 'none'
+						)
 					),
-					'lightbox_image_size' => array(
-						'type'    => 'photo-sizes',
-						'label'   => __( 'Lightbox Photo Size', 'fl-builder' ),
-						'default' => 'large',
-					),
-				),
-			),
-		),
-	),
-	'style'   => array( // Tab
-		'title'    => __( 'Style', 'fl-builder' ), // Tab title
-		'sections' => array( // Tab Sections
-			'general' => array( // Section
-				'title'  => '', // Section Title
-				'fields' => array( // Section Fields
-					'crop'               => array(
-						'type'    => 'select',
-						'label'   => __( 'Crop', 'fl-builder' ),
-						'default' => '',
-						'options' => array(
-							''          => _x( 'None', 'Photo Crop.', 'fl-builder' ),
-							'landscape' => __( 'Landscape', 'fl-builder' ),
-							'panorama'  => __( 'Panorama', 'fl-builder' ),
-							'portrait'  => __( 'Portrait', 'fl-builder' ),
-							'square'    => __( 'Square', 'fl-builder' ),
-							'circle'    => __( 'Circle', 'fl-builder' ),
+					'link_target'   => array(
+						'type'          => 'select',
+						'label'         => __('Link Target', 'fl-builder'),
+						'default'       => '_self',
+						'options'       => array(
+							'_self'         => __('Same Window', 'fl-builder'),
+							'_blank'        => __('New Window', 'fl-builder')
 						),
-					),
-					'width'              => array(
-						'type'       => 'unit',
-						'label'      => __( 'Width', 'fl-builder' ),
-						'responsive' => true,
-						'units'      => array(
-							'px',
-							'vw',
-							'%',
-						),
-						'slider'     => array(
-							'px' => array(
-								'min'  => 0,
-								'max'  => 1000,
-								'step' => 10,
-							),
-						),
-						'preview'    => array(
-							'type'      => 'css',
-							'selector'  => '.fl-photo-img, .fl-photo-content',
-							'property'  => 'width',
-							'important' => true,
-						),
-					),
-					'align'              => array(
-						'type'       => 'align',
-						'label'      => __( 'Align', 'fl-builder' ),
-						'default'    => 'center',
-						'responsive' => true,
-						'preview'    => array(
-							'type'      => 'css',
-							'selector'  => '.fl-photo',
-							'property'  => 'text-align',
-							'important' => true,
-						),
-					),
-					'border'             => array(
-						'type'       => 'border',
-						'label'      => __( 'Border', 'fl-builder' ),
-						'responsive' => true,
-						'preview'    => array(
-							'type'     => 'css',
-							'selector' => '.fl-photo-img',
-						),
-					),
-					'caption_typography' => array(
-						'type'       => 'typography',
-						'label'      => __( 'Caption Typography', 'fl-builder' ),
-						'responsive' => true,
-						'preview'    => array(
-							'type'      => 'css',
-							'selector'  => '{node}.fl-module-photo .fl-photo-caption',
-							'important' => true,
-						),
-					),
-					'fill_container'     => array(
-						'type'    => 'object-fit',
-						'label'   => __( 'Fill Container', 'fl-builder' ),
-						'preview' => [
-							'type'  => 'css',
-							'auto'  => true,
-							'rules' => [
-								[
-									'property'  => 'object-fit',
-									'selector'  => 'img.fl-photo-img',
-									'sub_value' => 'fit',
-								],
-								[
-									'property'  => 'object-position',
-									'selector'  => 'img.fl-photo-img',
-									'sub_value' => 'position',
-								],
-								[
-									'property'  => 'width',
-									'sub_value' => [
-										'setting_name' => 'width',
-										'type'         => 'unit',
-									],
-									'important' => true,
-								],
-								[
-									'property'  => 'height',
-									'sub_value' => [
-										'setting_name' => 'height',
-										'type'         => 'unit',
-									],
-									'important' => true,
-								],
-							],
-						],
-					),
-				),
-			),
-		),
-	),
+						'preview'         => array(
+							'type'            => 'none'
+						)
+					)
+				)
+			)
+		)
+	)
 ));

@@ -7,7 +7,7 @@ define('CS_REST_LOG_NONE', 0);
 class CS_REST_Log {
     var $_level;
 
-    function __construct($level) {
+    function CS_REST_Log($level) {
         $this->_level = $level;
     }
 

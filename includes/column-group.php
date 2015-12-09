@@ -1,9 +1,10 @@
 
 <div<?php FLBuilder::render_column_group_attributes( $group ); ?>>
-	<?php
-	// $cols received as a magic variable from template loader
-	foreach ( $cols as $col ) :
-		?>
-		<?php FLBuilder::render_column( $col ); ?>
+	<?php foreach ( $cols as $col ) : ?>
+	<div<?php echo FLBuilder::render_column_attributes( $col ); ?>>
+		<div class="fl-col-content fl-node-content">
+		<?php FLBuilder::render_modules( $col ); ?>
+		</div>
+	</div>
 	<?php endforeach; ?>
 </div>

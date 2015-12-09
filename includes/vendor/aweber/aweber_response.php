@@ -13,7 +13,6 @@
  */
 class AWeberResponse extends AWeberAPIBase {
 
-    public $url = '';
     public $adapter = false;
     public $data = array();
     public $_dynamicData = array();

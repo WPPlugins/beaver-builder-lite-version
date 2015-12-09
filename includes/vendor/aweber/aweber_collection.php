@@ -86,7 +86,7 @@ class AWeberCollection extends AWeberResponse implements ArrayAccess, Iterator, 
     /**
      * _type
      *
-     * Interpret what type of resources are held in this collection by
+     * Interpret what type of resources are held in this collection by 
      * analyzing the URL
      *
      * @access protected
@@ -137,7 +137,7 @@ class AWeberCollection extends AWeberResponse implements ArrayAccess, Iterator, 
      *                             * filtering on attributes that require additional permissions to
      *                               display requires an app authorized with those additional permissions.
      * @access public
-     * @return AWeberCollection
+     * @return AWeberCollection 
      */
     public function find($search_data) {
         # invoke find operation
@@ -159,13 +159,9 @@ class AWeberCollection extends AWeberResponse implements ArrayAccess, Iterator, 
      * Allows this object to be accessed via bracket notation (ie $obj[$x])
      * http://php.net/manual/en/class.arrayaccess.php
      */
-    #[\ReturnTypeWillChange]
+
     public function offsetSet($offset, $value)  {}
-
-    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)        {}
-
-    #[\ReturnTypeWillChange]
     public function offsetExists($offset) {
 
         if ($offset >=0 && $offset < $this->total_size) {
@@ -214,7 +210,6 @@ class AWeberCollection extends AWeberResponse implements ArrayAccess, Iterator, 
         }
     }
 
-    #[\ReturnTypeWillChange]
     public function offsetGet($offset) {
 
         if (!$this->offsetExists($offset)) {
@@ -241,27 +236,22 @@ class AWeberCollection extends AWeberResponse implements ArrayAccess, Iterator, 
      */
     protected $_iterationKey = 0;
 
-    #[\ReturnTypeWillChange]
     public function current() {
         return $this->offsetGet($this->_iterationKey);
     }
 
-    #[\ReturnTypeWillChange]
     public function key() {
         return $this->_iterationKey;
     }
 
-    #[\ReturnTypeWillChange]
     public function next() {
         $this->_iterationKey++;
     }
 
-    #[\ReturnTypeWillChange]
     public function rewind() {
         $this->_iterationKey = 0;
     }
 
-    #[\ReturnTypeWillChange]
     public function valid() {
         return $this->offsetExists($this->key());
     }
@@ -271,7 +261,7 @@ class AWeberCollection extends AWeberResponse implements ArrayAccess, Iterator, 
      * Allows PHP's count() and sizeOf() functions to act on this object
      * http://www.php.net/manual/en/class.countable.php
      */
-    #[\ReturnTypeWillChange]
+
     public function count() {
         return $this->total_size;
     }

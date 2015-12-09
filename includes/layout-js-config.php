@@ -5,19 +5,7 @@ var FLBuilderLayoutConfig = {
 		offset 		: 100
 	},
 	paths : {
-		pluginUrl : '<?php echo FLBuilder::plugin_url(); ?>',
+		pluginUrl : '<?php echo FL_BUILDER_URL; ?>',
 		wpAjaxUrl : '<?php echo admin_url( 'admin-ajax.php' ); ?>'
-	},
-	breakpoints : {
-		small  : <?php echo FLBuilderUtils::sanitize_number( $global_settings->responsive_breakpoint ); ?>,
-		medium : <?php echo FLBuilderUtils::sanitize_number( $global_settings->medium_breakpoint ); ?>,
-		large : <?php echo FLBuilderUtils::sanitize_number( $global_settings->large_breakpoint ); ?>
-	},
-	waypoint: {
-		offset: 80
-	},
-	emptyColWidth: '<?php echo FLBuilderUtils::get_empty_column_width(); ?>',
-	i18n : {
-		opensInNewTab : '<?php echo esc_js( __( '(opens in new tab)', 'fl-builder' ) ); ?>'
 	}
 };

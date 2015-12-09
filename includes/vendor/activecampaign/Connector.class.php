@@ -1,4 +1,5 @@
 <?php
+
 class AC_Connector {
 
 	public $url;
@@ -162,10 +163,12 @@ class AC_Connector {
 			curl_setopt($request, CURLOPT_POSTFIELDS, $data);
 			$debug_str1 .= "curl_setopt(\$ch, CURLOPT_POSTFIELDS, \"" . $data . "\");\n";
 		}
-
-		$request = fl_set_curl_safe_opts( $request );
-
+		curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($request, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($request, CURLOPT_FOLLOWLOCATION, true);
+		$debug_str1 .= "curl_setopt(\$ch, CURLOPT_SSL_VERIFYPEER, false);\n";
+		$debug_str1 .= "curl_setopt(\$ch, CURLOPT_SSL_VERIFYHOST, 0);\n";
+		$debug_str1 .= "curl_setopt(\$ch, CURLOPT_FOLLOWLOCATION, true);\n";
 		$response = curl_exec($request);
 		$debug_str1 .= "curl_exec(\$ch);\n";
 		if ($this->debug) {
@@ -187,7 +190,7 @@ class AC_Connector {
 		}
 		if ( !is_object($object) || (!isset($object->result_code) && !isset($object->succeeded) && !isset($object->success)) ) {
 			// add methods that only return a string
-			$string_responses = array("tracking_event_remove", "tags_list", "contact_list", "form_html", "tracking_site_status", "tracking_event_status", "tracking_whitelist", "tracking_log", "tracking_site_list", "tracking_event_list");
+			$string_responses = array("tracking_event_remove", "contact_list", "form_html", "tracking_site_status", "tracking_event_status", "tracking_whitelist", "tracking_log", "tracking_site_list", "tracking_event_list");
 			if (in_array($method, $string_responses)) {
 				return $response;
 			}

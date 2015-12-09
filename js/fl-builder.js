@@ -1,22 +1,13 @@
 (function($){
 
 	/**
-	 * Whether _logForeignTipTipHolder has already reported, so a page whose
-	 * #tiptip_holder belongs to another plugin is named once per session rather
-	 * than on every mouse move.
-	 *
-	 * @since 2.11
-	 */
-	var foreignTipTipHolderLogged = false;
-
-	/**
 	 * The main builder interface class.
-	 *
+	 * 
 	 * @since 1.0
 	 * @class FLBuilder
 	 */
 	FLBuilder = {
-
+	
 		/**
 		 * An instance of FLBuilderPreview for working
 		 * with the current live preview.
@@ -25,7 +16,7 @@
 		 * @property {FLBuilderPreview} preview
 		 */
 		preview                     : null,
-
+	
 		/**
 		 * An instance of FLLightbox for displaying a list
 		 * of actions a user can take such as publish or cancel.
@@ -35,24 +26,17 @@
 		 * @property {FLLightbox} _actionsLightbox
 		 */
 		_actionsLightbox            : null,
-
+		
 		/**
-		 * An array of AJAX data that needs to be requested
-		 * after the current request has finished.
+		 * A jQuery reference to a module element that should be
+		 * added to a new row after it has been rendered.
 		 *
-		 * @since 2.2
-		 * @property {Array} _ajaxQueue
+		 * @since 1.0
+		 * @access private
+		 * @property {Object} _addModuleAfterRowRender
 		 */
-		_ajaxQueue                  : [],
-
-		/**
-		 * A reference to the current AJAX request object.
-		 *
-		 * @since 2.2
-		 * @property {Object} _ajaxRequest
-		 */
-		_ajaxRequest                : null,
-
+		_addModuleAfterRowRender    : null,
+		
 		/**
 		 * An object that holds data for column resizing.
 		 *
@@ -61,7 +45,7 @@
 		 * @property {Object} _colResizeData
 		 */
 		_colResizeData              : null,
-
+		
 		/**
 		 * A flag for whether a column is being resized or not.
 		 *
@@ -70,7 +54,7 @@
 		 * @property {Boolean} _colResizing
 		 */
 		_colResizing              	: false,
-
+		
 		/**
 		 * The CSS class of the main content wrapper for the
 		 * current layout that is being worked on.
@@ -80,18 +64,7 @@
 		 * @property {String} _contentClass
 		 */
 		_contentClass               : false,
-
-		/**
-		 * The root class used for jQuery sortables in the builder's layout. 
-		 * Can be overridden using FLBuilder.setSortableRootClass and reset 
-		 * using FLBuilder.resetSortableRootClass.
-		 *
-		 * @since 2.11
-		 * @access private
-		 * @property {String} _sortableRootClass
-		 */
-		_sortableRootClass			: null,
-
+		
 		/**
 		 * Whether dragging has been enabled or not.
 		 *
@@ -100,7 +73,7 @@
 		 * @property {Boolean} _dragEnabled
 		 */
 		_dragEnabled                : false,
-
+		
 		/**
 		 * Whether an element is currently being dragged or not.
 		 *
@@ -109,17 +82,7 @@
 		 * @property {Boolean} _dragging
 		 */
 		_dragging                   : false,
-
-		/**
-		 * The initial scroll top of the window when a drag starts.
-		 * Used to reset the scroll top when a drag is cancelled.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @property {Boolean} _dragging
-		 */
-		_dragInitialScrollTop       : 0,
-
+		
 		/**
 		 * The URL to redirect to when a user leaves the builder.
 		 *
@@ -128,42 +91,7 @@
 		 * @property {String} _exitUrl
 		 */
 		_exitUrl                    : null,
-
-		/**
-		 * An instance of FLBuilderAJAXLayout for rendering
-		 * the layout via AJAX.
-		 *
-		 * @since 1.7
-		 * @property {FLBuilderAJAXLayout} _layout
-		 */
-		_layout                     : null,
-
-		/**
-		 * An array of layout data that needs to be rendered
-		 * after the current rendered is finished.
-		 *
-		 * @since 2.2
-		 * @property {Array} _layoutQueue
-		 */
-		_layoutQueue                 : [],
-
-		/**
-		 * A cached copy of custom layout CSS that is used to
-		 * revert changes if the cancel button is clicked.
-		 *
-		 * @since 1.7
-		 * @property {String} _layoutSettingsCSSCache
-		 */
-		_layoutSettingsCSSCache     : null,
-
-		/**
-		 * A timeout for throttling custom layout CSS changes.
-		 *
-		 * @since 1.7
-		 * @property {Object} _layoutSettingsCSSTimeout
-		 */
-		_layoutSettingsCSSTimeout   : null,
-
+		
 		/**
 		 * An instance of FLLightbox for displaying settings.
 		 *
@@ -172,7 +100,7 @@
 		 * @property {FLLightbox} _lightbox
 		 */
 		_lightbox                   : null,
-
+		
 		/**
 		 * A timeout for refreshing the height of lightbox scrollbars
 		 * in case the content changes from dynamic settings.
@@ -182,179 +110,127 @@
 		 * @property {Object} _lightboxScrollbarTimeout
 		 */
 		_lightboxScrollbarTimeout   : null,
-
+		
 		/**
 		 * An array that's used to cache which module settings
 		 * CSS and JS assets have already been loaded so they
 		 * are only loaded once.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Array} _loadedModuleAssets
 		 */
 		_loadedModuleAssets         : [],
-
+		
 		/**
 		 * An object used to store module settings helpers.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Object} _moduleHelpers
 		 */
 		_moduleHelpers              : {},
-
+		
 		/**
 		 * An instance of wp.media used to select multiple photos.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Object} _multiplePhotoSelector
 		 */
 		_multiplePhotoSelector      : null,
-
-		/**
-		 * A jQuery reference to a group that a new column
-		 * should be added to once it's finished rendering.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @property {Object} _newColParent
-		 */
-		_newColParent          		: null,
-
-		/**
-		 * The position a column should be added to within
-		 * a group once it finishes rendering.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @property {Number} _newColPosition
-		 */
-		_newColPosition        		: 0,
-
+		
 		/**
 		 * A jQuery reference to a row that a new column group
 		 * should be added to once it's finished rendering.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Object} _newColGroupParent
 		 */
 		_newColGroupParent          : null,
-
+		
 		/**
 		 * The position a column group should be added to within
 		 * a row once it finishes rendering.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Number} _newColGroupPosition
 		 */
 		_newColGroupPosition        : 0,
-
-		/**
-		 * A jQuery reference to a new module's parent.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @property {Object} _newModuleParent
-		 */
-		_newModuleParent          	: null,
-
-		/**
-		 * The position a new module should be added at once
-		 * it finishes rendering.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @property {Number} _newModulePosition
-		 */
-		_newModulePosition        	: 0,
-
+		
 		/**
 		 * The position a row should be added to within
 		 * the layout once it finishes rendering.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Number} _newRowPosition
 		 */
 		_newRowPosition             : 0,
-
+		
 		/**
 		 * The ID of a template that the user has selected.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Number} _selectedTemplateId
 		 */
 		_selectedTemplateId         : null,
-
+		
 		/**
 		 * The type of template that the user has selected.
 		 * Possible values are "core" or "user".
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {String} _selectedTemplateType
-		 */
+		 */ 
 		_selectedTemplateType       : null,
-
+		
 		/**
 		 * An instance of wp.media used to select a single photo.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Object} _singlePhotoSelector
-		 */
+		 */ 
 		_singlePhotoSelector        : null,
-
+		
 		/**
 		 * An instance of wp.media used to select a single video.
-		 *
+		 * 
 		 * @since 1.0
 		 * @access private
 		 * @property {Object} _singleVideoSelector
-		 */
+		 */ 
 		_singleVideoSelector        : null,
-
+		
 		/**
-		 * An instance of wp.media used to select a multiple audio.
-		 *
+		 * Whether the current AJAX update is silent or not. Silent
+		 * updates occur without blocking the page with the loading
+		 * overlay. If another AJAX request is made during a silent 
+		 * update, the loading overlay will be shown and the data for
+		 * the second request will be stored so it can be made when 
+		 * the silent update completes.
+		 * 
 		 * @since 1.0
 		 * @access private
-		 * @property {Object} _multipleAudiosSelector
-		 */
-		_multipleAudiosSelector        : null,
-
-
+		 * @property {Boolean} _silentUpdate
+		 */ 
+		_silentUpdate               : false,
+		
 		/**
-		 * @since 2.2.5
-		 */
-		_codeDisabled: false,
-
-		/**
-		 * Misc data container
-		 * @since 2.6
+		 * Data for an AJAX request that should be made once a silent
+		 * update has completed.
+		 * 
+		 * @since 1.0
 		 * @access private
-		 */
-		_sandbox: {},
-
-		/**
-		 * Flag whether to clear preview or not
-		 * @access private
-		 */
-		_publishAndRemain: false,
-
-		_shapesEdited: false,
-
-		/**
-		 * Cached font family markup for font fields.
-		 * @since 2.9
-		 * @access private
-		 */
-		_fontFamilyCache: null,
-
+		 * @property {Object} _silentUpdateCallbackData
+		 */ 
+		_silentUpdateCallbackData   : null,
+	
 		/**
 		 * Initializes the builder interface.
 		 *
@@ -364,17 +240,6 @@
 		 */
 		_init: function()
 		{
-			/**
-			 * Don't init inside the block editor. We just need the
-			 * builder's functions available there. Eventually, this
-			 * code should be refactored so we can load less of the
-			 * builder's JS in that environment.
-			 */
-			if ( FL.Builder.utils.isBlockEditor() ) {
-				return;
-			}
-
-			FLBuilder.UIIFrame.init();
 			FLBuilder._initJQueryReadyFix();
 			FLBuilder._initGlobalErrorHandling();
 			FLBuilder._initPostLock();
@@ -383,29 +248,18 @@
 			FLBuilder._initOverflowFix();
 			FLBuilder._initScrollbars();
 			FLBuilder._initLightboxes();
-			FLBuilder._initDropTargets();
 			FLBuilder._initSortables();
-			FLBuilder._initStrings();
-			FLBuilder._initSanityChecks();
-			FLBuilder._initTipTips();
-			FLBuilder._initTinyMCE();
+			FLBuilder._initCoreTemplateSettings();
 			FLBuilder._bindEvents();
 			FLBuilder._bindOverlayEvents();
 			FLBuilder._setupEmptyLayout();
 			FLBuilder._highlightEmptyCols();
-			FLBuilder._checkEnv();
-			FL.Builder.utils.colorScheme.init();
-
-			FLBuilder.addHook('didInitUI', FLBuilder._showTourOrTemplates.bind(FLBuilder) );
-			FLBuilder.addHook('endEditingSession', FLBuilder._doStats.bind(this) );
-			FLBuilder.addHook('didSaveLayoutSettingsComplete', FLBuilder._reloadIfPostSettingsChanged);
-
-			FLBuilder.triggerHook('init');
+			FLBuilder._showTourOrTemplates();
 		},
-
+		
 		/**
 		 * Prevent errors thrown in jQuery's ready function
-		 * from breaking subsequent ready calls.
+		 * from breaking subsequent ready calls. 
 		 *
 		 * @since 1.4.6
 		 * @access private
@@ -416,14 +270,14 @@
 			if ( FLBuilderConfig.debug ) {
 				return;
 			}
-
+			
 			jQuery.fn.oldReady = jQuery.fn.ready;
-
+			
 			jQuery.fn.ready = function( fn ) {
 				return jQuery.fn.oldReady( function() {
 					try {
 						if ( 'function' == typeof fn ) {
-							fn( $ );
+							fn();
 						}
 					}
 					catch ( e ){
@@ -432,15 +286,7 @@
 				});
 			};
 		},
-
-		_initSanityChecks: function() {
-			if ( FLBuilderConfig.uploadPath && typeof FLBuilderLayout === 'undefined' ) {
-				url = '<a href="' + FLBuilderConfig.uploadUrl + '">wp-admin -> Settings -> Media</a>';
-				FLBuilder.alert( '<strong>Critical Error</strong><p style="font-size:15px;">Please go to ' + url + ' and make sure uploads folder settings is blank</p>');
-				$('.fl-builder-alert-close', window.parent.document).hide()
-			}
-		},
-
+		
 		/**
 		 * Try to prevent errors from third party plugins
 		 * from breaking the builder.
@@ -454,13 +300,13 @@
 			if ( FLBuilderConfig.debug ) {
 				return;
 			}
-
+			
 			window.onerror = function( message, file, line, col, error ) {
 				FLBuilder.logGlobalError( message, file, line, col, error );
 				return true;
 			};
 		},
-
+		
 		/**
 		 * Send a wp.heartbeat request to lock editing of this
 		 * post so it can only be edited by the current user.
@@ -472,25 +318,15 @@
 		_initPostLock: function()
 		{
 			if(typeof wp.heartbeat != 'undefined') {
-
-				wp.heartbeat.interval(120);
-
+			
+				wp.heartbeat.interval(30);
+				
 				wp.heartbeat.enqueue('fl_builder_post_lock', {
-					post_id: FLBuilderConfig.postId
+					post_id: $('#fl-post-id').val()
 				});
 			}
 		},
-
-		_heartbeatError: function( e, data ) {
-			if ( typeof data['wp-auth-check'] !== 'undefined' ) {
-				if ( ! data['wp-auth-check'] ) {
-					FLLightbox.closeAll();
-					FLBuilder.alert('You have been logged out. Please login to continue.<br />You will be redirected back here automatically.</p><p><button onclick="window.open(\'' + FLBuilderConfig.loginUrl + '\')" class="fl-builder-button fl-builder-button-large fl-builder-button-primary">Click to login</button></p>');
-					$('.fl-lightbox-footer').remove();
-				}
-			}
-		},
-
+		
 		/**
 		 * Initializes html and body classes as well as the
 		 * builder content class for this post.
@@ -501,26 +337,16 @@
 		 */
 		_initClassNames: function()
 		{
-			var html = $( 'html' ).add( 'html', window.parent.document ),
-				body = $( 'body' ).add( 'body', window.parent.document );
-
-			html.addClass( 'fl-builder-edit' );
-			body.addClass( 'fl-builder' );
-
-			if ( FLBuilderConfig.isBBExtension ) {
-				html.addClass( 'fl-builder-asst-extension' );
+			$('html').addClass('fl-builder-edit');
+			$('body').addClass('fl-builder');
+			
+			if(FLBuilderConfig.simpleUi) {
+				$('body').addClass('fl-builder-simple');
 			}
-
-			if ( FLBuilderConfig.simpleUi ) {
-				body.addClass( 'fl-builder-simple' );
-			}
-
+			
 			FLBuilder._contentClass = '.fl-builder-content-' + FLBuilderConfig.postId;
-			FLBuilder._sortableRootClass = FLBuilder._contentClass;
-
-			$( FLBuilder._contentClass ).addClass( 'fl-builder-content-editing' );
 		},
-
+		
 		/**
 		 * Initializes the WordPress media uploader so any files
 		 * uploaded will be attached to the current post.
@@ -531,9 +357,9 @@
 		 */
 		_initMediaUploader: function()
 		{
-			wp.media.model.settings.post.id = FLBuilderConfig.postId;
+			wp.media.model.settings.post.id = $('#fl-post-id').val();
 		},
-
+		
 		/**
 		 * Third party themes that set their content wrappers to
 		 * overflow:hidden break builder overlays. We set them
@@ -547,9 +373,9 @@
 		{
 			$(FLBuilder._contentClass).parents().css('overflow', 'visible');
 		},
-
+		
 		/**
-		 * Initializes Nano Scroller scrollbars for the
+		 * Initializes Nano Scroller scrollbars for the 
 		 * builder interface.
 		 *
 		 * @since 1.0
@@ -558,28 +384,37 @@
 		 */
 		_initScrollbars: function()
 		{
-			var scrollers = $('.fl-nanoscroller', window.parent.document).nanoScroller({
-				documentContext: window.parent.document,
-				alwaysVisible: false,
+			$('.fl-nanoscroller').nanoScroller({
+				alwaysVisible: true,
+				preventPageScrolling: true,
 				paneClass: 'fl-nanoscroller-pane',
 				sliderClass: 'fl-nanoscroller-slider',
 				contentClass: 'fl-nanoscroller-content'
-			}),
-				settingsScroller = scrollers.filter('.fl-builder-settings-fields'),
-				pane = settingsScroller.find('.fl-nanoscroller-pane');
-
-			if ( pane.length ) {
-				var display = pane.get(0).style.display;
-				var content = settingsScroller.find('.fl-nanoscroller-content');
-
-				if ( display === "none" ) {
-					content.removeClass('has-scrollbar');
-				} else {
-					content.addClass('has-scrollbar');
-				}
-			}
+			});
 		},
-
+		
+		/**
+		 * Initializes the lightboxes for the builder interface.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _initLightboxes
+		 */
+		_initLightboxes: function()
+		{
+			/* Main builder lightbox */
+			FLBuilder._lightbox = new FLLightbox({
+				className: 'fl-builder-lightbox fl-builder-settings-lightbox'
+			});
+			
+			FLBuilder._lightbox.on('close', FLBuilder._lightboxClosed);
+			
+			/* Actions lightbox */
+			FLBuilder._actionsLightbox = new FLLightbox({
+				className: 'fl-builder-actions-lightbox'
+			});
+		},
+		
 		/**
 		 * Initializes jQuery sortables for drag and drop.
 		 *
@@ -590,259 +425,112 @@
 		_initSortables: function()
 		{
 			var defaults = {
-				frame: null,
-				appendTo: FLBuilder._sortableRootClass,
-				scroll: true,
+				appendTo: 'body',
 				cursor: 'move',
 				cursorAt: {
-					left: 85,
+					left: 25, 
 					top: 20
 				},
 				distance: 1,
 				helper: FLBuilder._blockDragHelper,
 				start : FLBuilder._blockDragStart,
 				sort: FLBuilder._blockDragSort,
-				change: FLBuilder._blockDragChange,
-				stop: FLBuilder._blockDragStop,
 				placeholder: 'fl-builder-drop-zone',
-				tolerance: 'intersect',
-				cancel: '.fl-sortable-disabled'
+				tolerance: 'intersect'
 			},
-			rowConnections 	  = '',
-			columnConnections = '',
-			moduleConnections = '';
-
-			// Adjust defaults for the iFrame UI.
-			if ( FLBuilder.UIIFrame.isEnabled() ) {
-				defaults.frame = $( '#fl-builder-ui-iframe', window.parent.document );
-				defaults.appendTo = $( 'body', window.parent.document );
-				defaults.scroll = false;
+			rowConnections 		= '',
+			moduleConnections 	= '';
+			
+			// Row Connections.
+			if ( 'row' == FLBuilderConfig.userTemplateType )  {
+				rowConnections = FLBuilder._contentClass + ' .fl-row-content';
 			}
-
-			// Mark modules that have an inner children wrapper.
-			$( FLBuilder._sortableRootClass + ' [data-children-wrapper]' ).each( function() {
-				$( this ).closest( '.fl-module' ).attr( 'data-has-children-wrapper', 'true' )
-			} );
-
+			else {
+				rowConnections = FLBuilder._contentClass + ', ' + 
+							  	 FLBuilder._contentClass + ' .fl-row:not(.fl-node-global) .fl-row-content';
+			}
+			
 			// Module Connections.
 			if ( 'row' == FLBuilderConfig.userTemplateType )  {
-				moduleConnections = FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-group-drop-target, ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-drop-target, ' +
-							  		FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-content, ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-module[data-accepts]:not([data-has-children-wrapper]):not(:has(> .fl-module-content)), ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-module[data-accepts]:not([data-has-children-wrapper]) > .fl-module-content, ' +
-									FLBuilder._sortableRootClass + ' [data-children-wrapper], ' + 
-									FLBuilder._sortableRootClass + '[data-children-wrapper]';
-			}
-			else if ( 'column' == FLBuilderConfig.userTemplateType ) {
-				moduleConnections = FLBuilder._sortableRootClass + ' .fl-col-group-drop-target, ' +
-			                        FLBuilder._sortableRootClass + ' .fl-col-drop-target, ' +
-			                        FLBuilder._sortableRootClass + ' .fl-col-content, ' +
-									FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]):not(:has(> .fl-module-content)), ' +
-									FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]) > .fl-module-content, ' +
-									FLBuilder._sortableRootClass + ' [data-children-wrapper], ' + 
-									FLBuilder._sortableRootClass + '[data-children-wrapper]';
-			}
-			else if ( 'module' == FLBuilderConfig.userTemplateType ) {
-				moduleConnections = FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]):not(:has(> .fl-module-content)), ' +
-									FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]) > .fl-module-content, ' +
-									FLBuilder._sortableRootClass + ' [data-children-wrapper]';
+				moduleConnections = FLBuilder._contentClass + ' .fl-row-content, ' + 
+							  		FLBuilder._contentClass + ' .fl-col-content';
 			}
 			else {
-				moduleConnections = FLBuilder._sortableRootClass + ' .fl-row-drop-target, ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-group-drop-target, ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-drop-target, ' +
-							  		FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col:not(.fl-builder-node-loading):not(.fl-node-global) .fl-col-content, ' +
-									FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]):not(:has(> .fl-module-content)):not(.fl-node-global), ' +
-									FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]):not(.fl-node-global) > .fl-module-content, ' +
-									FLBuilder._sortableRootClass + ' :not(.fl-node-global) [data-children-wrapper], ' + 
-									FLBuilder._sortableRootClass + '[data-children-wrapper]';
+				moduleConnections = FLBuilder._contentClass + ', ' + 
+							  		FLBuilder._contentClass + ' .fl-row:not(.fl-node-global) .fl-row-content, ' + 
+							  		FLBuilder._contentClass + ' .fl-col:not(.fl-node-global) .fl-col-content';
 			}
-
-			// Column Connections.
-			if ( 'row' == FLBuilderConfig.userTemplateType )  {
-				columnConnections = FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-group-drop-target, ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-drop-target';
-			}
-			else {
-				columnConnections = FLBuilder._sortableRootClass + ' .fl-row-drop-target, ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-group-drop-target, ' +
-									FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-drop-target';
-			}
-
-			// Row Connections.
-			if ( FLBuilderConfig.nestedColumns ) {
-				rowConnections = moduleConnections;
-			}
-			else if ( 'row' == FLBuilderConfig.userTemplateType )  {
-				rowConnections = FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-group-drop-target, ' +
-								 FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-drop-target';
-			}
-			else {
-				rowConnections = FLBuilder._sortableRootClass + ' .fl-row-drop-target, ' +
-								 FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-group-drop-target, ' +
-								 FLBuilder._sortableRootClass + ' .fl-row:not(.fl-builder-node-loading) .fl-col-drop-target';
-			}
-
+			
 			// Row layouts from the builder panel.
-			$('.fl-builder-rows', window.parent.document).sortable($.extend({}, defaults, {
+			$('.fl-builder-rows').sortable($.extend({}, defaults, {
 				connectWith: rowConnections,
 				items: '.fl-builder-block-row',
 				stop: FLBuilder._rowDragStop
 			}));
-
+			
 			// Row templates from the builder panel.
-			$('.fl-builder-row-templates', window.parent.document).sortable($.extend({}, defaults, {
-				connectWith: FLBuilder._sortableRootClass + ' .fl-row-drop-target',
-				items: '.fl-builder-block-row-template:not(.fl-builder-block-disabled)',
+			$('.fl-builder-row-templates').sortable($.extend({}, defaults, {
+				connectWith: FLBuilder._contentClass,
+				items: '.fl-builder-block-row-template',
 				stop: FLBuilder._nodeTemplateDragStop
 			}));
-
+			
 			// Saved rows from the builder panel.
-			$('.fl-builder-saved-rows', window.parent.document).sortable($.extend({}, defaults, {
+			$('.fl-builder-saved-rows').sortable($.extend({}, defaults, {
 				cancel: '.fl-builder-node-template-actions, .fl-builder-node-template-edit, .fl-builder-node-template-delete',
-				connectWith: FLBuilder._sortableRootClass + ' .fl-row-drop-target',
+				connectWith: FLBuilder._contentClass,
 				items: '.fl-builder-block-saved-row',
 				stop: FLBuilder._nodeTemplateDragStop
 			}));
-
-			// Saved columns from the builder panel.
-			$('.fl-builder-saved-columns', window.parent.document).sortable($.extend({}, defaults, {
-				cancel: '.fl-builder-node-template-actions, .fl-builder-node-template-edit, .fl-builder-node-template-delete',
-				connectWith: columnConnections,
-				items: '.fl-builder-block-saved-column',
-				stop: FLBuilder._nodeTemplateDragStop
-			}));
-
+			
 			// Modules from the builder panel.
-			$('.fl-builder-modules, .fl-builder-widgets', window.parent.document).sortable($.extend({}, defaults, {
+			$('.fl-builder-modules, .fl-builder-widgets').sortable($.extend({}, defaults, {
 				connectWith: moduleConnections,
-				items: '.fl-builder-block-module:not(.fl-builder-block-disabled)',
+				items: '.fl-builder-block-module',
 				stop: FLBuilder._moduleDragStop
 			}));
-
+			
 			// Module templates from the builder panel.
-			$('.fl-builder-module-templates', window.parent.document).sortable($.extend({}, defaults, {
+			$('.fl-builder-module-templates').sortable($.extend({}, defaults, {
 				connectWith: moduleConnections,
 				items: '.fl-builder-block-module-template',
 				stop: FLBuilder._nodeTemplateDragStop
 			}));
-
+			
 			// Saved modules from the builder panel.
-			$('.fl-builder-saved-modules', window.parent.document).sortable($.extend({}, defaults, {
+			$('.fl-builder-saved-modules').sortable($.extend({}, defaults, {
 				cancel: '.fl-builder-node-template-actions, .fl-builder-node-template-edit, .fl-builder-node-template-delete',
 				connectWith: moduleConnections,
 				items: '.fl-builder-block-saved-module',
 				stop: FLBuilder._nodeTemplateDragStop
 			}));
-
-			// Rows
-			$('.fl-row-sortable-proxy', window.parent.document).sortable($.extend({}, defaults, {
-				connectWith: FLBuilder._sortableRootClass + ' .fl-row-drop-target',
+			
+			// Row position.
+			$(FLBuilder._contentClass).sortable($.extend({}, defaults, {
+				handle: '.fl-row-overlay .fl-block-overlay-actions .fl-block-move',
 				helper: FLBuilder._rowDragHelper,
-				start: FLBuilder._rowDragStart,
+				items: '.fl-row',
 				stop: FLBuilder._rowDragStop
 			}));
-
-			// Columns
-			$('.fl-col-sortable-proxy', window.parent.document).sortable($.extend({}, defaults, {
-				connectWith: moduleConnections,
-				helper: FLBuilder._colDragHelper,
-				start: FLBuilder._colDragStart,
-				stop: FLBuilder._colDragStop
+			
+			// Column group position.
+			$(FLBuilder._contentClass + ' .fl-row-content').sortable($.extend({}, defaults, {
+				handle: '.fl-row-overlay .fl-block-overlay-actions .fl-block-move',
+				helper: FLBuilder._rowDragHelper,
+				items: '.fl-col-group',
+				stop: FLBuilder._rowDragStop
 			}));
-
-			// Modules
-			$('.fl-module-sortable-proxy', window.parent.document).sortable($.extend({}, defaults, {
+			
+			// Module position.
+			$(FLBuilder._contentClass + ' .fl-col-content').sortable($.extend({}, defaults, {
 				connectWith: moduleConnections,
+				handle: '.fl-module-overlay .fl-block-overlay-actions .fl-block-move',
 				helper: FLBuilder._moduleDragHelper,
-				start: FLBuilder._moduleDragStart,
+				items: '.fl-module',
 				stop: FLBuilder._moduleDragStop
 			}));
-
-			// Modules and groups in columns.
-			$(FLBuilder._sortableRootClass + ' .fl-col-content').sortable($.extend({}, defaults, {
-				cancel: '.fl-module, .fl-col-group',
-				handle: '.fl-module-sortable-proxy',
-			}));
-
-			// Modules in container modules WITHOUT a wrapper.
-			$(FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]):not(:has(> .fl-module-content))').sortable($.extend({}, defaults, {
-				cancel: '.fl-module',
-				handle: '.fl-module-sortable-proxy',
-			}));
-
-			// Modules in container modules WITH a wrapper.
-			$(FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper]) > .fl-module-content').sortable($.extend({}, defaults, {
-				cancel: '.fl-module',
-				handle: '.fl-module-sortable-proxy',
-			}));
-
-			// Modules in container modules WITH a CHILD wrapper.
-			$(FLBuilder._sortableRootClass + ' [data-children-wrapper]').sortable($.extend({}, defaults, {
-				cancel: '.fl-module',
-				handle: '.fl-module-sortable-proxy',
-			}));
-
-			// Drop targets
-			$(FLBuilder._sortableRootClass + ' .fl-row-drop-target').sortable( defaults );
-			$(FLBuilder._sortableRootClass + ' .fl-col-group-drop-target').sortable( defaults );
-			$(FLBuilder._sortableRootClass + ' .fl-col-drop-target').sortable( defaults );
-
-			FLBuilder.triggerHook( 'didInitSortables' );
 		},
-
-		/**
-		 * Sets the root class for jQuery sortables in the layout.
-		 * 
-		 * @since 2.11
-		 * @param {String} sortableRootClass 
-		 */
-		setSortableRootClass: function( sortableRootClass ) {
-			FLBuilder.resetSortableRootClass();
-			FLBuilder._sortableRootClass = sortableRootClass;
-            FLBuilder._initSortables();
-		},
-
-		/**
-		 * Resets the root class for jQuery sortables in the layout
-		 * to the builder's content class.
-		 * 
-		 * @since 2.11
-		 */
-		resetSortableRootClass: function() {
-			FLBuilder._sortableRootClass = FLBuilder._contentClass;
-            FLBuilder._initSortables();
-		},
-
-		/**
-		 * Refreshes the items for all jQuery sortables so any
-		 * new items will be recognized.
-		 *
-		 * @since 2.2
-		 * @access private
-		 * @method _refreshSortables
-		 */
-		_refreshSortables: function()
-		{
-			var sortables = $( '.ui-sortable' ).add( '.ui-sortable', window.parent.document );
-
-			sortables.sortable( 'refresh' );
-			sortables.sortable( 'refreshPositions' );
-		},
-
-		/**
-		 * Initializes text translation
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @method _initStrings
-		 */
-		_initStrings: function()
-		{
-			$.validator.messages.required = FLBuilderStrings.validateRequiredMessage;
-		},
-
+		
 		/**
 		 * Binds most of the events for the builder interface.
 		 *
@@ -853,179 +541,211 @@
 		_bindEvents: function()
 		{
 			/* Links */
-			if ( ! $( 'body' ).hasClass( 'wp-admin' ) ) {
-				var $excludedLinks = $( FLBuilder._uiLinkSelector ); // links in ui shouldn't be disabled.
-				$('a').not($excludedLinks).on('click', FLBuilder._preventDefault);
-				$('.fl-page-nav .nav a').on('click', FLBuilder._headerLinkClicked);
-				$('body').on( 'click', '.fl-builder-content a', FLBuilder._preventDefault);
-				$('body').on( 'mouseup', 'button.fl-builder-button', this._buttonMouseUp.bind(this) );
-
-				// Neither bind above reliably catches a link that is rendered after the
-				// editing session starts. The direct bind only sees anchors that exist
-				// at init, and the delegated one resolves its match by walking up from
-				// the clicked node — which fails when that node leaves the document
-				// mid-dispatch, as it does when the inline editor sets up TinyMCE on the
-				// module being clicked. Nothing then cancels the click and the browser
-				// navigates this frame to the link, taking the builder with it. Doing it
-				// in the capture phase happens before any of that. (#5698)
-				document.addEventListener( 'click', FLBuilder._preventLinkNavigation, true );
-			}
-
-			/* Heartbeat */
-			$(document).on('heartbeat-tick', FLBuilder._initPostLock);
-			$(document).on('heartbeat-tick', FLBuilder._heartbeatError);
-
-
-			/* Unload Warning */
-			$(window.parent).on('beforeunload', FLBuilder._warnBeforeUnload);
-
-			/* Lite Version */
-			$('body', window.parent.document).on( 'click', '.fl-builder-blocks-pro-expand', FLBuilder._toggleProModules);
-			$('body', window.parent.document).on( 'click', '.fl-builder-upgrade-button', FLBuilder._upgradeClicked);
-
-			/* Panel */
-			$('.fl-builder-panel-actions .fl-builder-panel-close', window.parent.document).on('click', FLBuilder._closePanel);
-			$('body', window.parent.document).on( 'mousedown', '.fl-builder-node-template-actions', FLBuilder._stopPropagation);
-			$('body', window.parent.document).on( 'mousedown', '.fl-builder-node-template-edit', FLBuilder._stopPropagation);
-			$('body', window.parent.document).on( 'mousedown', '.fl-builder-node-template-delete', FLBuilder._stopPropagation);
-			$('body', window.parent.document).on( 'click', '.fl-builder-node-template-edit', FLBuilder._editNodeTemplateClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-node-template-delete', FLBuilder._deleteNodeTemplateClicked);
-			$('body', window.parent.document).on( 'mousedown', '.fl-builder-block:not(.fl-builder-block-disabled)', FLBuilder._blockDragInit );
-			$('body', window.parent.document).on('mouseup', FLBuilder._blockDragCancel);
-
-			/* Actions Lightbox */
-			$('body', window.parent.document).on( 'click', '.fl-builder-actions .fl-builder-cancel-button', FLBuilder._cancelButtonClicked);
-
-			/* Layout and Global Settings */
-			$('body', window.parent.document).on( 'click', '.fl-builder-layout-settings .fl-builder-settings-save', FLBuilder._saveLayoutSettingsClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-layout-settings .fl-builder-settings-cancel', FLBuilder._cancelLayoutSettingsClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-global-settings .fl-builder-settings-save', FLBuilder._saveGlobalSettingsClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-global-settings .fl-builder-settings-cancel', FLBuilder._cancelLayoutSettingsClicked);
-
-			/* Template Panel Tab */
-			$('body', window.parent.document).on( 'click', '.fl-user-template', FLBuilder._userTemplateClicked);
-			$('body', window.parent.document).on( 'click', '.fl-user-template-edit', FLBuilder._editUserTemplateClicked);
-			$('body', window.parent.document).on( 'click', '.fl-user-template-delete', FLBuilder._deleteUserTemplateClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-template-replace-button', FLBuilder._templateReplaceClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-template-prepend-button', FLBuilder._templatePrependClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-template-append-button', FLBuilder._templateAppendClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-template-actions .fl-builder-cancel-button', FLBuilder._templateCancelClicked);
-
-			/* User Template Settings */
-			$('body', window.parent.document).on( 'click', '.fl-builder-user-template-settings .fl-builder-settings-save', FLBuilder._saveUserTemplateSettings);
-
-			/* Welcome Actions */
-			$('body', window.parent.document).on( 'click', '.fl-builder-no-tour-button', FLBuilder._noTourButtonClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-yes-tour-button', FLBuilder._yesTourButtonClicked);
-
-			/* Alert Lightbox */
-			$('body', window.parent.document).on( 'click', '.fl-builder-alert-close', FLBuilder._alertClose);
-
-			/* Node Templates */
-			$('body', window.parent.document).on( 'click', '.fl-builder-settings-save-as', FLBuilder._nodeSaveAsClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-node-template-settings .fl-builder-settings-save', FLBuilder._saveNodeTemplate);
-
-			/* Settings */
-			$('body', window.parent.document).on( 'click', '.fl-builder-settings-tabs a', FLBuilder._settingsTabClicked);
-			$('body', window.parent.document).on( 'show', '.fl-builder-settings-tabs a', FLBuilder._calculateSettingsTabsOverflow);
-			$('body', window.parent.document).on( 'hide', '.fl-builder-settings-tabs a', FLBuilder._calculateSettingsTabsOverflow);
-			$('body', window.parent.document).on( 'click', '.fl-builder-settings-cancel', FLBuilder._settingsCancelClicked);
-
-			/* Settings Tabs Overflow menu */
-			$('body', window.parent.document).on( 'click', '.fl-builder-settings-tabs-overflow-menu > a', FLBuilder._settingsTabsToOverflowMenuItemClicked.bind(this));
-			$('body', window.parent.document).on( 'click', '.fl-builder-settings-tabs-more', FLBuilder._toggleTabsOverflowMenu.bind(this) );
-			$('body', window.parent.document).on( 'click', '.fl-builder-settings-tabs-overflow-click-mask', FLBuilder._hideTabsOverflowMenu.bind(this));
-
-			/* Tooltips */
-			$('body', window.parent.document).on( 'mouseover', '.fl-help-tooltip-icon', FLBuilder._showHelpTooltip);
-			$('body', window.parent.document).on( 'mouseout', '.fl-help-tooltip-icon', FLBuilder._hideHelpTooltip);
-
-			/* Multiple Fields */
-			$('body', window.parent.document).on( 'click', '.fl-builder-field-add', FLBuilder._addFieldClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-field-copy', FLBuilder._copyFieldClicked);
-			$('body', window.parent.document).on( 'click', '.fl-builder-field-delete', FLBuilder._deleteFieldClicked);
-
-			/* Photo Fields */
-			$('body', window.parent.document).on( 'click', '.fl-photo-field .fl-photo-select', FLBuilder._selectSinglePhoto);
-			$('body', window.parent.document).on( 'click', '.fl-photo-field .fl-photo-edit', FLBuilder._selectSinglePhoto);
-			$('body', window.parent.document).on( 'click', '.fl-photo-field .fl-photo-replace', FLBuilder._selectSinglePhoto);
-			$('body', window.parent.document).on( 'click', '.fl-photo-field .fl-photo-remove', FLBuilder._singlePhotoRemoved);
-
-			/* Multiple Photo Fields */
-			$('body', window.parent.document).on( 'click', '.fl-multiple-photos-field .fl-multiple-photos-select', FLBuilder._selectMultiplePhotos);
-			$('body', window.parent.document).on( 'click', '.fl-multiple-photos-field .fl-multiple-photos-edit', FLBuilder._selectMultiplePhotos);
-			$('body', window.parent.document).on( 'click', '.fl-multiple-photos-field .fl-multiple-photos-add', FLBuilder._selectMultiplePhotos);
-
-			/* Video Fields */
-			$('body', window.parent.document).on( 'click', '.fl-video-field .fl-video-select', FLBuilder._selectSingleVideo);
-			$('body', window.parent.document).on( 'click', '.fl-video-field .fl-video-replace', FLBuilder._selectSingleVideo);
-			$('body', window.parent.document).on( 'click', '.fl-video-field .fl-video-remove', FLBuilder._singleVideoRemoved);
-
-			/* Multiple Audio Fields */
-			$('body', window.parent.document).on( 'click', '.fl-multiple-audios-field .fl-multiple-audios-select', FLBuilder._selectMultipleAudios);
-			$('body', window.parent.document).on( 'click', '.fl-multiple-audios-field .fl-multiple-audios-edit', FLBuilder._selectMultipleAudios);
-			$('body', window.parent.document).on( 'click', '.fl-multiple-audios-field .fl-multiple-audios-add', FLBuilder._selectMultipleAudios);
-
-			/* Icon Fields */
-			$('body', window.parent.document).on( 'click', '.fl-icon-field .fl-icon-select', FLBuilder._selectIcon);
-			$('body', window.parent.document).on( 'click', '.fl-icon-field .fl-icon-replace', FLBuilder._selectIcon);
-			$('body', window.parent.document).on( 'click', '.fl-icon-field .fl-icon-remove', FLBuilder._removeIcon);
-
-			/* Settings Form Fields */
-			$('body', window.parent.document).on( 'click', '.fl-form-field .fl-form-field-edit', FLBuilder._formFieldClicked);
-			$('body', window.parent.document).on( 'click', '.fl-form-field-settings .fl-builder-settings-save', FLBuilder._saveFormFieldClicked);
-
-			/* Layout Fields */
-			$('body', window.parent.document).on( 'click', '.fl-layout-field-option', FLBuilder._layoutFieldClicked);
-
-			/* Links Fields */
-			$('body', window.parent.document).on( 'click', '.fl-link-field-select', FLBuilder._linkFieldSelectClicked);
-			$('body', window.parent.document).on( 'click', '.fl-link-field-search-cancel', FLBuilder._linkFieldSelectCancelClicked);
-
-			/* Loop Settings Fields */
-			$('body', window.parent.document).on( 'change', '.fl-loop-data-source-select select[name $= "data_source" ]', FLBuilder._loopDataSourceChange);
-			$('body', window.parent.document).on( 'change', '.fl-custom-query select[name $= "post_type" ]', FLBuilder._customQueryPostTypeChange);
-			$('body', window.parent.document).on( 'change', '.fl-custom-query select[name $= "post_type[]" ]', FLBuilder._customQueryPostTypesChange);
-
-			/* Text Fields - Add Predefined Value Selector */
-			$('body', window.parent.document).on( 'change', '.fl-text-field-add-value', FLBuilder._textFieldAddValueSelectChange);
-
-			/* Number Fields */
-			$('body', window.parent.document).on( 'focus', '.fl-field input[type=number]', FLBuilder._onNumberFieldFocus );
-			$('body', window.parent.document).on( 'blur', '.fl-field input[type=number]', FLBuilder._onNumberFieldBlur );
-
-			// Live Preview
-			FLBuilder.addHook( 'didCompleteAJAX', FLBuilder._refreshSettingsPreviewReference );
-			FLBuilder.addHook( 'didRenderLayoutComplete', FLBuilder._refreshSettingsPreviewReference );
-
-			// Resolve video attachment filenames on form init
-			FLBuilder.addHook( 'settings-form-init', FLBuilder._resolveVideoFieldAttachments );
-		},
-
-		/**
-		 * Remove events when ending the edit session
-		 * @since 2.0
-		 * @access private
-		 */
-		_unbindEvents: function() {
-			$('a').off('click', FLBuilder._preventDefault);
-			$('.fl-page-nav .nav a').off('click', FLBuilder._headerLinkClicked);
-			$('body').undelegate('.fl-builder-content a', 'click', FLBuilder._preventDefault);
-			document.removeEventListener( 'click', FLBuilder._preventLinkNavigation, true );
-		},
-
-		/**
-		 * Rebind events when restarting the edit session
-		 * @since 2.1.2.3
-		 * @access private
-		 */
-		_rebindEvents: function() {
 			$('a').on('click', FLBuilder._preventDefault);
 			$('.fl-page-nav .nav a').on('click', FLBuilder._headerLinkClicked);
-			$('body').on( 'click', '.fl-builder-content a', FLBuilder._preventDefault);
-			document.addEventListener( 'click', FLBuilder._preventLinkNavigation, true );
-		},
+			
+			/* Heartbeat */
+			$(document).on('heartbeat-tick', FLBuilder._initPostLock);
+			
+			/* Unload Warning */
+			$(window).on('beforeunload', FLBuilder._warnBeforeUnload);
+			
+			/* Submenus */
+			$('body').delegate('.fl-builder-has-submenu', 'click', FLBuilder._submenuParentClicked);
+			$('body').delegate('.fl-builder-has-submenu a', 'click', FLBuilder._submenuChildClicked);
+			$('body').delegate('.fl-builder-submenu', 'mouseenter', FLBuilder._submenuMouseenter);
+			$('body').delegate('.fl-builder-submenu', 'mouseleave', FLBuilder._submenuMouseleave);
+			
+			/* Bar */
+			$('.fl-builder-tools-button').on('click', FLBuilder._toolsClicked);
+			$('.fl-builder-done-button').on('click', FLBuilder._doneClicked);
+			$('.fl-builder-add-content-button').on('click', FLBuilder._showPanel);
+			$('.fl-builder-templates-button').on('click', FLBuilder._changeTemplateClicked);
+			$('.fl-builder-buy-button').on('click', FLBuilder._upgradeClicked);
+			$('.fl-builder-upgrade-button').on('click', FLBuilder._upgradeClicked);
+			$('.fl-builder-help-button').on('click', FLBuilder._helpButtonClicked);
+			
+			/* Panel */
+			$('.fl-builder-panel-actions .fl-builder-panel-close').on('click', FLBuilder._closePanel);
+			$('.fl-builder-blocks-section-title').on('click', FLBuilder._blockSectionTitleClicked);
+			$('body').delegate('.fl-builder-node-template-actions', 'mousedown', FLBuilder._stopPropagation);
+			$('body').delegate('.fl-builder-node-template-edit', 'mousedown', FLBuilder._stopPropagation);
+			$('body').delegate('.fl-builder-node-template-delete', 'mousedown', FLBuilder._stopPropagation);
+			$('body').delegate('.fl-builder-node-template-edit', 'click', FLBuilder._editNodeTemplateClicked);
+			$('body').delegate('.fl-builder-node-template-delete', 'click', FLBuilder._deleteNodeTemplateClicked);
+			
+			/* Drag and Drop */
+			$('body').delegate('.fl-builder-block', 'mousedown', FLBuilder._blockDragInit);
+			$('body').on('mouseup', FLBuilder._blockDragCancel);
+			
+			/* Actions Lightbox */
+			$('body').delegate('.fl-builder-actions .fl-builder-cancel-button', 'click', FLBuilder._cancelButtonClicked);
+			
+			/* Save Actions */
+			$('body').delegate('.fl-builder-save-actions .fl-builder-publish-button', 'click', FLBuilder._publishButtonClicked);
+			$('body').delegate('.fl-builder-save-actions .fl-builder-draft-button', 'click', FLBuilder._draftButtonClicked);
+			$('body').delegate('.fl-builder-save-actions .fl-builder-discard-button', 'click', FLBuilder._discardButtonClicked);
+			
+			/* Tools Actions */
+			$('body').delegate('.fl-builder-duplicate-page-button', 'click', FLBuilder._duplicatePageClicked);
+			$('body').delegate('.fl-builder-save-user-template-button', 'click', FLBuilder._saveUserTemplateClicked);
+			$('body').delegate('.fl-builder-global-settings-button', 'click', FLBuilder._globalSettingsClicked);
+			$('body').delegate('.fl-builder-global-settings .fl-builder-settings-save', 'click', FLBuilder._saveGlobalSettingsClicked);
+			
+			/* Template Selector */
+			$('body').delegate('.fl-template-category-select', 'change', FLBuilder._templateCategoryChanged);
+			$('body').delegate('.fl-template-preview', 'click', FLBuilder._templateClicked);
+			$('body').delegate('.fl-user-template', 'click', FLBuilder._userTemplateClicked);
+			$('body').delegate('.fl-user-template-edit', 'click', FLBuilder._editUserTemplateClicked);
+			$('body').delegate('.fl-user-template-delete', 'click', FLBuilder._deleteUserTemplateClicked);
+			$('body').delegate('.fl-builder-template-replace-button', 'click', FLBuilder._templateReplaceClicked);
+			$('body').delegate('.fl-builder-template-append-button', 'click', FLBuilder._templateAppendClicked);
+			$('body').delegate('.fl-builder-template-actions .fl-builder-cancel-button', 'click', FLBuilder._templateCancelClicked);
+			
+			/* User Template Settings */
+			$('body').delegate('.fl-builder-user-template-settings .fl-builder-settings-save', 'click', FLBuilder._saveUserTemplateSettings);
+			
+			/* Help Actions */
+			$('body').delegate('.fl-builder-help-tour-button', 'click', FLBuilder._startHelpTour);
+			$('body').delegate('.fl-builder-help-video-button', 'click', FLBuilder._watchVideoClicked);
+			$('body').delegate('.fl-builder-knowledge-base-button', 'click', FLBuilder._viewKnowledgeBaseClicked);
+			$('body').delegate('.fl-builder-forums-button', 'click', FLBuilder._visitForumsClicked);
+			
+			/* Welcome Actions */
+			$('body').delegate('.fl-builder-no-tour-button', 'click', FLBuilder._noTourButtonClicked);
+			$('body').delegate('.fl-builder-yes-tour-button', 'click', FLBuilder._yesTourButtonClicked);
+			
+			/* Alert Lightbox */
+			$('body').delegate('.fl-builder-alert-close', 'click', FLBuilder._alertClose);
+			
+			/* Rows */
+			$('body').delegate('.fl-row-overlay .fl-block-remove', 'click', FLBuilder._deleteRowClicked);
+			$('body').delegate('.fl-row-overlay .fl-block-copy', 'click', FLBuilder._rowCopyClicked);
+			$('body').delegate('.fl-row-overlay .fl-block-move', 'mousedown', FLBuilder._blockDragInit);
+			$('body').delegate('.fl-row-overlay .fl-block-settings', 'click', FLBuilder._rowSettingsClicked);
+			$('body').delegate('.fl-row-overlay', 'click', FLBuilder._rowSettingsClicked);
+			$('body').delegate('.fl-builder-row-settings .fl-builder-settings-save', 'click', FLBuilder._saveSettings);
+			
+			/* Columns */
+			$('body').delegate('.fl-col-overlay', 'click', FLBuilder._colSettingsClicked);
+			$('body').delegate('.fl-builder-col-settings .fl-builder-settings-save', 'click', FLBuilder._saveSettings);
+			$('body').delegate('.fl-col-overlay .fl-block-remove', 'click', FLBuilder._deleteColClicked);
+			
+			/* Columns Submenu */
+			$('body').delegate('.fl-block-col-submenu .fl-block-col-edit', 'click', FLBuilder._colSettingsClicked);
+			$('body').delegate('.fl-block-col-submenu .fl-block-col-delete', 'click', FLBuilder._deleteColClicked);
+			$('body').delegate('.fl-block-col-submenu .fl-block-col-insert-before', 'click', FLBuilder._insertColBeforeClicked);
+			$('body').delegate('.fl-block-col-submenu .fl-block-col-insert-after', 'click', FLBuilder._insertColAfterClicked);
+			$('body').delegate('.fl-block-col-submenu .fl-block-col-reset', 'click', FLBuilder._resetColumnWidths);
+			
+			/* Modules */
+			$('body').delegate('.fl-module-overlay .fl-block-remove', 'click', FLBuilder._deleteModuleClicked);
+			$('body').delegate('.fl-module-overlay .fl-block-copy', 'click', FLBuilder._moduleCopyClicked);
+			$('body').delegate('.fl-module-overlay .fl-block-move', 'mousedown', FLBuilder._blockDragInit);
+			$('body').delegate('.fl-module-overlay .fl-block-settings', 'click', FLBuilder._moduleSettingsClicked);
+			$('body').delegate('.fl-module-overlay', 'click', FLBuilder._moduleSettingsClicked);
+			$('body').delegate('.fl-builder-module-settings .fl-builder-settings-save', 'click', FLBuilder._saveModuleClicked);
+			
+			/* Node Templates */
+			$('body').delegate('.fl-builder-settings-save-as', 'click', FLBuilder._showNodeTemplateSettings);
+			$('body').delegate('.fl-builder-node-template-settings .fl-builder-settings-save', 'click', FLBuilder._saveNodeTemplate);
+			
+			/* Settings */
+			$('body').delegate('.fl-builder-settings-tabs a', 'click', FLBuilder._settingsTabClicked);
+			$('body').delegate('.fl-builder-settings-cancel', 'click', FLBuilder._settingsCancelClicked);
+			
+			/* Tooltips */
+			$('body').delegate('.fl-help-tooltip-icon', 'mouseover', FLBuilder._showHelpTooltip);
+			$('body').delegate('.fl-help-tooltip-icon', 'mouseout', FLBuilder._hideHelpTooltip);
+			
+			/* Multiple Fields */
+			$('body').delegate('.fl-builder-field-add', 'click', FLBuilder._addFieldClicked);
+			$('body').delegate('.fl-builder-field-copy', 'click', FLBuilder._copyFieldClicked);
+			$('body').delegate('.fl-builder-field-delete', 'click', FLBuilder._deleteFieldClicked);
+			
+			/* Select Fields */
+			$('body').delegate('.fl-builder-settings-fields select', 'change', FLBuilder._settingsSelectChanged);
+			
+			/* Photo Fields */
+			$('body').delegate('.fl-photo-field .fl-photo-select', 'click', FLBuilder._selectSinglePhoto);
+			$('body').delegate('.fl-photo-field .fl-photo-edit', 'click', FLBuilder._selectSinglePhoto);
+			$('body').delegate('.fl-photo-field .fl-photo-replace', 'click', FLBuilder._selectSinglePhoto);
+			$('body').delegate('.fl-photo-field .fl-photo-remove', 'click', FLBuilder._singlePhotoRemoved);
+			
+			/* Multiple Photo Fields */
+			$('body').delegate('.fl-multiple-photos-field .fl-multiple-photos-select', 'click', FLBuilder._selectMultiplePhotos);
+			$('body').delegate('.fl-multiple-photos-field .fl-multiple-photos-edit', 'click', FLBuilder._selectMultiplePhotos);
+			$('body').delegate('.fl-multiple-photos-field .fl-multiple-photos-add', 'click', FLBuilder._selectMultiplePhotos);
+			
+			/* Video Fields */
+			$('body').delegate('.fl-video-field .fl-video-select', 'click', FLBuilder._selectSingleVideo);
+			$('body').delegate('.fl-video-field .fl-video-replace', 'click', FLBuilder._selectSingleVideo);
+			
+			/* Icon Fields */
+			$('body').delegate('.fl-icon-field .fl-icon-select', 'click', FLBuilder._selectIcon);
+			$('body').delegate('.fl-icon-field .fl-icon-replace', 'click', FLBuilder._selectIcon);
+			$('body').delegate('.fl-icon-field .fl-icon-remove', 'click', FLBuilder._removeIcon);
+			
+			/* Settings Form Fields */
+			$('body').delegate('.fl-form-field .fl-form-field-edit', 'click', FLBuilder._formFieldClicked);
+			$('body').delegate('.fl-form-field-settings .fl-builder-settings-save', 'click', FLBuilder._saveFormFieldClicked);
+			
+			/* Layout Fields */
+			$('body').delegate('.fl-layout-field-option', 'click', FLBuilder._layoutFieldClicked);
+			
+			/* Links Fields */
+			$('body').delegate('.fl-link-field-select', 'click', FLBuilder._linkFieldSelectClicked);
+			$('body').delegate('.fl-link-field-search-cancel', 'click', FLBuilder._linkFieldSelectCancelClicked);
+			
+			/* Loop Builder Fields */
+			$('body').delegate('.fl-loop-builder select[name=post_type]', 'change', FLBuilder._loopBuilderPostTypeChange);
 
+			/* Text Fields - Add Value Selector */
+			$('body').delegate('.fl-select-add-value', 'change', FLBuilder._textFieldAddValueSelectChange);
+		},
+		
+		/**
+		 * Binds the events for overlays that appear when 
+		 * mousing over a row, column or module.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _bindOverlayEvents
+		 */
+		_bindOverlayEvents: function()
+		{
+			var content = $(FLBuilder._contentClass);
+			
+			content.delegate('.fl-row', 'mouseenter', FLBuilder._rowMouseenter);
+			content.delegate('.fl-row', 'mouseleave', FLBuilder._rowMouseleave);
+			content.delegate('.fl-row-overlay', 'mouseleave', FLBuilder._rowMouseleave);
+			content.delegate('.fl-col', 'mouseenter', FLBuilder._colMouseenter);
+			content.delegate('.fl-col', 'mouseleave', FLBuilder._colMouseleave);
+			content.delegate('.fl-module', 'mouseenter', FLBuilder._moduleMouseenter);
+			content.delegate('.fl-module', 'mouseleave', FLBuilder._moduleMouseleave);
+		},
+		
+		/**
+		 * Unbinds the events for overlays that appear when 
+		 * mousing over a row, column or module.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _destroyOverlayEvents
+		 */
+		_destroyOverlayEvents: function()
+		{
+			var content = $(FLBuilder._contentClass);
+			
+			content.undelegate('.fl-row', 'mouseenter', FLBuilder._rowMouseenter);
+			content.undelegate('.fl-row', 'mouseleave', FLBuilder._rowMouseleave);
+			content.undelegate('.fl-row-overlay', 'mouseleave', FLBuilder._rowMouseleave);
+			content.undelegate('.fl-col', 'mouseenter', FLBuilder._colMouseenter);
+			content.undelegate('.fl-col', 'mouseleave', FLBuilder._colMouseleave);
+			content.undelegate('.fl-module', 'mouseenter', FLBuilder._moduleMouseenter);
+			content.undelegate('.fl-module', 'mouseleave', FLBuilder._moduleMouseleave);
+		},
+		
 		/**
 		 * Prevents the default action for an event.
 		 *
@@ -1038,42 +758,7 @@
 		{
 			e.preventDefault();
 		},
-
-		/**
-		 * Links that belong to the builder UI and keep working while editing.
-		 *
-		 * @since 3.0
-		 * @access private
-		 * @property {String} _uiLinkSelector
-		 */
-		_uiLinkSelector: '.fl-builder-bar a, .fl-builder--content-library-panel a, .fl-page-nav .nav a',
-
-		/**
-		 * Stops a click on a link in the layout from navigating the frame the
-		 * builder is running in. Bound in the capture phase, so it runs before
-		 * any handler on the link itself and before the click can be routed by
-		 * a delegated handler, which is what makes it hold for links rendered
-		 * after the editing session started. UI links are left alone, matching
-		 * the exclusions used by the binds in _bindEvents.
-		 *
-		 * @since 3.0
-		 * @access private
-		 * @method _preventLinkNavigation
-		 * @param {Object} e The event object.
-		 */
-		_preventLinkNavigation: function( e )
-		{
-			var link = e.target && e.target.closest ? e.target.closest( 'a' ) : null;
-
-			if ( ! link || ! link.getAttribute( 'href' ) ) {
-				return;
-			} else if ( link.matches( FLBuilder._uiLinkSelector ) ) {
-				return;
-			}
-
-			e.preventDefault();
-		},
-
+		
 		/**
 		 * Prevents propagation of an event.
 		 *
@@ -1086,7 +771,7 @@
 		{
 			e.stopPropagation();
 		},
-
+		
 		/**
 		 * Launches the builder for another page if a link in the
 		 * builder theme header is clicked.
@@ -1100,22 +785,17 @@
 		{
 			var link = $(this),
 				href = link.attr('href');
-
-			// ignore links with a #hash
-			if( this.hash ) {
-				return;
-			}
-
+			
 			e.preventDefault();
-
+			
 			if ( FLBuilderConfig.isUserTemplate )  {
 				return;
 			}
-
+			
 			FLBuilder._exitUrl = href.indexOf('?') > -1 ? href : href + '?fl_builder';
-			FLBuilder.triggerHook('triggerDone');
+			FLBuilder._doneClicked();
 		},
-
+		
 		/**
 		 * Warns the user that their changes won't be saved if
 		 * they leave the page while editing settings.
@@ -1124,184 +804,21 @@
 		 * @access private
 		 * @method _warnBeforeUnload
 		 * @return {String} The warning message.
-		 */
+		 */ 
 		_warnBeforeUnload: function()
 		{
-			var rowSettings     = $('.fl-builder-row-settings', window.parent.document).length > 0,
-				colSettings     = $('.fl-builder-col-settings', window.parent.document).length > 0,
-				moduleSettings  = $('.fl-builder-module-settings', window.parent.document).length > 0;
-
-			if( ! FLBuilder.isBlockEditor() && ( rowSettings || colSettings || moduleSettings ) ) {
+			var rowSettings     = $('.fl-builder-row-settings').length > 0,
+				colSettings     = $('.fl-builder-col-settings').length > 0,
+				moduleSettings  = $('.fl-builder-module-settings').length > 0;
+			
+			if(rowSettings || colSettings || moduleSettings) {
 				return FLBuilderStrings.unloadWarning;
 			}
 		},
-
-		/* Lite Version
-		----------------------------------------------------------*/
-
-		/**
-		 * Opens a new window with the upgrade URL when the
-		 * upgrade button is clicked.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @method _upgradeClicked
-		 */
-		_upgradeClicked: function()
-		{
-			window.parent.open(FLBuilderConfig.upgradeUrl);
-		},
-
-		/**
-		 * Toggles the pro module section in lite.
-		 *
-		 * @since 2.4
-		 */
-		_toggleProModules: function()
-		{
-			var button = $( '.fl-builder-blocks-pro-expand', window.parent.document ),
-				closed = $( '.fl-builder-blocks-pro-closed', window.parent.document ),
-				open = $( '.fl-builder-blocks-pro-open', window.parent.document );
-
-			button.toggleClass( 'fl-builder-blocks-pro-expand-rotate' );
-
-			if ( closed.length ) {
-				closed.removeClass( 'fl-builder-blocks-pro-closed' );
-				closed.addClass( 'fl-builder-blocks-pro-open' );
-			} else {
-				open.removeClass( 'fl-builder-blocks-pro-open' );
-				open.addClass( 'fl-builder-blocks-pro-closed' );
-			}
-		},
-
-		/**
-		 * Shows the the pro message lightbox.
-		 *
-		 * @since 2.4
-		 */
-		_showProMessage: function( feature )
-		{
-			if ( ! FLBuilderConfig.lite ) {
-				return
-			}
-
-			var alert = new FLLightbox({
-					className: 'fl-builder-pro-lightbox',
-					destroyOnClose: true
-				}),
-				template = wp.template( 'fl-pro-lightbox' );
-
-			alert.open( template( { feature : feature } ) );
-		},
-
-		/* Popovers
-		----------------------------------------------------------*/
-
-		/**
-		 * Hides a popover, but only when the Popover API will accept the call.
-		 *
-		 * hidePopover() throws NotSupportedError on an element that carries no
-		 * popover attribute. Every caller in the builder sits inside a loop driven
-		 * by a body mouse handler, and neither jQuery's .each() nor a for..in
-		 * catches, so a single unhidable element aborts the sweep and strands every
-		 * remaining overlay — module editing then dies page-wide. (#5558)
-		 *
-		 * @since 2.11
-		 * @access private
-		 * @method _hidePopover
-		 * @param {HTMLElement} element The element to hide. Absent is not an error.
-		 * @return {Boolean} Whether hidePopover() was called.
-		 */
-		_hidePopover: function( element )
-		{
-			if ( ! element || 'function' !== typeof element.hidePopover ) {
-				return false;
-			}
-
-			// A missing attribute is exactly the spec's "no popover state", which is
-			// the whole of the NotSupportedError condition — every present value
-			// maps to a real state, so there is nothing to parse. The known source
-			// is a #tiptip_holder created by another plugin's copy of jQuery
-			// tipTip, which BB's unscoped lookup then finds; ours always carries
-			// popover="auto", and every overlay template hardcodes popover="manual".
-			//
-			// Deliberately not also checking :popover-open. Hiding a popover that
-			// is already hidden stopped throwing in whatwg/html#9142, and BB's own
-			// tipTip fork has been calling showPopover() on an already-showing
-			// holder in shipped code without incident, which is field evidence that
-			// no engine BB supports still has the old behavior.
-			if ( ! element.hasAttribute( 'popover' ) ) {
-				return false;
-			}
-
-			element.hidePopover();
-
-			return true;
-		},
-
-		/**
-		 * Shows a popover, but only when the Popover API will accept the call.
-		 *
-		 * The mirror of _hidePopover, and it exists so the two halves state one
-		 * policy instead of two: no Popover API call anywhere in the builder may
-		 * throw out of a mousemove-driven sweep. _hidePopover skips on an engine
-		 * with no Popover API; without this, showPopover() still threw there,
-		 * from inside _appendOverlay — the same aborted-creation path #5558 is
-		 * about, one step earlier, leaving the hide-side guards unreachable.
-		 *
-		 * What skipping buys is narrower than "it still works", and the two
-		 * callers differ:
-		 *
-		 * - #tiptip_holder genuinely degrades: css/jquery.tiptip.css gives it its
-		 *   own position and display, so the popover attribute only bought top
-		 *   layer. Tooltips work, they can just paint behind overlays.
-		 * - An overlay does not. BB ships no position of its own for it — the UA
-		 *   [popover] rule supplies position:fixed along with the display:none,
-		 *   so without the API the element lands unpositioned in normal flow,
-		 *   and the rect _positionOverlay caches for hit-testing is wrong.
-		 *
-		 * So on such an engine the builder is still visually broken; what the
-		 * guard prevents is the throw that also kills editing page-wide for
-		 * every other node. A misplaced box beats a dead editor. The uniform
-		 * guard is also what lets any of this be tested at all: jsdom implements
-		 * no Popover API, so an unguarded call is untestable there.
-		 *
-		 * Skips silently, unlike the hide side. Its two log sites report an
-		 * anomaly found by re-querying the DOM (a foreign holder, a stray node
-		 * ID); the dominant skip here is a session-constant engine capability,
-		 * which would log on every frame, and the anomalous branch is
-		 * unreachable from both shipped callers — overlay templates hardcode
-		 * popover="manual" and the tipTip fork writes popover="auto" itself.
-		 *
-		 * @since 2.11
-		 * @access private
-		 * @method _showPopover
-		 * @param {HTMLElement} element The element to show. Absent is not an error.
-		 * @return {Boolean} Whether showPopover() was called.
-		 */
-		_showPopover: function( element )
-		{
-			if ( ! element || 'function' !== typeof element.showPopover ) {
-				return false;
-			}
-
-			// Same NotSupportedError condition as the hide side: no attribute is
-			// the spec's "no popover state". BB's own elements always carry it —
-			// overlay templates hardcode popover="manual" and our tipTip fork
-			// writes popover="auto" — so this only ever skips a foreign element,
-			// which must be left alone because popover implies display:none.
-			if ( ! element.hasAttribute( 'popover' ) ) {
-				return false;
-			}
-
-			element.showPopover();
-
-			return true;
-		},
-
+		
 		/* TipTips
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes tooltip help messages.
 		 *
@@ -1311,26 +828,9 @@
 		 */
 		_initTipTips: function()
 		{
-			var classname = '.fl-tip:not(.fl-has-tip)',
-				tips = $( classname ).add( classname, window.parent.document );
-
-			tips.each( function(){
-				var ele = $( this );
-				ele.addClass( 'fl-has-tip' );
-				if ( undefined == ele.attr( 'data-title' ) ) {
-					ele.attr( 'data-title', ele.attr( 'title' ) );
-				}
-			} )
-
-			if ( ! FLBuilderLayout._isTouch() ) {
-				tips.tipTip( {
-					defaultPosition : 'top',
-					delay           : 300,
-					maxWidth        : 'auto'
-				} );
-			}
+			$('.fl-tip').tipTip();
 		},
-
+		
 		/**
 		 * Removes all tooltip help messages from the screen.
 		 *
@@ -1340,57 +840,12 @@
 		 */
 		_hideTipTips: function()
 		{
-			var holder = $('#tiptip_holder');
-
-			holder.stop().hide();
-			$('#tiptip_holder', window.parent.document).stop().hide();
-
-			// Two reasons the holder may not be hidable, both of them #5558 one
-			// frame earlier than _removeOverlay's own guard — which this runs
-			// before, so an unguarded call here makes that guard unreachable and
-			// module editing dies page-wide either way:
-			//
-			// - It is absent. .tipTip() creates it lazily and _initTipTips skips
-			//   .tipTip() entirely on touch devices and when no tips match.
-			// - It exists but is not a popover, because another plugin's copy of
-			//   jQuery tipTip created it and this lookup is not scoped to ours.
-			FLBuilder._hidePopover( holder[0] );
-
-			// Report the second case, which the guard would otherwise make silent —
-			// and silence is what made #5558 take two rounds of stack traces to
-			// diagnose. Bounded at one line per session: there is only ever one
-			// #tiptip_holder per document, and this runs from body mouse handlers.
-			if ( holder.length && ! holder[0].hasAttribute( 'popover' ) ) {
-				FLBuilder._logForeignTipTipHolder();
-			}
+			$('#tiptip_holder').stop().remove();
 		},
-
-		/**
-		 * Reports a #tiptip_holder that another plugin's copy of jQuery tipTip
-		 * created, which BB reuses because the ID is unscoped. BB's tooltips then
-		 * work without the top layer, so inside the builder they can paint behind
-		 * module overlays — which are themselves popovers.
-		 *
-		 * Logged once per session; see _hideTipTips for why. (#5558)
-		 *
-		 * @since 2.11
-		 * @access private
-		 * @method _logForeignTipTipHolder
-		 */
-		_logForeignTipTipHolder: function()
-		{
-			if ( foreignTipTipHolderLogged ) {
-				return;
-			}
-
-			foreignTipTipHolderLogged = true;
-
-			FLBuilder.log( 'Beaver Builder: the #tiptip_holder on this page is not a popover, so it was created by another plugin\'s copy of jQuery tipTip. Beaver Builder tooltips will work but may render behind builder overlays. See issue #5558.' );
-		},
-
+		
 		/* Submenus
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Callback for when the parent of a submenu is clicked.
 		 *
@@ -1401,106 +856,27 @@
 		 */
 		_submenuParentClicked: function( e )
 		{
-			var body    = $( 'body' ),
-				parent  = $( this ),
-				submenu = parent.find( '.fl-builder-submenu' );
-
+			var parent 	 = $( this ),
+				submenu  = parent.find( '.fl-builder-submenu' );
+				
 			if ( parent.hasClass( 'fl-builder-submenu-open' ) ) {
-				body.removeClass( 'fl-builder-submenu-open' );
 				parent.removeClass( 'fl-builder-submenu-open' );
 				parent.removeClass( 'fl-builder-submenu-right' );
-			} else {
+			}
+			else {
+				
 				if( parent.offset().left + submenu.width() > $( window ).width() ) {
 					parent.addClass( 'fl-builder-submenu-right' );
 				}
-
-				body.addClass( 'fl-builder-submenu-open' );
+				
 				parent.addClass( 'fl-builder-submenu-open' );
 			}
-
-			submenu.closest('.fl-row-overlay').addClass('fl-row-menu-active');
-
+			
 			FLBuilder._hideTipTips();
 			e.preventDefault();
 			e.stopPropagation();
 		},
-
-		/**
-		 * Callback for when the parent of a submenu is hovered.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _hoverMenuParentMouseEnter
-		 * @param {Object} e The event object.
-		 */
-		_hoverMenuParentMouseEnter: function (e) {
-			e.stopPropagation();
-
-			var body    = $('body'),
-				parent  = $(this),
-				menu 	= parent.find( '> .fl-builder-submenu' ),
-				open	= parent.hasClass( 'fl-builder-submenu-open' );
-
-			$( '.fl-builder-submenu' ).each( function() {
-				var timeout = $( this ).data( 'timeout' );
-				if ( 'undefined' !== typeof timeout ) {
-					clearTimeout( timeout );
-				}
-				var showTimeout = $( this ).data( 'show-timeout' );
-				if ( 'undefined' !== typeof showTimeout ) {
-					clearTimeout( showTimeout );
-				}
-			} );
-
-			// remove classes first
-			$('.fl-builder-submenu-right').removeClass('fl-builder-submenu-right');
-			$('.fl-builder-submenu-open').removeClass('fl-builder-submenu-open');
-			$('.fl-row-menu-active').removeClass('fl-row-menu-active');
-
-			// determine align
-			if (parent.offset().left + menu.width() > $(window).width()) {
-				parent.addClass('fl-builder-submenu-right');
-			}
-
-			// add classes
-			if ( open ) {
-				parent.closest('.fl-row-overlay').addClass('fl-row-menu-active');
-				parent.addClass('fl-builder-submenu-open');
-				body.addClass('fl-builder-submenu-open');
-			} else {
-				menu.data( 'show-timeout', setTimeout( function() {
-					parent.closest('.fl-row-overlay').addClass('fl-row-menu-active');
-					parent.addClass('fl-builder-submenu-open');
-					body.addClass('fl-builder-submenu-open');
-				}, 250 ) ); // Slight timeout to prevent opening when mousing through overlays
-			}
-		},
-
-		/**
-		 * Callback for when the parent of a submenu is unhovered.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _hoverMenuParentMouseLeave
-		 * @param {Object} e The event object.
-		 */
-		_hoverMenuParentMouseLeave: function (e) {
-			var parent  = $(this);
-			var submenu = parent.find('.fl-builder-submenu');
-			var timeout = setTimeout( function() {
-				parent.removeClass('fl-builder-submenu-right');
-				parent.removeClass('fl-builder-submenu-open');
-				parent.closest('.fl-row-overlay').removeClass('fl-row-menu-active');
-			}, 500 );
-
-			submenu.data( 'timeout', timeout );
-
-			var showTimeout = submenu.data( 'show-timeout' );
-			if ( 'undefined' !== typeof showTimeout ) {
-				clearTimeout( showTimeout );
-			}
-		},
-
+		
 		/**
 		 * Callback for when the child of a submenu is clicked.
 		 *
@@ -1511,15 +887,9 @@
 		 */
 		_submenuChildClicked: function( e )
 		{
-			var body   = $( 'body' ),
-				parent = $( this ).parents( '.fl-builder-has-submenu' );
-
-			if ( ! parent.parents( '.fl-builder-has-submenu' ).length ) {
-				body.removeClass( 'fl-builder-submenu-open' );
-				parent.removeClass( 'fl-builder-submenu-open' );
-			}
+			$( this ).closest( '.fl-builder-submenu-open' ).removeClass( 'fl-builder-submenu-open' );
 		},
-
+		
 		/**
 		 * Callback for when the mouse enters a submenu.
 		 *
@@ -1530,22 +900,14 @@
 		 */
 		_submenuMouseenter: function( e )
 		{
-			if ($(this).parent().hasClass('fl-builder-submenu-hover')) {
-				return;
-			}
-
 			var menu 	= $( this ),
-				timeout = menu.data( 'timeout' ),
-				showTimeout = menu.data( 'show-timeout' );
-
+				timeout = menu.data( 'timeout' );
+				
 			if ( 'undefined' != typeof timeout ) {
 				clearTimeout( timeout );
 			}
-			if ( 'undefined' != typeof showTimeout ) {
-				clearTimeout( showTimeout );
-			}
 		},
-
+		
 		/**
 		 * Callback for when the mouse leaves a submenu.
 		 *
@@ -1556,83 +918,127 @@
 		 */
 		_submenuMouseleave: function( e )
 		{
-			if ($(this).parent().hasClass('fl-builder-submenu-hover')) {
-				return;
-			}
-
-			var body    = $( 'body' ),
-				menu 	= $( this ),
-				timeout = setTimeout( function() {
-					body.removeClass( 'fl-builder-submenu-open' );
-					menu.closest( '.fl-builder-has-submenu' ).removeClass( 'fl-builder-submenu-open' );
+			var menu 	= $( this ),
+				timeout = setTimeout( function(){
+					menu.closest( '.fl-builder-submenu-open' ).removeClass( 'fl-builder-submenu-open' );
 				}, 500 );
-
-			menu.closest('.fl-row-overlay').removeClass('fl-row-menu-active');
+			
 			menu.data( 'timeout', timeout );
-
-			var showTimeout = menu.data( 'show-timeout' );
-			if ( 'undefined' !== typeof showTimeout ) {
-				clearTimeout( showTimeout );
-			}
 		},
-
-		/**
-		 * Callback for when the mouse enters the parent
-		 * of a nested submenu.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _submenuNestedParentMouseenter
-		 * @param {Object} e The event object.
-		 */
-		_submenuNestedParentMouseenter: function( e )
-		{
-			var parent = $( this );
-			var submenu = parent.find( '> .fl-builder-submenu' );
-			var winWidth = $( window ).width();
-			var leftSpace = parent.offset().left;
-			var rightSpace = winWidth - ( parent.width() + leftSpace );
-			var menusWidth = parent.width() + leftSpace + submenu.width();
-
-			if ( menusWidth > winWidth && submenu.width() < leftSpace ) {
-				parent.addClass( 'fl-builder-submenu-right' );
-			} else if ( submenu.width() > rightSpace ) {
-				var left = parent.width() - ( submenu.width() - rightSpace );
-				submenu.css( 'left', left );
-			}
-		},
-
-		/**
-		 * Closes all open submenus.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _closeAllSubmenus
-		 */
-		_closeAllSubmenus: function()
-		{
-			$( '.fl-builder-submenu-open' ).removeClass( 'fl-builder-submenu-open' );
-		},
-
+		
 		/* Bar
 		----------------------------------------------------------*/
-
+		
 		/**
-		 * Fires blur on mouse up to avoid focus ring when clicked with mouse.
+		 * Shows the actions lightbox when the tools button is clicked.
 		 *
-		 * @since 2.0
+		 * @since 1.0
 		 * @access private
-		 * @method _buttonMouseUp
-		 * @param {Event} e
-		 * @return void
+		 * @method _toolsClicked
 		 */
-		_buttonMouseUp: function(e) {
-			$(e.currentTarget).blur();
+		_toolsClicked: function()
+		{
+			var buttons             = {},
+				lite                = FLBuilderConfig.lite,
+				enabledTemplates    = FLBuilderConfig.enabledTemplates;
+				
+			// Duplicate button
+			if(FLBuilderConfig.isUserTemplate) {
+				if ( typeof window.opener == 'undefined' || ! window.opener ) {
+					buttons['duplicate-page'] = FLBuilderStrings.duplicateTemplate;
+				}
+			}
+			else {
+				buttons['duplicate-page'] = FLBuilderStrings.duplicatePage;
+			}
+			
+			// Template buttons
+			if(!lite && !FLBuilderConfig.isUserTemplate && (enabledTemplates == 'enabled' || enabledTemplates == 'user')) {
+			
+				buttons['save-user-template'] = FLBuilderStrings.saveTemplate;
+				
+				if('undefined' != typeof FLBuilderTemplateSettings) {
+					buttons['save-template'] = FLBuilderStrings.saveCoreTemplate;
+				}
+			}
+			
+			// Global settings button 
+			buttons['global-settings'] = FLBuilderStrings.editGlobalSettings;
+				
+			FLBuilder._showActionsLightbox({
+				'className' : 'fl-builder-tools-actions',
+				'title'     : FLBuilderStrings.actionsLightboxTitle,
+				'buttons'   : buttons
+			});
 		},
-
+		
+		/**
+		 * Shows the actions lightbox when the done button is clicked.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _doneClicked
+		 */
+		_doneClicked: function()
+		{
+			FLBuilder._showActionsLightbox({
+				'className': 'fl-builder-save-actions',
+				'title': FLBuilderStrings.actionsLightboxTitle,
+				'buttons': {
+					'publish': FLBuilderStrings.publish,
+					'draft': FLBuilderStrings.draft,
+					'discard': FLBuilderStrings.discard
+				}
+			});
+		},
+		
+		/**
+		 * Opens a new window with the upgrade URL when the 
+		 * upgrade button is clicked.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _upgradeClicked
+		 */
+		_upgradeClicked: function()
+		{
+			window.open(FLBuilderConfig.upgradeUrl);
+		},
+		
+		/**
+		 * Shows the actions lightbox when the help button is clicked.
+		 *
+		 * @since 1.4.9
+		 * @access private
+		 * @method _helpButtonClicked
+		 */
+		_helpButtonClicked: function()
+		{
+			var buttons = {};
+			
+			if ( FLBuilderConfig.help.tour ) {
+				buttons['help-tour'] = FLBuilderStrings.takeHelpTour;
+			}
+			if ( FLBuilderConfig.help.video ) {
+				buttons['help-video'] = FLBuilderStrings.watchHelpVideo;
+			}
+			if ( FLBuilderConfig.help.knowledge_base ) {
+				buttons['knowledge-base'] = FLBuilderStrings.viewKnowledgeBase;
+			}
+			if ( FLBuilderConfig.help.forums ) {
+				buttons['forums'] = FLBuilderStrings.visitForums;
+			}
+			
+			FLBuilder._showActionsLightbox({
+				'className': 'fl-builder-help-actions',
+				'title': FLBuilderStrings.actionsLightboxTitle,
+				'buttons': buttons
+			});
+		},
+		
 		/* Panel
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Closes the builder's content panel.
 		 *
@@ -1642,9 +1048,10 @@
 		 */
 		_closePanel: function()
 		{
-			FLBuilder.triggerHook('hideContentPanel');
+			$('.fl-builder-panel').stop(true, true).animate({ right: '-350px' }, 500, function(){ $(this).hide(); });
+			$('.fl-builder-bar .fl-builder-add-content-button').stop(true, true).fadeIn();
 		},
-
+		
 		/**
 		 * Opens the builder's content panel.
 		 *
@@ -1654,87 +1061,56 @@
 		 */
 		_showPanel: function()
 		{
-			FLBuilder.triggerHook('showContentPanel');
+			$('.fl-builder-bar .fl-builder-add-content-button').stop(true, true).fadeOut();
+			$('.fl-builder-panel').stop(true, true).show().animate({ right: '0' }, 500);
 		},
-
+		
 		/**
-		 * Toggle the panel open or closed.
+		 * Opens or closes a section in the builder's content panel
+		 * when a section title is clicked.
 		 *
-		 * @since 2.0
+		 * @since 1.0
 		 * @access private
-		 * @method _togglePanel
+		 * @method _blockSectionTitleClicked
 		 */
-		_togglePanel: function()
+		_blockSectionTitleClicked: function()
 		{
-			FLBuilder.triggerHook('toggleContentPanel');
+			var title   = $(this),
+				section = title.parent();
+				
+			if(section.hasClass('fl-active')) {
+				section.removeClass('fl-active');
+			}
+			else {
+				$('.fl-builder-blocks-section').removeClass('fl-active');
+				section.addClass('fl-active');
+			}
+			
+			FLBuilder._initScrollbars();
 		},
-
+		
 		/* Save Actions
 		----------------------------------------------------------*/
-
-		/**
-		* Publish the current layout
-		*
-		* @since 2.0
-		* @access private
-		* @method _publishLayout
-		* @param {Boolean} shouldExit Whether or not builder should exit after publish
-		* @param {Boolean} openLightbox Whether or not to keep the lightboxes open.
-		* @return void
-		*/
-		_publishLayout: function( shouldExit, openLightbox ) {
-			// Save existing settings first if any exist. Don't proceed if it fails.
-			if ( ! FLBuilder._triggerSettingsSave( openLightbox, true ) ) {
-				return;
-			}
-
-			if ( _.isUndefined( shouldExit ) ) {
-				var shouldExit = true;
-			}
-
-			const actions = FL.Builder.data.getLayoutActions()
-			const callback = FLBuilder._onPublishComplete.bind( FLBuilder, shouldExit )
-			actions.saveLayout( true, shouldExit, callback )
-		},
-
+		
 		/**
 		 * Publishes the layout when the publish button is clicked.
 		 *
 		 * @since 1.0
 		 * @access private
-		 * @param bool whether or not builder should exit after publish
 		 * @method _publishButtonClicked
 		 */
-		_publishButtonClicked: function( shouldExit )
+		_publishButtonClicked: function()
 		{
-			FLBuilder._publishLayout( shouldExit );
+			FLBuilder.showAjaxLoader();
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_save',
+				method: 'save_layout'
+			}, FLBuilder._exit);
+				
+			FLBuilder._actionsLightbox.close();
 		},
-
-		/**
-		 * Fires on successful ajax publish.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @param bool whether or not builder should exit after publish
-		 * @return void
-		 */
-		_onPublishComplete: function( shouldExit ) {
-			if ( shouldExit ) {
-				if ( FLBuilderConfig.shouldRefreshOnPublish ) {
-					FLBuilder._exit();
-				} else {
-					FLBuilder._exitWithoutRefresh();
-				}
-			}
-
-			// Change the admin bar status dot to green if it isn't already
-			$('#wp-admin-bar-fl-builder-frontend-edit-link .fl-builder-admin-bar-status-dot').css('color', '#6bc373');
-
-			FLBuilder.triggerHook( 'didPublishLayout', {
-				shouldExit: shouldExit,
-			} );
-		},
-
+		
 		/**
 		 * Exits the builder when the save draft button is clicked.
 		 *
@@ -1745,11 +1121,16 @@
 		_draftButtonClicked: function()
 		{
 			FLBuilder.showAjaxLoader();
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.saveDraft()
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_save',
+				method: 'save_draft',
+				render_assets: 0
+			}, FLBuilder._exit);
+			
+			FLBuilder._actionsLightbox.close();
 		},
-
+		
 		/**
 		 * Clears changes to the layout when the discard draft button
 		 * is clicked.
@@ -1761,18 +1142,20 @@
 		_discardButtonClicked: function()
 		{
 			var result = confirm(FLBuilderStrings.discardMessage);
-
+			
 			if(result) {
-
+			
 				FLBuilder.showAjaxLoader();
-
-				const actions = FL.Builder.data.getLayoutActions()
-				actions.discardDraft()
-			} else {
-				FLBuilder.triggerHook('didCancelDiscard');
+				
+				FLBuilder.ajax({
+					action: 'fl_builder_save',
+					method: 'clear_draft_layout'
+				}, FLBuilder._exit);
+					
+				FLBuilder._actionsLightbox.close();
 			}
 		},
-
+		
 		/**
 		 * Closes the actions lightbox when the cancel button is clicked.
 		 *
@@ -1785,11 +1168,11 @@
 			FLBuilder._exitUrl = null;
 			FLBuilder._actionsLightbox.close();
 		},
-
+		
 		/**
-		 * Redirects the user to the _exitUrl if defined, otherwise
-		 * it redirects the user to the current post without the
-		 * builder active.
+		 * Redirects the user to the _exitUrl if defined, otherwise 
+		 * it redirects the user to the current post without the 
+		 * builder active. 
 		 *
 		 * @since 1.0
 		 * @since 1.5.7 Closes the window if we're in a child window.
@@ -1798,100 +1181,50 @@
 		 */
 		_exit: function()
 		{
-			var href = window.parent.location.href;
-
-			try {
-				var flbuilder = typeof window.parent.opener.FLBuilder != 'undefined'
-			}
-			catch(err) {
-				var flbuilder = false
-			}
-
-			if ( FLBuilderConfig.isUserTemplate && typeof window.parent.opener != 'undefined' && window.parent.opener ) {
-
-				if ( flbuilder ) {
-					if ( 'undefined' === typeof FLBuilderGlobalNodeId ) {
-						window.parent.opener.FLBuilder._updateLayout();
-					} else {
-						window.parent.opener.FLBuilder._updateNode( FLBuilderGlobalNodeId );
-					}
+			var href = window.location.href;
+			
+			if ( FLBuilderConfig.isUserTemplate && typeof window.opener != 'undefined' && window.opener ) {
+				
+				if ( typeof window.opener.FLBuilder != 'undefined' ) {
+					window.opener.FLBuilder._updateLayout();
 				}
-
-				window.parent.close();
+				
+				window.close();
 			}
 			else {
-
+				
 				if ( FLBuilder._exitUrl ) {
 					href = FLBuilder._exitUrl;
 				}
 				else {
-					href = href.replace( '&fl_builder_ui', '' );
-					href = href.replace( '?fl_builder&', '?' );
-					href = href.replace( '?fl_builder', '' );
-					href = href.replace( '&fl_builder', '' );
+					href = href.replace('?fl_builder', '').replace('&fl_builder', '');
 				}
-
-				if ( window.parent.location.host === 'playground.wordpress.net' ) {
-					const meta = '<meta http-equiv="refresh" content="0; URL=\'' + href + '\'" />';
-					$( 'head', window.parent.document ).append( meta );
-				} else {
-					window.parent.location.href = href;
-				}
+				
+				window.location.href = href;
 			}
 		},
-
-		/**
-		 * Allow the editing session to end but don't redirect to any url.
-		 *
-		 * @since 2.0
-		 * @return void
-		 */
-		_exitWithoutRefresh: function() {
-			var href = window.parent.location.href;
-
-			try {
-				var flbuilder = typeof window.parent.opener.FLBuilder != 'undefined'
-			}
-			catch(err) {
-				var flbuilder = false
-			}
-
-			if ( FLBuilderConfig.isUserTemplate && flbuilder && window.opener ) {
-
-				if ( flbuilder ) {
-					if ( 'undefined' === typeof FLBuilderGlobalNodeId ) {
-						window.parent.opener.FLBuilder._updateLayout();
-					} else {
-						window.parent.opener.FLBuilder._updateNode( FLBuilderGlobalNodeId );
-					}
-				}
-
-				window.parent.close();
-			}
-			else {
-				FLBuilder.triggerHook('endEditingSession');
-			}
-		},
-
+		
 		/* Tools Actions
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Duplicates the current post and builder layout.
 		 *
 		 * @since 1.0
 		 * @access private
-		 * @method _duplicateLayoutClicked
+		 * @method _duplicatePageClicked
 		 */
-		_duplicateLayoutClicked: function()
+		_duplicatePageClicked: function()
 		{
+			FLBuilder._actionsLightbox.close();
 			FLBuilder.showAjaxLoader();
-
+			
 			FLBuilder.ajax({
-				action: 'duplicate_post'
-			}, FLBuilder._duplicateLayoutComplete);
+				action: 'fl_builder_save',
+				method: 'duplicate_post'
+			}, FLBuilder._duplicatePageComplete);
 		},
-
+		
 		/**
 		 * Redirects the user to the post edit screen of a
 		 * duplicated post when duplication is complete.
@@ -1901,193 +1234,13 @@
 		 * @method _duplicatePageComplete
 		 * @param {Number} The ID of the duplicated post.
 		 */
-		_duplicateLayoutComplete: function(response)
+		_duplicatePageComplete: function(response)
 		{
-			var adminUrl = FLBuilderConfig.adminUrl;
-
-			window.parent.location.href = adminUrl + 'post.php?post='+ response +'&action=edit';
+			var adminUrl = $('#fl-admin-url').val();
+			
+			window.location.href = adminUrl + 'post.php?post='+ response +'&action=edit';
 		},
-
-
-		/* Layout Settings
-		----------------------------------------------------------*/
-
-		/**
-		 * Shows the layout settings lightbox when the layout
-		 * settings button is clicked.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _layoutSettingsClicked
-		 */
-		_layoutSettingsClicked: function()
-		{
-			FLBuilderSettingsForms.render( {
-				id        : 'layout',
-				className : 'fl-builder-layout-settings',
-				settings  : FLBuilderSettingsConfig.settings.layout
-			}, function() {
-				FLBuilder._layoutSettingsInitCSS();
-			} );
-		},
-
-		/**
-		 * Initializes custom layout CSS for live preview.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _layoutSettingsInitCSS
-		 */
-		_layoutSettingsInitCSS: function()
-		{
-			var css = $( '.fl-builder-settings #fl-field-css textarea:not(.ace_text-input)', window.parent.document );
-
-			css.on( 'change', FLBuilder._layoutSettingsCSSChanged );
-
-			FLBuilder._layoutSettingsCSSCache = css.val();
-		},
-
-		/**
-		 * Sets a timeout for throttling custom layout CSS changes.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _layoutSettingsCSSChanged
-		 */
-		_layoutSettingsCSSChanged: function()
-		{
-			if ( FLBuilder._layoutSettingsCSSTimeout ) {
-				clearTimeout( FLBuilder._layoutSettingsCSSTimeout );
-			}
-
-			FLBuilder._layoutSettingsCSSTimeout = setTimeout( $.proxy( FLBuilder._layoutSettingsCSSDoChange, this ), 600 );
-		},
-
-		/**
-		 * Updates the custom layout CSS when changes are made in the editor.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _layoutSettingsCSSDoChange
-		 */
-		_layoutSettingsCSSDoChange: function()
-		{
-			var form	 = $( '.fl-builder-settings', window.parent.document ),
-				textarea = $( this ),
-				field    = textarea.parents( '#fl-field-css' );
-
-			if ( field.find( '.ace_error' ).length > 0 ) {
-				return;
-			}
-			else if ( form.hasClass( 'fl-builder-layout-settings' ) ) {
-				$( '#fl-builder-layout-css' ).html( textarea.val() );
-			}
-			else {
-				$( '#fl-builder-global-css' ).html( textarea.val() );
-			}
-
-			FLBuilder._layoutSettingsCSSTimeout = null;
-		},
-
-		/**
-		 * Saves the layout settings when the save button is clicked.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _saveLayoutSettingsClicked
-		 */
-		_saveLayoutSettingsClicked: function()
-		{
-			var form     = $( this ).closest( '.fl-builder-settings' ),
-				settings = FLBuilder._getSettings( form );
-
-			FLBuilder.showAjaxLoader();
-			FLBuilder._lightbox.close();
-			FLBuilder._layoutSettingsCSSCache = null;
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.saveLayoutSettings( settings )
-		},
-
-		/**
-		 * Reverts changes made when the cancel button for the layout
-		 * settings has been clicked.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _cancelLayoutSettingsClicked
-		 */
-		_cancelLayoutSettingsClicked: function()
-		{
-			var form = $( '.fl-builder-settings', window.parent.document );
-
-			if ( form.hasClass( 'fl-builder-layout-settings' ) ) {
-				$( '#fl-builder-layout-css' ).html( FLBuilder._layoutSettingsCSSCache );
-			}
-			else {
-				$( '#fl-builder-global-css' ).html( FLBuilder._layoutSettingsCSSCache );
-			}
-
-			FLBuilder._layoutSettingsCSSCache = null;
-		},
-
-		/**
-		 * Completes the ajax call for saving layout settings.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _saveLayoutSettingsComplete
-		 * @param {Object} the settings object
-		 */
-		_saveLayoutSettingsComplete: function( settings )
-		{
-			FLBuilder.triggerHook( 'didSaveLayoutSettingsComplete', settings )
-			FLBuilder._updateLayout()
-		},
-
-		/**
-		 * Reloads the builder page when a post slug or page template change is detected.
-		 * Fires on didSaveLayoutSettingsComplete; compares submitted values against
-		 * page-load defaults so only actual changes trigger a reload.
-		 *
-		 * @since 2.10
-		 * @access private
-		 * @method _reloadIfPostSettingsChanged
-		 */
-		_reloadIfPostSettingsChanged: function( e, settings )
-		{
-			var initial = FLBuilderSettingsConfig &&
-			              FLBuilderSettingsConfig.settings &&
-			              FLBuilderSettingsConfig.settings.layout;
-
-			if ( ! initial ) {
-				return;
-			}
-
-			var slugChanged = settings.slug !== undefined &&
-			                  settings.slug !== ( initial.slug || '' );
-
-			var tplChanged  = settings.page_template !== undefined &&
-			                  settings.page_template !== ( initial.page_template || '' );
-
-			if ( ! slugChanged && ! tplChanged ) {
-				return;
-			}
-
-			if ( slugChanged ) {
-				// Navigate to the new permalink — reloading the old URL would 404.
-				FLBuilder.ajax( { action: 'get_post_permalink' }, function( response ) {
-					var data = FLBuilder._jsonParse( response );
-					window.parent.location.href = ( data && data.url ) ? data.url : window.parent.location.href;
-				} );
-			} else {
-				window.parent.location.reload( true );
-			}
-		},
-
-		/* Global Settings
-		----------------------------------------------------------*/
-
+		
 		/**
 		 * Shows the global builder settings lightbox when the global
 		 * settings button is clicked.
@@ -2095,21 +1248,51 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _globalSettingsClicked
-		 */
+		 */       
 		_globalSettingsClicked: function()
 		{
-			const settings = FLBuilderSettingsConfig.settings.global
-			settings.color_scheme = FL.Builder.data.getSystemState().colorScheme
+			FLBuilder._actionsLightbox.close();
+			FLBuilder._showLightbox(false);
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_global_settings'
+			}, FLBuilder._globalSettingsLoaded);
+		},
 
-			FLBuilderSettingsForms.render( {
-				id        : 'global',
-				className : 'fl-builder-global-settings',
-				settings  : settings
-			}, function() {
-				FLBuilder._layoutSettingsInitCSS();
-				FLBuilder.original_shapes = FLBuilderSettingsConfig.settings.global.shape_form;
-				FLBuilderResponsiveEditing._switchAllSettingsToCurrentMode();
-			} );
+		/**
+		 * Sets the lightbox content when the global settings have loaded.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _globalSettingsLoaded
+		 * @param {String} html The HTML for the global settings form.
+		 */  
+		_globalSettingsLoaded: function(html)
+		{
+			FLBuilder._setSettingsFormContent(html);  
+					  
+			FLBuilder._initSettingsValidation({
+				module_margins: {
+					required: true,
+					number: true
+				},
+				row_margins: {
+					required: true,
+					number: true
+				},
+				row_padding: {
+					required: true,
+					number: true
+				},
+				row_width: {
+					required: true,
+					number: true
+				},
+				responsive_breakpoint: {
+					required: true,
+					number: true
+				}
+			});
 		},
 
 		/**
@@ -2118,70 +1301,36 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _saveGlobalSettingsClicked
-		 */
+		 */       
 		_saveGlobalSettingsClicked: function()
 		{
 			var form     = $(this).closest('.fl-builder-settings'),
 				valid    = form.validate().form(),
-				settings = FLBuilder._getSettings( form );
-
+				data     = form.serializeArray(),
+				settings = {},
+				i        = 0;
+				
 			if(valid) {
-
-				FLBuilder.showAjaxLoader();
-				FLBuilder._layoutSettingsCSSCache = null;
-
-				const actions = FL.Builder.data.getLayoutActions()
-				actions.saveGlobalSettings( settings )
-
-				FLBuilder._lightbox.close();
-
-				// if number of global shapes has changed then refresh.
-				if ( 'undefined' != typeof FLBuilder.original_shapes && FLBuilder.original_shapes.length !== settings.shape_form?.length ) {
-					FLBuilder._shapesEdited = true;
+					 
+				for( ; i < data.length; i++) {
+					settings[data[i].name] = data[i].value;
 				}
+				
+				FLBuilder.showAjaxLoader();
+				
+				FLBuilder.ajax({
+					action: 'fl_builder_save',
+					method: 'save_global_settings',
+					settings: settings
+				}, FLBuilder._updateLayout);
+					
+				FLBuilder._lightbox.close();
 			}
 		},
-
-		/**
-		 * Saves the global settings when the save button is clicked.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @method _saveGlobalSettingsComplete
-		 * @param {String} response
-		 */
-		_saveGlobalSettingsComplete: function( response )
-		{
-			FLBuilder.triggerHook( 'didSaveGlobalSettingsComplete', FLBuilder._jsonParse( response ) );
-
-			FLBuilder._updateLayout();
-
-			if ( FLBuilder._shapesEdited === true ) {
-				window.parent.location.reload(true);
-			}
-		},
-
-		/* Global Styles - See extensions for global styles code.
-		----------------------------------------------------------*/
-
-		/**
-		 * Shows the global builder styles lightbox when the global
-		 * styles button is clicked.
-		 *
-		 * @since 2.8
-		 */
-		_globalStylesClicked: function()
-		{
-			if ( FLBuilderConfig.lite ) {
-				FLBuilder._showProMessage( 'Global Styles' );
-			} else if ( 'undefined' !== typeof FLBuilderGlobalStyles ) {
-				FLBuilderGlobalStyles._showPanel();
-			}
-		},
-
+		
 		/* Template Selector
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Shows the template selector when the builder is launched
 		 * if the current layout is empty.
@@ -2192,48 +1341,133 @@
 		 */
 		_initTemplateSelector: function()
 		{
-			var rows = $(FLBuilder._contentClass).find('.fl-row'),
-				layoutHasContent = ( rows.length > 0 );
-
-			if( ! layoutHasContent ) {
-				FLBuilder.ContentPanel.show('modules');
+			var rows = $(FLBuilder._contentClass).find('.fl-row');
+			
+			if(rows.length === 0) {
+				FLBuilder._showTemplateSelector();
 			}
 		},
-
+		
 		/**
-		* Show options for inserting or appending a template when a template is selected.
-		* This logic was moved from `_templateClicked` to unbind it from the specific event.
-		*
-		* @since 2.0
-		* @access private
-		* @method _requestTemplateInsert
-		*/
-		_requestTemplateInsert: function(index, type) {
-
-			// if there are existing rows in the layout
-			if( FLBuilder.layoutHasContent() ) {
-
-				// If the template is blank, no need to ask
+		 * Shows the template selector when the templates button
+		 * has been clicked.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _changeTemplateClicked
+		 */
+		_changeTemplateClicked: function()
+		{
+			FLBuilder._actionsLightbox.close();
+			FLBuilder._showTemplateSelector();
+		},
+		
+		/**
+		 * Shows the template selector lightbox.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _showTemplateSelector
+		 */
+		_showTemplateSelector: function()
+		{
+			if ( FLBuilderConfig.simpleUi ) {
+				return;
+			}
+			if ( FLBuilderConfig.isUserTemplate ) {
+				return;   
+			}
+			if ( 'disabled' == FLBuilderConfig.enabledTemplates ) {
+				return;
+			}
+			if ( FLBuilderConfig.lite ) {
+				return;    
+			}
+			
+			FLBuilder._showLightbox( false );
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_template_selector'
+			}, FLBuilder._templateSelectorLoaded );
+		},
+		
+		/**
+		 * Sets the lightbox content when the template selector has loaded.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _templateSelectorLoaded
+		 * @param {String} html The HTML for the template selector.
+		 */
+		_templateSelectorLoaded: function( html )
+		{
+			FLBuilder._setLightboxContent( html );
+			
+			var select 			= $( '.fl-template-category-select' ),
+				userTemplates 	= $( '.fl-user-template' );
+			
+			// Default to the user templates tab?
+			if ( 'user' == FLBuilderConfig.enabledTemplates || userTemplates.length > 0 ) {
+				select.val( 'fl-builder-settings-tab-yours' );
+				$( '.fl-builder-settings-tab' ).removeClass( 'fl-active' );
+				$( '#fl-builder-settings-tab-yours' ).addClass( 'fl-active' );
+			}
+			
+			// Show the no templates message?
+			if ( 0 === userTemplates.length ) {
+				$( '.fl-user-templates-message' ).show();
+			}
+			
+			$( 'body' ).trigger( 'fl-builder.template-selector-loaded' );
+		},
+		
+		/**
+		 * Callback to show a template category when the 
+		 * select is changed.
+		 *
+		 * @since 1.5.7
+		 * @access private
+		 * @method _templateCategoryChanged
+		 */
+		_templateCategoryChanged: function()
+		{
+			$( '.fl-template-selector .fl-builder-settings-tab' ).hide();
+			$( '#' + $( this ).val() ).show();
+		},
+		
+		/**
+		 * Callback for when a user clicks a core template in 
+		 * the template selector.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _templateClicked
+		 */
+		_templateClicked: function()
+		{
+			var template = $(this),
+				index    = template.closest('.fl-template-preview').attr('data-id');
+			
+			if($(FLBuilder._contentClass).children('.fl-row').length > 0) {
+				
 				if(index == 0) {
-					if( confirm( FLBuilderStrings.changeTemplateMessage ) ) {
+					if(confirm(FLBuilderStrings.changeTemplateMessage)) {
 						FLBuilder._lightbox._node.hide();
-						FLBuilder._applyTemplate(0, false, type);
+						FLBuilder._applyTemplate(0, false, 'core');
 					}
 				}
-				// present options Replace or Append
 				else {
 					FLBuilder._selectedTemplateId = index;
-					FLBuilder._selectedTemplateType = type;
+					FLBuilder._selectedTemplateType = 'core';
 					FLBuilder._showTemplateActions();
 					FLBuilder._lightbox._node.hide();
-				}
+				}                
 			}
-			// if there are no rows, just insert the template.
 			else {
-				FLBuilder._applyTemplate(index, false, type);
+				FLBuilder._applyTemplate(index, false, 'core');
 			}
 		},
-
+		
 		/**
 		 * Shows the actions lightbox for replacing and appending templates.
 		 *
@@ -2243,30 +1477,16 @@
 		 */
 		_showTemplateActions: function()
 		{
-			var buttons = [];
-
-			buttons[ 10 ] = {
-				'key': 'template-replace',
-				'label': FLBuilderStrings.templateReplace
-			};
-
-			buttons[ 15 ] = {
-				'key': 'template-prepend',
-				'label': FLBuilderStrings.templatePrepend
-			};
-
-			buttons[ 20 ] = {
-				'key': 'template-append',
-				'label': FLBuilderStrings.templateAppend
-			};
-
 			FLBuilder._showActionsLightbox({
 				'className': 'fl-builder-template-actions',
 				'title': FLBuilderStrings.actionsLightboxTitle,
-				'buttons': buttons
+				'buttons': {
+					'template-replace': FLBuilderStrings.templateReplace,
+					'template-append': FLBuilderStrings.templateAppend
+				}
 			});
 		},
-
+		
 		/**
 		 * Replaces the current layout with a template when the replace
 		 * button is clicked.
@@ -2282,21 +1502,7 @@
 				FLBuilder._applyTemplate(FLBuilder._selectedTemplateId, false, FLBuilder._selectedTemplateType);
 			}
 		},
-
-		/**
-		 * Prepend a template to the current layout when the prepend
-		 * button is clicked.
-		 *
-		 * @since 3.0
-		 * @access private
-		 * @method _templatePrependClicked
-		 */
-		_templatePrependClicked: function()
-		{
-			FLBuilder._actionsLightbox.close();
-			FLBuilder._applyTemplate(FLBuilder._selectedTemplateId, '2', FLBuilder._selectedTemplateType);
-		},
-
+		
 		/**
 		 * Append a template to the current layout when the append
 		 * button is clicked.
@@ -2310,7 +1516,7 @@
 			FLBuilder._actionsLightbox.close();
 			FLBuilder._applyTemplate(FLBuilder._selectedTemplateId, true, FLBuilder._selectedTemplateType);
 		},
-
+		
 		/**
 		 * Shows the template selector when the cancel button of
 		 * the template actions lightbox is clicked.
@@ -2321,11 +1527,11 @@
 		 */
 		_templateCancelClicked: function()
 		{
-			FLBuilder.triggerHook( 'showContentPanel' );
+			FLBuilder._lightbox._node.show();
 		},
-
+		
 		/**
-		 * Applies a template to the current layout by either appending
+		 * Applys a template to the current layout by either appending
 		 * it or replacing the current layout with it.
 		 *
 		 * @since 1.1.9
@@ -2335,62 +1541,39 @@
 		 * @param {Boolean} append Whether the new template should be appended or not.
 		 * @param {String} type The type of template. Either core or user.
 		 */
-		_applyTemplate: function( id, append, type )
+		_applyTemplate: function(id, append, type)
 		{
-			append  = typeof append === 'undefined' || ! append ? '0' : ( '2' === append ? '2' : '1' )
-			type    = typeof type === 'undefined' ? 'core' : type
-
+			append  = typeof append === 'undefined' || !append ? '0' : '1';
+			type    = typeof type === 'undefined' ? 'core' : type;
+			
 			FLBuilder._lightbox.close();
 			FLBuilder.showAjaxLoader();
-			FLBuilder.triggerHook('beforeApplyTemplate');
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.applyTemplate( id, append, type )
-
-			FLBuilder.triggerHook('didApplyTemplate');
-		},
-
-		/**
-		 * Callback for when applying a template completes.
-
-		 * @since 2.0
-		 * @access private
-		 * @method _applyTemplateComplete
-		 * @param  {String} response
-		 */
-		_applyTemplateComplete:  function( response )
-		{
-			var data = FLBuilder._jsonParse( response );
-
-			FLBuilder._renderLayout( data.layout );
-			FLBuilder.triggerHook( 'didApplyTemplateComplete', data.config );
-		},
-
-		/**
-		 * Callback for when applying a user template completes.
-
-		 * @since 1.9.5
-		 * @access private
-		 * @method _applyUserTemplateComplete
-		 * @param  {string} response
-		 */
-		_applyUserTemplateComplete: function( response )
-		{
-			var data = FLBuilder._jsonParse( response );
-
-			if ( null !== data.layout_css ) {
-				$( '#fl-builder-layout-css' ).html( data.layout_css );
+		
+			if(type == 'core') {
+		
+				FLBuilder.ajax({
+					action: 'fl_builder_save',
+					method: 'apply_template',
+					template_id: id,
+					append: append
+				}, FLBuilder._updateLayout);
 			}
-
-			FLBuilder._renderLayout( data.layout );
-			FLBuilder.triggerHook( 'didApplyTemplateComplete', data.config );
+			else {
+			
+				FLBuilder.ajax({
+					action: 'fl_builder_save',
+					method: 'apply_user_template',
+					template_id: id,
+					append: append
+				}, FLBuilder._updateLayout);
+			}
 		},
-
+		
 		/* User Template Settings
 		----------------------------------------------------------*/
-
+		
 		/**
-		 * Shows the settings for saving a user defined template
+		 * Shows the settings for saving a user defined template 
 		 * when the save template button is clicked.
 		 *
 		 * @since 1.1.3
@@ -2399,22 +1582,33 @@
 		 */
 		_saveUserTemplateClicked: function()
 		{
-			if ( FLBuilderConfig.lite ) {
-				FLBuilder._showProMessage( 'Saving Templates' );
-				return;
-			}
-
-			FLBuilderSettingsForms.render( {
-				id        : 'user_template',
-				className : 'fl-builder-user-template-settings',
-				rules 	  : {
-					name: {
-						required: true
-					}
-				}
-			} );
+			FLBuilder._actionsLightbox.close();
+			FLBuilder._showLightbox(false);
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_user_template_settings'
+			}, FLBuilder._userTemplateSettingsLoaded);
 		},
-
+		
+		/**
+		 * Sets the lightbox content when the user template settings are loaded.
+		 *
+		 * @since 1.1.9
+		 * @access private
+		 * @method _userTemplateSettingsLoaded
+		 * @param {String} html The HTML for the user template settings form.
+		 */  
+		_userTemplateSettingsLoaded: function(html)
+		{
+			FLBuilder._setSettingsFormContent(html);  
+					  
+			FLBuilder._initSettingsValidation({
+				name: {
+					required: true
+				}
+			});
+		},
+		
 		/**
 		 * Saves user template settings when the save button is clicked.
 		 *
@@ -2427,16 +1621,21 @@
 			var form     = $(this).closest('.fl-builder-settings'),
 				valid    = form.validate().form(),
 				settings = FLBuilder._getSettings(form);
-
+				
 			if(valid) {
-
-				const actions = FL.Builder.data.getLayoutActions()
-				actions.saveUserTemplateSettings( settings )
-
+					 
+				FLBuilder.showAjaxLoader();
+				
+				FLBuilder.ajax({
+					action: 'fl_builder_save',
+					method: 'save_user_template',
+					settings: settings
+				}, FLBuilder._saveUserTemplateSettingsComplete);
+					
 				FLBuilder._lightbox.close();
 			}
 		},
-
+		
 		/**
 		 * Shows a success alert when user template settings have saved.
 		 *
@@ -2444,17 +1643,13 @@
 		 * @access private
 		 * @method _saveUserTemplateSettingsComplete
 		 */
-		_saveUserTemplateSettingsComplete: function(data)
+		_saveUserTemplateSettingsComplete: function()
 		{
-			if ( !data ) return;
-			var data = FLBuilder._jsonParse(data);
-
-			FLBuilderConfig.contentItems.template.push(data);
-			FLBuilder.triggerHook('contentItemsChanged');
+			FLBuilder.alert(FLBuilderStrings.templateSaved);
 		},
-
+		
 		/**
-		 * Callback for when a user clicks a user defined template in
+		 * Callback for when a user clicks a user defined template in 
 		 * the template selector.
 		 *
 		 * @since 1.1.3
@@ -2464,15 +1659,16 @@
 		_userTemplateClicked: function()
 		{
 			var id = $(this).attr('data-id');
-
-			if($(FLBuilder._contentClass).children('.fl-row, .fl-module').length > 0) {
+				
+			if($(FLBuilder._contentClass).children('.fl-row').length > 0) {
+			
 				if(id == 'blank') {
 					if(confirm(FLBuilderStrings.changeTemplateMessage)) {
 						FLBuilder._lightbox._node.hide();
 						FLBuilder._applyTemplate('blank', false, 'user');
 					}
 				}
-				else {
+				else {            
 					FLBuilder._selectedTemplateId = id;
 					FLBuilder._selectedTemplateType = 'user';
 					FLBuilder._showTemplateActions();
@@ -2483,7 +1679,7 @@
 				FLBuilder._applyTemplate(id, false, 'user');
 			}
 		},
-
+		
 		/**
 		 * Launches the builder in a new tab to edit a user
 		 * defined template when the edit link is clicked.
@@ -2497,10 +1693,10 @@
 		{
 			e.preventDefault();
 			e.stopPropagation();
-
-			window.parent.open($(this).attr('href'));
+			
+			window.open($(this).attr('href'));
 		},
-
+		
 		/**
 		 * Deletes a user defined template when the delete link is clicked.
 		 *
@@ -2513,36 +1709,106 @@
 		{
 			var template = $( this ).closest( '.fl-user-template' ),
 				id		 = template.attr( 'data-id' ),
-				all		 = $( '.fl-user-template[data-id=' + id + ']', window.parent.document ),
-				parent   = null,
-				index    = null,
-				i        = null,
-				item     = null;
-
+				all		 = $( '.fl-user-template[data-id=' + id + ']' ),
+				parent   = null;
+			
 			if ( confirm( FLBuilderStrings.deleteTemplate ) ) {
-
-				const actions = FL.Builder.data.getLayoutActions()
-				actions.deleteUserTemplate( id )
-
-				// Remove the item from library
-				for(i in FLBuilderConfig.contentItems.template) {
-					item = FLBuilderConfig.contentItems.template[i];
-					if (item.postId == id) {
-						index = i;
+				
+				FLBuilder.ajax( {
+					action: 'fl_builder_save',
+					method: 'delete_user_template',
+					template_id: id
+				} );
+			
+				all.fadeOut( function() {
+					
+					template = $( this );
+					parent 	 = template.closest( '.fl-user-template-category' );
+					
+					template.remove(); 
+					
+					if ( 0 === parent.find( '.fl-user-template' ).length ) {
+						parent.remove();
 					}
-				}
-				if (!_.isNull(index)) {
-					FLBuilderConfig.contentItems.template.splice(index, 1);
-					FLBuilder.triggerHook('contentItemsChanged');
-				}
+					if ( 1 === $( '.fl-user-template' ).length ) {
+						$( '.fl-user-templates').hide();
+						$( '.fl-user-templates-message').show();
+					}
+				});
 			}
-
+			
 			e.stopPropagation();
 		},
+		
+		/* Core Template Settings
+		----------------------------------------------------------*/
+		
+		/**
+		 * Initializes the settings for saving core templates.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _initCoreTemplateSettings
+		 */
+		_initCoreTemplateSettings: function()
+		{
+			if('undefined' != typeof FLBuilderTemplateSettings) {
+				FLBuilderTemplateSettings.init();
+			}
+		},
+		
+		/* Help Actions
+		----------------------------------------------------------*/
+		
+		/**
+		 * Shows the getting started video when the watch video button
+		 * is clicked.
+		 *
+		 * @since 1.4.9
+		 * @access private
+		 * @method _initCoreTemplateSettings
+		 */
+		_watchVideoClicked: function()
+		{
+			var template = wp.template( 'fl-video-lightbox' );
 
+			FLBuilder._actionsLightbox.close();
+			FLBuilder._lightbox.open( template( { video : FLBuilderConfig.help.video_embed } ) );
+		},
+		
+		/**
+		 * Opens a new window with the knowledge base URL when the 
+		 * view knowledge base button is clicked.
+		 *
+		 * @since 1.4.9
+		 * @access private
+		 * @method _viewKnowledgeBaseClicked
+		 */
+		_viewKnowledgeBaseClicked: function()
+		{
+			FLBuilder._actionsLightbox.close();
+			
+			window.open( FLBuilderConfig.help.knowledge_base_url );
+		},
+		
+		/**
+		 * Opens a new window with the forums URL when the 
+		 * visit forums button is clicked.
+		 *
+		 * @since 1.4.9
+		 * @access private
+		 * @method _visitForumsClicked
+		 */
+		_visitForumsClicked: function()
+		{
+			FLBuilder._actionsLightbox.close();
+			
+			window.open( FLBuilderConfig.help.forums_url );
+		},
+		
 		/* Help Tour
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Shows the help tour or template selector when the builder
 		 * is launched.
@@ -2554,7 +1820,6 @@
 		_showTourOrTemplates: function()
 		{
 			if ( ! FLBuilderConfig.simpleUi && ! FLBuilderConfig.isUserTemplate ) {
-
 				if ( FLBuilderConfig.help.tour && FLBuilderConfig.newUser ) {
 					FLBuilder._showTourLightbox();
 				}
@@ -2563,31 +1828,9 @@
 				}
 			}
 		},
-
+		
 		/**
-		 * Save browser stats when builder is loaded.
-		 * @since 2.1.6
-		 */
-		_doStats: function() {
-			if( 1 == FLBuilderConfig.statsEnabled ) {
-
-				args = {
-					'screen-width': screen.width,
-					'screen-height': screen.height,
-					'pixel-ratio': window.devicePixelRatio,
-					'user-agent': window.navigator.userAgent,
-					'isrtl': FLBuilderConfig.isRtl
-				}
-
-				FLBuilder.ajax({
-					action: 'save_browser_stats',
-					browser_data: args
-				});
-			}
-		},
-
-		/**
-		 * Shows the actions lightbox with a welcome message for new
+		 * Shows the actions lightbox with a welcome message for new 
 		 * users asking if they would like to take the tour.
 		 *
 		 * @since 1.4.9
@@ -2600,9 +1843,9 @@
 
 			FLBuilder._actionsLightbox.open( template() );
 		},
-
+		
 		/**
-		 * Closes the actions lightbox and shows the template selector
+		 * Closes the actions lightbox and shows the template selector 
 		 * if a new user declines the tour.
 		 *
 		 * @since 1.4.9
@@ -2614,7 +1857,7 @@
 			FLBuilder._actionsLightbox.close();
 			FLBuilder._initTemplateSelector();
 		},
-
+		
 		/**
 		 * Closes the actions lightbox and starts the tour when a new user
 		 * decides to take the tour.
@@ -2628,7 +1871,7 @@
 			FLBuilder._actionsLightbox.close();
 			FLBuilderTour.start();
 		},
-
+		
 		/**
 		 * Starts the help tour.
 		 *
@@ -2641,12 +1884,12 @@
 			FLBuilder._actionsLightbox.close();
 			FLBuilderTour.start();
 		},
-
+		
 		/* Layout
 		----------------------------------------------------------*/
-
+		
 		/**
-		 * Shows a message to drop a row or module to get started
+		 * Shows a message to drop a row or module to get started 
 		 * if the layout is empty.
 		 *
 		 * @since 1.0
@@ -2656,46 +1899,22 @@
 		_setupEmptyLayout: function()
 		{
 			var content = $(FLBuilder._contentClass);
-
+			
 			if ( FLBuilderConfig.isUserTemplate && 'module' == FLBuilderConfig.userTemplateType ) {
-				return;
-			}
-			else if ( FLBuilderConfig.isUserTemplate && 'column' == FLBuilderConfig.userTemplateType ) {
 				return;
 			}
 			else {
 				content.removeClass('fl-builder-empty');
 				content.find('.fl-builder-empty-message').remove();
-
-				if ( ! content.find( '.fl-row, .fl-module, .fl-builder-block' ).length ) {
+				
+				if(content.children('.fl-row').length === 0) {
 					content.addClass('fl-builder-empty');
 					content.append('<span class="fl-builder-empty-message">'+ FLBuilderStrings.emptyMessage +'</span>');
 					FLBuilder._initSortables();
 				}
 			}
 		},
-
-		/**
-		 * Sends an AJAX request to re-render a single node.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _updateNode
-		 * @param {String} nodeId
-		 * @param {Function} callback
-		 */
-		_updateNode: function( nodeId, callback )
-		{
-			if ( ! $( '.fl-node-' + nodeId ).length ) {
-				return;
-			}
-
-			FLBuilder._showNodeLoading( nodeId );
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.renderNode( nodeId, callback )
-		},
-
+		
 		/**
 		 * Sends an AJAX request to render the layout and is typically
 		 * used as a callback to many of the builder's save operations.
@@ -2707,39 +1926,123 @@
 		_updateLayout: function()
 		{
 			FLBuilder.showAjaxLoader();
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.renderLayout()
-
-			// Refresh Node Data
-			actions.fetchLayout()
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_layout'
+			}, FLBuilder._renderLayout);
 		},
-
+		
 		/**
 		 * Removes the current layout and renders a new layout using
-		 * the provided data. Will render a node instead of the layout
-		 * if data.partial is true.
+		 * the provided data.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _renderLayout
 		 * @param {Object} data The layout data. May also be a JSON encoded string.
+		 * @param {String} data.html The HTML for the new layout.
+		 * @param {String} data.css The URL for the layout CSS.
+		 * @param {String} data.js The URL for the layout JavaScript.
 		 * @param {Function} callback A function to call when the layout has finished rendering.
 		 */
-		_renderLayout: function( data, callback )
+		_renderLayout: function(data, callback)
 		{
-			if ( FLBuilder._layout ) {
-				FLBuilder._layoutQueue.push( {
-					data: data,
-					callback: callback,
-				} );
-			} else {
-				FLBuilder._layout = new FLBuilderAJAXLayout( data, callback );
-			}
-		},
+			data = typeof data == 'string' ? JSON.parse(data) : data;
+		
+			var post    = $('#fl-post-id').val(),
+				head    = $('head').eq(0),
+				body    = $('body').eq(0),
+				content = $(FLBuilder._contentClass),
+				loader  = $('<img src="' + data.css + '" />'),
+				oldCss  = $('link[href*="/cache/' + post + '"]'),
+				oldJs   = $('script[src*="/cache/' + post + '"]'),
+				newCss  = $('<link rel="stylesheet" id="fl-builder-layout-' + post + '-css"  href="'+ data.css +'" />'),
+				newJs   = $('<script src="'+ data.js +'"></script>');
+				
+			// Image onerror hack to check if the stylesheet has been loaded.
+			loader.on('error', function() 
+			{
+				// Remove the loader.
+				loader.remove();
+				
+				// Add the new layout css.
+				if(oldCss.length > 0) {
+					oldCss.after(newCss);
+				}
+				else {
+					head.append(newCss);    
+				}
+				
+				// Set a quick timeout to ensure the css has taken effect.
+				setTimeout(function()
+				{
+					// Set the body height so the page doesn't scroll.
+					body.height(body.height());
+					
+					// Remove the old content and assets.
+					content.empty();
+					oldCss.remove();
+					oldJs.remove();
+					
+					// Add the new content.
+					content.append( FLBuilder._renderLayoutCleanContent( data.html ) );
+					
+					// Add the new layout js.
+					setTimeout(function(){
+						head.append(newJs);
+					}, 50);
 
+					// Send the layout rendered event.
+					$( FLBuilder._contentClass ).trigger( 'fl-builder.layout-rendered' );
+					
+					// Remove action overlays so they can reset.
+					FLBuilder._removeAllOverlays();
+					
+					// Hide the loader.
+					FLBuilder.hideAjaxLoader();
+					
+					// Run the callback.
+					if(typeof callback != 'undefined') {
+						callback();
+					}
+				
+				}, 250);
+			});
+			
+			body.append(loader);
+		},
+		
 		/**
-		 * Called by the layout's JavaScript file once it's loaded
+		 * Removes scripts that are already on the page from
+		 * new HTML content that is going to be rendered.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _renderLayoutCleanContent
+		 * @param {String} html The new HTML content to clean.
+		 * @return {String} The cleaned HTML content.
+		 */
+		_renderLayoutCleanContent: function( html )
+		{
+			var cleaned = $( '<div id="fl-cleaned-content">' + html + '</div>' ),
+				src     = '',
+				script  = null;
+			
+			cleaned.find( 'script' ).each( function() {
+				
+				src     = $( this ).attr( 'src' );
+				script  = $( 'script[src="' + src + '"]' );
+				
+				if ( script.length > 0 ) {
+					$( this ).remove();
+				}
+			});
+			
+			return cleaned.html();
+		},
+		
+		/**
+		 * Called by the layout's JavaScript file once it's loaded 
 		 * to finish rendering the layout.
 		 *
 		 * @since 1.0
@@ -2748,17 +2051,17 @@
 		 */
 		_renderLayoutComplete: function()
 		{
-			if ( FLBuilder._layout ) {
-				FLBuilder._layout._complete();
-				FLBuilder._layout = null;
-			}
-
-			if ( FLBuilder._layoutQueue.length ) {
-				var item = FLBuilder._layoutQueue.shift();
-				FLBuilder._layout = new FLBuilderAJAXLayout( item.data, item.callback );
-			}
+			FLBuilder._setupEmptyLayout();
+			FLBuilder._highlightEmptyCols();
+			FLBuilder._initSortables();
+			FLBuilder._resizeLayout();
+			FLBuilder._initMediaElements();
+			FLBuilderLayout.init();
+			
+			// Reset the body height.
+			$('body').height('auto');
 		},
-
+		
 		/**
 		 * Trigger the resize event on the window so elements
 		 * in the layout that rely on JavaScript know to resize.
@@ -2769,30 +2072,14 @@
 		 */
 		_resizeLayout: function()
 		{
-			$(window).trigger('resize');
-
+			$(window).trigger('resize'); 
+				
 			if(typeof YUI !== 'undefined') {
 				YUI().use('node-event-simulate', function(Y) {
 					Y.one(window).simulate("resize");
 				});
 			}
 		},
-
-		/**
-		 * Checks to see if any rows exist in the layout, or if it is blank.
-		 *
-		 * @since 2.0
-		 * @method layoutHasContent
-		 * @return {Boolean}
-		 */
-		layoutHasContent: function()
-		{
-            if( $(FLBuilder._contentClass).children('.fl-row, .fl-module').length > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        },
 
 		/**
 		 * Initializes MediaElements.js audio and video players.
@@ -2804,107 +2091,20 @@
 		_initMediaElements: function()
 		{
 			var settings = {};
-
+			
 			if(typeof $.fn.mediaelementplayer != 'undefined') {
-
+			
 				if(typeof _wpmejsSettings !== 'undefined') {
 					settings.pluginPath = _wpmejsSettings.pluginPath;
 				}
-
-				$('.wp-audio-shortcode, .wp-video-shortcode').not('.mejs-container').mediaelementplayer(settings);
+				
+				$('.wp-audio-shortcode, .wp-video-shortcode').mediaelementplayer(settings);                
 			}
 		},
-
+		
 		/* Generic Drag and Drop
 		----------------------------------------------------------*/
-
-		/**
-		 * Inserts drop targets for nodes such as rows, columns
-		 * and column groups since making those all sortables
-		 * makes sorting really jumpy.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _initDropTargets
-		 */
-		_initDropTargets: function()
-		{
-			var notGlobal     = 'row' == FLBuilderConfig.userTemplateType ? '' : ':not(.fl-node-global)',
-				rows          = $( FLBuilder._contentClass + ' .fl-row' ),
-				row           = null,
-				groups        = $( FLBuilder._contentClass + ' .fl-row' + notGlobal ).find( '.fl-col-group' ),
-				group         = null,
-				cols          = null,
-				rootCol       = 'column' == FLBuilderConfig.userTemplateType ? $( FLBuilder._contentClass + '> .fl-col' ).eq(0) : null,
-				layoutModules = $( FLBuilder._contentClass ).find( '> .fl-module' ),
-				rowModules    = $( FLBuilder._contentClass + ' .fl-row' + notGlobal ).find( '.fl-row-content > .fl-module' ),
-				i             = 0;
-
-			// Remove old drop targets.
-			$( '.fl-col-drop-target' ).remove();
-			$( '.fl-col-group-drop-target' ).remove();
-			$( '.fl-row-drop-target' ).remove();
-
-			// Row drop targets.
-			$( FLBuilder._contentClass ).append( '<div class="fl-drop-target fl-row-drop-target"></div>' );
-			rows.prepend( '<div class="fl-drop-target fl-row-drop-target"></div>' );
-			rows.append( '<div class="fl-drop-target fl-drop-target-last fl-row-drop-target fl-row-drop-target-last"></div>' );
-
-			// Add drop targets to empty rows.
-			rows.find( '.fl-row-content' ).prepend( '<div class="fl-drop-target fl-col-group-drop-target fl-col-group-drop-target-empty"></div>' );
-			FLBuilder._initEmptyRowDropTargets();
-
-			// Add drop targets to container modules in the main layout.
-			layoutModules.prepend( '<div class="fl-drop-target fl-row-drop-target"></div>' );
-			layoutModules.append( '<div class="fl-drop-target fl-drop-target-last fl-row-drop-target fl-row-drop-target-last"></div>' );
-
-			// Add drop targets to container modules in rows.
-			rowModules.append( '<div class="fl-drop-target fl-col-group-drop-target"></div>' );
-			rowModules.append( '<div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last"></div>' );
-
-			// Add drop targets to column groups and columns.
-			for ( i = 0; i < groups.length; i++ ) {
-
-				group = groups.eq( i );
-				cols  = group.find( '> .fl-col' );
-
-				// Column group drop targets.
-				if ( ! group.hasClass( 'fl-col-group-nested' ) ) {
-					group.append( '<div class="fl-drop-target fl-col-group-drop-target"></div>' );
-					group.append( '<div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last"></div>' );
-				}
-
-				// Column drop targets.
-				cols.append( '<div class="fl-drop-target fl-col-drop-target"></div>' );
-				cols.append( '<div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last"></div>' );
-			}
-
-			// Add drop targets to root column of a column template.
-			if ( rootCol && 0 === groups.length ) {
-				groups = rootCol.find( '.fl-col-group' );
-
-				rootCol.append( '<div class="fl-drop-target fl-col-drop-target"></div>' );
-				rootCol.append( '<div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last"></div>' );
-			}
-		},
-
-		/**
-		 * Shows drop targets in empty rows with no content.
-		 *
-		 * @method _initEmptyRowDropTargets
-		 * @return void
-		 */
-		_initEmptyRowDropTargets: function()
-		{
-			var emptyRows = $( FLBuilder._contentClass + ' .fl-row-content:not(:has(*:visible))' );
-
-			$( '.fl-row-content-empty' ).removeClass( '.fl-row-content-empty' );
-
-			if ( emptyRows.length ) {
-				emptyRows.addClass( 'fl-row-content-empty' );
-			}
-		},
-
+		
 		/**
 		 * Returns a helper element for a drag operation.
 		 *
@@ -2915,16 +2115,16 @@
 		 * @param {Object} item The item being dragged.
 		 * @return {Object} The helper element.
 		 */
-		_blockDragHelper: function (e, item)
+		_blockDragHelper: function (e, item) 
 		{
 			var helper = item.clone();
-
+			
 			item.clone().insertAfter(item);
 			helper.addClass('fl-builder-block-drag-helper');
-
+			
 			return helper;
 		},
-
+		
 		/**
 		 * Initializes a drag operation.
 		 *
@@ -2933,71 +2133,73 @@
 		 * @method _blockDragInit
 		 * @param {Object} e The event object.
 		 */
-		_blockDragInit: function( e )
+		_blockDragInit: function(e)
 		{
-			var target        = $( e.currentTarget ),
-				content 	  = $( FLBuilder._contentClass ),
-				overlay	   	  = target.closest( '.fl-block-overlay' ),
-				nodeId        = null,
-				node          = null,
-				scrollTop     = $( window ).scrollTop(),
-				initialPos    = 0;
-
+			var target      = $(e.target),
+				item        = null,
+				initialPos  = 0,
+				noHighlight = 'row' == FLBuilderConfig.userTemplateType ? '' : ':not(.fl-node-global)';
+				
 			// Set the _dragEnabled flag.
 			FLBuilder._dragEnabled = true;
-
-			// Save the initial scroll position.
-			FLBuilder._dragInitialScrollTop = scrollTop;
-
-			// Get the node to scroll to once the node highlights have affected the body height.
-			if ( overlay.length > 0 ) {
-
-				// Set the node to a node instance being dragged.
-				nodeId = overlay.attr( 'data-node' );
-				node = content.find( '.fl-block-overlay-active[data-node="' + nodeId + '"]' );
-
-				// Mark this node as initialized for dragging.
-				node.addClass( 'fl-node-drag-init' );
+			
+			// Set the item to a module instance.  
+			if(target.closest('.fl-module').length > 0) {
+				item = target.closest('.fl-module');
 			}
-			else if ( target.hasClass( 'fl-builder-block' ) ) {
-
-				// Set the node to the first visible row instance.
-				$( FLBuilder._sortableRootClass + ' .fl-row' ).each( function() {
-					if ( node === null && $( this ).offset().top - scrollTop > 0 ) {
-						node = $( this );
+			// Set the item to a row instance.
+			else if(target.closest('.fl-row').length > 0) {
+				item = target.closest('.fl-row');
+			}
+			// Set the item to the first visible row.
+			else if(target.hasClass('fl-builder-block-row') || target.hasClass('fl-builder-block-saved-row')) {
+				$('.fl-row').each(function(){
+					if(item === null && $(this).offset().top - $(window).scrollTop() > 0) {
+						item = $(this);
 					}
-				} );
+				});
 			}
-
-			// Get the initial scroll position of the node.
-			if ( node !== null ) {
-				initialPos = node.offset().top - scrollTop;
+			// Set the item to the first visible module.
+			else if(target.hasClass('fl-builder-block-module') || target.hasClass('fl-builder-block-saved-module')) {
+				
+				$('.fl-module').each(function(){
+					if(item === null && $(this).offset().top - $(window).scrollTop() > 0) {
+						item = $(this);
+					}
+				});
 			}
-
+			
+			// Get the initial scroll position of the item.
+			if(item !== null) {
+				initialPos = item.offset().top - $(window).scrollTop();
+			}
+			else {
+				item = target;
+			}
+			
+			// Hide the empty message.
+			$('.fl-builder-empty-message').hide();
+			
+			// Highlight rows.
+			$(FLBuilder._contentClass + ' .fl-row' + noHighlight).addClass('fl-row-highlight');
+			
+			// Highlight modules.
+			if(item.hasClass('fl-module') || item.hasClass('fl-builder-block-module') || item.hasClass('fl-builder-block-saved-module')) {
+				$(FLBuilder._contentClass + ' .fl-col' + noHighlight).addClass('fl-col-highlight');
+			}
+			
 			// Setup the UI for dragging.
-			FLBuilder._highlightRowsAndColsForDrag( target );
-			FLBuilder._adjustColHeightsForDrag();
-			FLBuilder._disableGlobalNodes();
+			FLBuilder._disableGlobalRows();
+			FLBuilder._closePanel();
 			FLBuilder._destroyOverlayEvents();
-			FLBuilder._initSortables();
-			$( 'body' ).addClass( 'fl-builder-dragging' );
-			$( 'body', window.parent.document ).addClass( 'fl-builder-dragging' );
-			$( '.fl-builder-empty-message' ).hide();
-			$( '.fl-sortable-disabled' ).removeClass( 'fl-sortable-disabled' );
-
-			// Remove all action overlays if this isn't a touch for a proxy item.
-			if ( 'touchstart' !== e.type && ! $( e.target ).hasClass( 'fl-sortable-proxy-item ' ) ) {
-				FLBuilder._removeAllOverlays();
+			FLBuilder._removeAllOverlays();
+			
+			// Scroll to the row or module that was dragged.            
+			if(initialPos > 0) {
+				scrollTo(0, item.offset().top - initialPos);
 			}
-
-			// Scroll to the node that is dragging.
-			if ( initialPos > 0 ) {
-				scrollTo( 0, node.offset().top - initialPos );
-			}
-
-			FLBuilder.triggerHook('didInitDrag', { target } );
 		},
-
+		
 		/**
 		 * Callback that fires when dragging starts.
 		 *
@@ -3009,15 +2211,14 @@
 		 */
 		_blockDragStart: function(e, ui)
 		{
-			// Let the builder know dragging has started.
 			FLBuilder._dragging = true;
-
-			// Removed the drag init class as we're done with that.
-			$( '.fl-node-drag-init' ).removeClass( 'fl-node-drag-init' );
-
-			FLBuilder.triggerHook('didStartDrag');
+			
+			// Refresh sortables.
+			$(FLBuilder._contentClass).sortable('refreshPositions');
+			$(FLBuilder._contentClass + ' .fl-row-content').sortable('refreshPositions');
+			$(FLBuilder._contentClass + ' .fl-col-content').sortable('refreshPositions');
 		},
-
+		
 		/**
 		 * Callback that fires when an element that is being
 		 * dragged is sorted.
@@ -3030,261 +2231,60 @@
 		 */
 		_blockDragSort: function(e, ui)
 		{
-			var parent = ui.placeholder.parent(),
-				title  = FLBuilderStrings.insert;
-
-			// Prevent sorting?
-			if ( FLBuilder._blockPreventSort( ui.item, parent ) ) {
+			if(typeof ui.placeholder === 'undefined') {
 				return;
 			}
-
-			// Reset flex items with a fixed width.
-			$( '.fl-sortable-fixed-width' ).css( 'max-width', '' ).removeClass( 'fl-sortable-fixed-width' );
-
+			
+			var parent = ui.placeholder.parent(),
+				title  = FLBuilderStrings.insert;
+			
 			// Find the placeholder title.
-			if(parent.hasClass('fl-col-content') || parent.hasClass('fl-module') || parent.hasClass('fl-module-content') || parent.data('children-wrapper')) {
-
-				// Make flex items fixed width while sorting.
-				if ((/flex/).test(parent.css('display'))) {
-					ui.placeholder.hide();
-					parent.css('max-width', '');
-					parent.css('max-width', parent.outerWidth());
-					parent.addClass( 'fl-sortable-fixed-width' );
-					ui.placeholder.show();
-				}
-
-				if ((/flex/).test(parent.css('display')) && (/row|row-reverse/).test(parent.css( "flex-direction" ))) {
-					title = '';
-				}
-				else if(ui.item.hasClass('fl-builder-block-row')) {
-					title = ui.item.find('.fl-builder-block-title').text();
-				}
-				else if(ui.item.hasClass('fl-col-sortable-proxy-item')) {
-					title = FLBuilderStrings.column;
-				}
-				else if(ui.item.hasClass('fl-builder-block-module')) {
+			if(parent.hasClass('fl-col-content')) {
+				if(ui.item.hasClass('fl-builder-block-module')) {
 					title = ui.item.find('.fl-builder-block-title').text();
 				}
 				else if(ui.item.hasClass('fl-builder-block-saved-module') || ui.item.hasClass('fl-builder-block-module-template')) {
 					title = ui.item.find('.fl-builder-block-title').text();
 				}
 				else {
-					title = ui.item.data('name');
+					title = ui.item.attr('data-name');
 				}
 			}
-			else if(parent.hasClass('fl-col-drop-target')) {
-				title = '';
+			else if(parent.hasClass('fl-row-content')) {
+				if(ui.item.hasClass('fl-builder-block-row')) {
+					title = ui.item.find('.fl-builder-block-title').text();
+				}
+				else {
+					title = FLBuilderStrings.newColumn;
+				}
 			}
-			else if (parent.hasClass('fl-col-group-drop-target')) {
-				title = '';
-			}
-			else if(parent.hasClass('fl-row-drop-target')) {
+			else if(parent.hasClass('fl-builder-content')) {
 				if(ui.item.hasClass('fl-builder-block-row')) {
 					title = ui.item.find('.fl-builder-block-title').text();
 				}
 				else if(ui.item.hasClass('fl-builder-block-saved-row')) {
 					title = ui.item.find('.fl-builder-block-title').text();
 				}
-				else if(ui.item.hasClass('fl-builder-block-saved-column')) {
-					title = ui.item.find('.fl-builder-block-title').text();
-				}
-				else if(ui.item.hasClass('fl-row-sortable-proxy-item')) {
+				else if(ui.item.hasClass('fl-row')) {
 					title = FLBuilderStrings.row;
-				}
-				else if(ui.item.hasClass('fl-builder-block-module') || ui.item.hasClass('fl-module-sortable-proxy-item')) {
-					var itemType = ui.item.data( 'type' );
-					var alias = ui.item.data( 'alias' );
-
-					var configFinder = function( config ) {
-						return alias === config.alias && itemType === config.slug;
-					};
-					var config = FLBuilderConfig.contentItems.module.filter( configFinder ).pop()
-						|| ( FLBuilderConfig.unlistedModules || [] ).filter( configFinder ).pop();
-
-					var accepts = config ? config.accepts : false;
-					var isTopLevel = config ? config.top_level : false;
-					var name = config ? config.name : '';
-
-					if ( ( accepts && accepts.length ) || isTopLevel ) {
-						title = name;
-					} else {
-						title = FLBuilderStrings.newRow;
-					}
-				}
-				else if(ui.item.hasClass('fl-builder-block-saved-module')) {
-					title = ui.item.find('.fl-builder-block-title').text();
 				}
 				else {
 					title = FLBuilderStrings.newRow;
 				}
 			}
-
+			
 			// Set the placeholder title.
 			ui.placeholder.html(title);
-
-			if ( ! $( ui.item ).hasClass( 'fl-builder-block-global' ) ) {
-				$( ui.placeholder ).addClass( 'fl-builder-drop-zone-standard' );
-			}
-
+			
 			// Add the global class?
-			if ( ui.item.hasClass( 'fl-node-global' ) ||
-				 ui.item.hasClass( 'fl-builder-block-global' ) ||
-				 $( '.fl-node-dragging' ).hasClass( 'fl-node-global' )
-			) {
-				if ( $( '.fl-node-dragging' ).data( 'dynamic-editing' ) || 
-					ui.item.hasClass( 'fl-builder-block-dynamic' ) ) {
-					ui.placeholder.addClass( 'fl-builder-drop-zone-dynamic' );
-				} else {
-					ui.placeholder.addClass( 'fl-builder-drop-zone-global' );
-				}
+			if ( ui.item.hasClass( 'fl-node-global' ) || ui.item.hasClass( 'fl-builder-block-global' ) ) {
+				ui.placeholder.addClass( 'fl-builder-drop-zone-global' );
 			}
 			else {
-				ui.placeholder.removeClass( 'fl-builder-drop-zone-dynamic' );
 				ui.placeholder.removeClass( 'fl-builder-drop-zone-global' );
 			}
 		},
-
-		/**
-		 * Callback that fires when an element that is being
-		 * dragged position changes.
-		 *
-		 * What we're doing here keeps it from appearing jumpy when dragging
-		 * between columns. Without this you'd see the placeholder jump into
-		 * a column position briefly when you didn't intend for it to.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _blockDragChange
-		 * @param {Object} e The event object.
-		 * @param {Object} ui An object with additional info for the drag.
-		 */
-		_blockDragChange: function( e, ui )
-		{
-			FLBuilder._initEmptyRowDropTargets();
-
-			ui.placeholder.css( 'opacity', '0' );
-			ui.placeholder.animate( { 'opacity': '1' }, 100 );
-		},
-
-		/**
-		 * Prevents sorting of items that shouldn't be sorted into
-		 * specific areas.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _blockPreventSort
-		 * @param {Object} item The item being sorted.
-		 * @param {Object} parent The new parent.
-		 */
-		_blockPreventSort: function( item, parent )
-		{
-			var prevent              = false,
-				isRowBlock           = item.hasClass( 'fl-builder-block-row' ),
-				isCol                = item.hasClass( 'fl-col-sortable-proxy-item' ),
-				isModule         	 = item.hasClass( 'fl-builder-block-module' ) || item.hasClass( 'fl-module-sortable-proxy-item' ),
-				isContainerModule	 = parent.data( 'accepts' ),
-				isChildrenWrapper	 = parent.data( 'children-wrapper' ),
-				isParentColGlobal    = parent.closest('.fl-col[data-template-url]').hasClass('fl-node-global'),
-				isParentCol          = parent.hasClass( 'fl-col-content' ),
-				isColTarget          = parent.hasClass( 'fl-col-drop-target' ),
-				isDisabled		  	 = parent.closest( '.fl-node-disabled' ).length > 0,
-				group                = parent.parents( '.fl-col-group:not(.fl-col-group-nested)' ),
-				nestedGroup          = parent.parents( '.fl-col-group-nested' ),
-				itemType			 = item.data( 'type' );
-
-			// Handle container modules.
-			if ( isContainerModule || isChildrenWrapper ) {
-				var config = FLBuilderConfig.contentItems.module.filter( config => itemType === config.slug ).pop()
-					|| ( FLBuilderConfig.unlistedModules || [] ).filter( config => itemType === config.slug ).pop();
-				var accepts = config ? config.accepts : false;
-
-				// Handle disabled container modules.
-				if ( isDisabled ) {
-					prevent = true;
-				}
-				// Prevent rows and columns in container modules.
-				else if ( isRowBlock || isCol ) {
-					prevent = true;
-				}
-				// Prevent unaccepted nodes in container modules.
-				else if ( 'object' === typeof accepts && accepts.length && ! accepts.includes( itemType ) ) {
-					prevent = true;
-				}
-			}
-
-			// Prevent modules in unaccepted parents.
-			if ( isModule && 'widget' !== itemType ) {
-				var config = FLBuilderConfig.contentItems.module.filter( config => itemType === config.slug ).pop()
-					|| ( FLBuilderConfig.unlistedModules || [] ).filter( config => itemType === config.slug ).pop();
-				var parents = config ? config.parents : false;
-				var parentType = parent.data( 'type' );
-
-				if ( 'object' === typeof parents ) {
-					if ( 0 === parents.length && ! parent.hasClass( 'fl-row-drop-target' ) ) {
-						prevent = true; // Only allow main layout if no parents are defined.
-					} else if ( parents.length && ! parents.includes( parentType ) ) {
-						prevent = true;
-					}
-				}
-			}
-
-			// Prevent columns in nested columns.
-			if ( ( isRowBlock || isCol ) && isParentCol && nestedGroup.length > 0 ) {
-				prevent = true;
-			}
-
-			// Prevent 1 column from being nested in an empty column.
-			if ( isParentCol && ! parent.find( '.fl-module, .fl-col' ).length ) {
-
-				if ( isRowBlock && '1-col' == item.data( 'cols' ) ) {
-					prevent = true;
-				}
-				else if ( isCol ) {
-					prevent = true;
-				}
-			}
-
-			// Prevent 5 or 6 columns from being nested.
-			if ( isRowBlock && isParentCol && $.inArray( item.data( 'cols' ), [ '5-cols', '6-cols' ] ) > -1 ) {
-				prevent = true;
-			}
-
-			// Prevent columns with nested columns from being dropped in nested columns.
-			if ( isCol && $( '.fl-node-dragging' ).find( '.fl-col-group-nested' ).length > 0 ) {
-
-				if ( isParentCol || ( isColTarget && nestedGroup.length > 0 ) ) {
-					prevent = true;
-				}
-			}
-
-			// Prevent more than 12 columns.
-			if ( isColTarget && group.length > 0 && 0 === nestedGroup.length && group.find( '> .fl-col:visible' ).length > 11 ) {
-				prevent = true;
-			}
-
-			// Prevent more than 4 nested columns.
-			if ( isColTarget && nestedGroup.length > 0 && nestedGroup.find( '.fl-col:visible' ).length > 3 ) {
-				prevent = true;
-			}
-
-			// Prevent module from being dropped to a Global Col except when editing a saved column.
-			if ( isModule && isParentColGlobal && 'column' !== FLBuilderConfig.userTemplateType ) {
-				prevent = true;
-			}
-
-			// Prevent dropping into layouts rendered via shortcode.
-			if ( parent.closest( '.fl-builder-shortcode-mask-wrap' ).length ) {
-				prevent = true;
-			}
-
-			// Add the disabled class if we are preventing a sort.
-			if ( prevent && ! parent.hasClass( 'fl-builder-blocks-section-content' ) ) {
-				parent.addClass( 'fl-sortable-disabled' );
-			}
-
-			return prevent;
-		},
-
+		
 		/**
 		 * Cleans up when a drag operation has stopped.
 		 *
@@ -3294,43 +2294,28 @@
 		 * @param {Object} e The event object.
 		 * @param {Object} ui An object with additional info for the drag.
 		 */
-		_blockDragStop: function( e, ui )
+		_blockDragStop: function(e, ui)
 		{
-			var scrollTop  = $( window ).scrollTop(),
-				parent     = ui.item.parent(),
-				initialPos = null;
+			var parent     = ui.item.parent(),
+				initialPos = parent.offset().top - $(window).scrollTop();
 
-			// Get the node to scroll to once removing the node highlights affects the body height.
-			if ( parent.hasClass( 'fl-drop-target' ) && parent.closest( '[data-node]' ).length ) {
-				parent = parent.closest( '[data-node]' );
-				initialPos = parent.offset().top - scrollTop;
-			}
-			else {
-				initialPos = parent.offset().top - scrollTop;
-			}
-
-			// Show the panel if a block was dropped back in.
-			if ( parent.hasClass( 'fl-builder-blocks-section-content' ) ) {
+			// Show the panel? 
+			if(parent.hasClass('fl-builder-blocks-section-content')) {
 				FLBuilder._showPanel();
 			}
-
-			// Finish dragging.
+			
+			// Finish dragging. 
 			FLBuilder._dragEnabled = false;
 			FLBuilder._dragging = false;
 			FLBuilder._bindOverlayEvents();
-			FLBuilder._removeEmptyRowAndColHighlights();
 			FLBuilder._highlightEmptyCols();
-			FLBuilder._enableGlobalNodes();
-			FLBuilder._setupEmptyLayout();
-			$( 'body' ).removeClass( 'fl-builder-dragging' );
-			$( 'body', window.parent.document ).removeClass( 'fl-builder-dragging' );
-
-			// Scroll the page back to where it was.
-			scrollTo( 0, parent.offset().top - initialPos );
-
-			FLBuilder.triggerHook('didStopDrag');
+			FLBuilder._enableGlobalRows();
+			$('.fl-builder-empty-message').show();
+			
+			// Scroll the page back to where it was. 
+			scrollTo(0, parent.offset().top - initialPos);
 		},
-
+		
 		/**
 		 * Cleans up when a drag operation has canceled.
 		 *
@@ -3340,431 +2325,202 @@
 		 */
 		_blockDragCancel: function()
 		{
-			if ( FLBuilder._dragEnabled && ! FLBuilder._dragging ) {
+			if(FLBuilder._dragEnabled && !FLBuilder._dragging) {
 				FLBuilder._dragEnabled = false;
 				FLBuilder._dragging = false;
 				FLBuilder._bindOverlayEvents();
-				FLBuilder._removeEmptyRowAndColHighlights();
 				FLBuilder._highlightEmptyCols();
-				FLBuilder._enableGlobalNodes();
-				FLBuilder._setupEmptyLayout();
-				$( 'body' ).removeClass( 'fl-builder-dragging' );
-				$( 'body', window.parent.document ).removeClass( 'fl-builder-dragging' );
-				$( '.fl-node-drag-init' ).removeClass( 'fl-node-drag-init' );
-				$( '.fl-node-dragging' ).removeClass( 'fl-node-dragging' );
-				scrollTo( 0, FLBuilder._dragInitialScrollTop );
-				FLBuilder.triggerHook('didCancelDrag');
+				FLBuilder._enableGlobalRows();
+				$('.fl-builder-empty-message').show();
 			}
 		},
-
+		
 		/**
-		 * Reorders a node within its parent.
+		 * Removes all node overlays and hides any tooltip helpies.
 		 *
-		 * @since 1.9
+		 * @since 1.0
 		 * @access private
-		 * @method _reorderNode
-		 * @param {String} nodeId The node ID of the node.
-		 * @param {Number} position The new position.
+		 * @method _removeAllOverlays
 		 */
-		_reorderNode: function( nodeId, position )
+		_removeAllOverlays: function()
 		{
-			const actions = FL.Builder.getActions()
-			actions.moveNode( nodeId, position )
+			FLBuilder._removeRowOverlays();
+			FLBuilder._removeColOverlays();
+			FLBuilder._removeModuleOverlays();
+			FLBuilder._hideTipTips();
 		},
-
+		
 		/**
-		 * Handle completion after reorder ajax.
+		 * Appends a node action overlay to the layout.
 		 *
-		 * @since 2.5
+		 * @since 1.6.3.3
 		 * @access private
-		 * @method _reorderNodeComplete
-		 * @param Object ajax response
+		 * @method _appendOverlay
+		 * @param {Object} node A jQuery reference to the node this overlay is associated with.
+		 * @param {Object} template A rendered wp.template. 
 		 */
-		_reorderNodeComplete: function( response ) {
-			var data = FLBuilder._jsonParse( response );
-			var hook = 'didMove' + data.nodeType.charAt(0).toUpperCase() + data.nodeType.slice(1);
-			FLBuilder.triggerHook( 'didMoveNode', data );
-			FLBuilder.triggerHook( hook, data );
-		},
-
-		/**
-		 * Moves a node up a position within its parent.
-		 *
-		 * @since 2.8
-		 */
-		_moveNodeUpClicked: function( e )
+		_appendOverlay: function( node, template )
 		{
-			var node = $( e.target ).closest( '[data-node]' );
-			var nodeId = node.attr( 'data-node' );
-			var data = FL.Builder.data.getNode( nodeId );
-			var position = data.position - 1;
-			var upBtn = node.find( '.fl-block-move-up' ).first();
-			var downBtn = node.find( '.fl-block-move-down' ).first();
-
-			if ( position <= 0 ) {
-				upBtn.addClass( 'fl-builder-submenu-disabled' );
-			} else {
-				upBtn.removeClass( 'fl-builder-submenu-disabled' );
-			}
-
-			downBtn.removeClass( 'fl-builder-submenu-disabled' );
-
-			FLBuilder._reorderNode( nodeId, position );
-			FLBuilder._selectNodeOverlay( node, false );
-			FL.Builder.data.updateNode( nodeId, { ...data, position } );
-		},
-
-		/**
-		 * Moves a node down a position within its parent.
-		 *
-		 * @since 2.8
-		 */
-		_moveNodeDownClicked: function( e )
-		{
-			var node = $( e.target ).closest( '[data-node]' );
-			var nodeId = node.attr( 'data-node' );
-			var data = FL.Builder.data.getNode( nodeId );
-			var position = data.position + 1;
-			var upBtn = node.find( '.fl-block-move-up' ).first();
-			var downBtn = node.find( '.fl-block-move-down' ).first();
-			var parentChildren = node.parent().find( '> [data-node]' );
-
-			if ( position >= parentChildren.length - 1 ) {
-				downBtn.addClass( 'fl-builder-submenu-disabled' );
-			} else {
-				downBtn.removeClass( 'fl-builder-submenu-disabled' );
-			}
-
-			upBtn.removeClass( 'fl-builder-submenu-disabled' );
-
-			FLBuilder._reorderNode( nodeId, position );
-			FLBuilder._selectNodeOverlay( node, false );
-			FL.Builder.data.updateNode( nodeId, { ...data, position } );
-		},
-
-		/**
-		 * Moves a node to a new parent.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _moveNode
-		 * @param {String} newParent The node ID of the new parent.
-		 * @param {String} nodeId The node ID of the node.
-		 * @param {Number} position The new position.
-		 */
-		_moveNode: function( newParent, nodeId, position )
-		{
-			const actions = FL.Builder.getActions()
-			const node = $( '.fl-node-' + nodeId )
-
-			node.attr( 'data-parent', newParent )
-			actions.moveNode( nodeId, position, newParent )
-		},
-
-		/**
-		 * Finishes a move node operation.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _moveNodeComplete
-		 * @param Object ajax response
-		 */
-		_moveNodeComplete: function( response )
-		{
-			const data = FLBuilder._jsonParse( response );
-			const hook = 'didMove' + data.nodeType.charAt( 0 ).toUpperCase() + data.nodeType.slice( 1 );
-			FLBuilder.triggerHook( 'didMoveNode', data );
-			FLBuilder.triggerHook( hook, data );
-		},
-
-		/* Generic Node Methods
-		----------------------------------------------------------*/
-
-		/**
-		 * Returns a JQuery reference to the HTMLElement for particular node.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _getjQueryElement
-		 * @return {JQuery} dom reference.
-		 */
-		_getJQueryElement: function( id ) {
-
-			return $( FLBuilder._contentClass ).find( '[data-node="' + id + '"]' )
-		},
-
-		/**
-		 * Whether an element the builder matched as a node really is a layout
-		 * node, rather than markup that merely carries the class.
-		 *
-		 * The row, column and module handlers are all delegated on class alone
-		 * (.fl-row, .fl-col, .fl-module), so anything inside a module's *content*
-		 * carrying one of those classes matches first — delegation is
-		 * innermost-first — and reaches a handler that then reads node data off
-		 * it. Pasted builder markup in an HTML or Text field is the usual source.
-		 *
-		 * data-node is the test because the PHP that renders a node writes the
-		 * class and the attribute together — for modules, both sit inside the
-		 * same `if ( $module->node )` branch — so a real node never has one
-		 * without the other. The CSS already leans on this: the breakpoint
-		 * selectors in class-fl-builder.php are written .fl-module[data-node] for
-		 * exactly this reason.
-		 *
-		 * Callers bail rather than stop the event, so it keeps bubbling to the
-		 * real node that contains the stray — clicking inside an HTML module
-		 * still opens that module's settings. (#5558)
-		 *
-		 * @since 2.11
-		 * @access private
-		 * @method _isLayoutNode
-		 * @param {HTMLElement|Object} node An element or jQuery reference. Absent
-		 *                                  is not an error — an empty set is not
-		 *                                  a layout node either.
-		 * @return {Boolean}
-		 */
-		_isLayoutNode: function( node )
-		{
-			return $( node ).is( '[data-node]' );
-		},
-
-		/**
-		 * Whether an element the builder matched as a module really is one,
-		 * rather than markup pasted straight off a rendered page.
-		 *
-		 * data-node alone isn't enough here (see _isLayoutNode above) — the PHP
-		 * that renders a module writes data-node whenever the node has an ID,
-		 * but only writes data-type, data-parent, data-name and friends when
-		 * FLBuilderModel::is_builder_active() is true. A page saved and viewed
-		 * on the front end therefore carries data-node but never data-type, so
-		 * markup copied off it and pasted into an HTML/Text module passes
-		 * _isLayoutNode and reaches _showModuleSettings with an undefined type,
-		 * which throws looking up FLBuilderSettingsConfig.modules[ undefined ].
-		 * Module click/hover handlers only ever run while the builder itself is
-		 * active, so a real module in that context always has data-type. (#5597)
-		 *
-		 * Rows and columns have no equivalent builder-only attribute to test —
-		 * they keep using _isLayoutNode.
-		 *
-		 * @since 2.11
-		 * @access private
-		 * @method _isModuleNode
-		 * @param {HTMLElement|Object} node An element or jQuery reference. Absent
-		 *                                  is not an error — an empty set is not
-		 *                                  a module node either.
-		 * @return {Boolean}
-		 */
-		_isModuleNode: function( node )
-		{
-			return $( node ).is( '[data-type]' );
-		},
-
-		/**
-		 * Returns whether a node lays its children out
-		 * horizontally, vertically, or layered.
-		 *
-		 * @since 2.8
-		 * @param {Object} node
-		 */
-		_getNodeLayoutDirection: function( node )
-		{
-			var isFlex = ( /flex/ ).test( node.parent().css( 'display' ) );
-			var isFlexRow = ( /row|row-reverse/ ).test( node.parent().css( 'flex-direction' ) );
-			var isGrid = ( /grid/ ).test( node.parent().css( 'display' ) );
-			var isLayeredGrid = isGrid && '1 / 1 / -1 / -1' === node.css( 'grid-area' );
-			var isSingleColumnGrid = 1 === window.getComputedStyle( node.parent()[0] ).getPropertyValue( 'grid-template-columns' ).split( ' ' ).length;
-
-			if ( isFlex && isFlexRow ) {
-				return 'horizontal';
-			} else if ( isGrid ) {
-				if ( isLayeredGrid ) {
-					return 'layered';
-				} else if ( ! isSingleColumnGrid ) {
-					return 'horizontal';
-				}
-			}
-
-			return 'vertical';
-		},
-
-		/**
-		 * Checks if a node requires a confirmation message before deleting.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _needsDeleteConfirmation
-		 * @return bool
-		 */
-		_needsDeleteConfirmation: function( node ) {
-			if ( 'module' === node.type ) {
-				return true
-			}
-
-			// Otherwise check if the container has modules
-			const el = FLBuilder._getJQueryElement( node.node )
-			return el.find( '.fl-module' ).length > 0
-		},
-
-		/**
-		 * Disables global nodes during drag.
-		 *
-		 * @since 2.8
-		 */
-		_disableGlobalNodes: function()
-		{
-			if ( 'row' !== FLBuilderConfig.userTemplateType ) {
-				$( '.fl-row.fl-node-global' ).addClass( 'fl-node-disabled' );
-			}
-
-			if ( 'column' !== FLBuilderConfig.userTemplateType ) {
-				$( '.fl-row:not(.fl-node-global) .fl-col.fl-node-global' ).addClass( 'fl-node-disabled' );
-			}
-
-			let containers = $( '.fl-module.fl-node-global[data-accepts][data-template-url]' );
-
-			if ( 'module' === FLBuilderConfig.userTemplateType ) {
-				containers = containers.not( '.fl-builder-content > *' );
-			}
-
-			containers.addClass( 'fl-node-disabled' );
-		},
-
-		/**
-		 * Remove disabled global node class after drag.
-		 *
-		 * @since 2.8
-		 */
-		_enableGlobalNodes: function()
-		{
-			$( '.fl-node-disabled' ).removeClass( 'fl-node-disabled' );
-		},
-
-		/**
-		 * Called when the node duplicate overlay action is clicked.
-		 *
-		 * @since 2.8
-		 */
-		_nodeDuplicateClicked: function( e )
-		{
-			var button = $( this );
-			var nodeId = button.attr( 'data-target-node' );
-			var actions = FL.Builder.getActions();
-
-			if ( ! nodeId ) {
-				nodeId = button.parents( '[data-node]' ).attr( 'data-node' );
-			}
-
-			actions.copyNode( nodeId );
-			e.stopPropagation();
-		},
-
-		/**
-		 * Called when the node remove overlay action is clicked.
-		 *
-		 * @since 2.8
-		 */
-		_nodeRemoveClicked: function( e )
-		{
-			var button = $( this );
-			var nodeId = button.attr( 'data-target-node' );
-			var actions = FL.Builder.getActions();
-
-			if ( ! nodeId ) {
-				nodeId = button.parents( '[data-node]' ).attr( 'data-node' );
-			}
-
-			actions.deleteNode( nodeId );
-			e.stopPropagation();
-		},
-
-		/**
-		 * Called when the node global unlink overlay action is clicked.
-		 *
-		 * @since 2.10
-		 */
-		_nodeUnlinkGlobalClicked: function( e )
-		{
-			const button = $( this );
-			let nodeId = button.attr( 'data-target-node' );
-
-			if ( ! nodeId ) {
-				nodeId = button.parents( '[data-node]' ).attr( 'data-node' );
-			}
-
-			FLBuilder._nodeUnlinkGlobal( nodeId );
-		},
-
-		/**
-		 * Unlink a global node.
-		 * 
-		 * @since 2.10
-		 * @param {String} nodeId The node ID of the node.
-		 */
-		_nodeUnlinkGlobal: function( nodeId ) 
-		{
-			const actions = FL.Builder.data.getLayoutActions();
-			const { getNode } = FL.Builder.data;
-			const node = getNode( nodeId );
-			const hook = `didUnlinkGlobal${node.type.charAt(0).toUpperCase() + node.type.slice(1)}`;
-			const $node = $( '[data-node="' + nodeId + '"]' );
-			const dynamicEditing = $node.data( 'dynamic-editing' );
-
-			if ( dynamicEditing && ! confirm( FLBuilderStrings.unlinkDynamicWarning ) ) {
-				return;
-			} else if ( ! dynamicEditing && ! confirm( FLBuilderStrings.unlinkTemplateWarning ) ) {
-				return;
-			}
-
-			FLBuilder._showNodeLoading( nodeId );
-
-			const callback = response => {
-				const data = FLBuilder._jsonParse( response );
-				FLBuilder._renderLayout( data, function() {
-					FLBuilder.triggerHook( hook, {
-						newNodeId : data.nodeId,
-						oldNodeId : data.oldNodeId,
-						newNodes : data.newNodes,
-						deletedNodes : data.deletedNodes,
-						moduleType : 'module' === node.type ? node.settings.type : null
-					} );
-				} );
-			}
-
-			actions.unlinkGlobalNode( nodeId, callback );
-		},
-
-		/**
-		 * Called when the node global edit overlay action is clicked.
-		 *
-		 * @since 2.10
-		 */
-		_nodeEditTemplateClicked: function( e )
-		{
-			const button = $( this );
-			let nodeId = button.attr( 'data-target-node' );
+			var overlayPos 	= 0,
+				overlay 	= null,
+				isRow		= node.hasClass( 'fl-row' ),
+				content		= isRow ? node.find( '> .fl-row-content-wrap' ) : node.find( '> .fl-node-content' ),
+				margins 	= {
+					'top' 		: parseInt( content.css( 'margin-top' ), 10 ),
+					'bottom' 	: parseInt( content.css( 'margin-bottom' ), 10 )
+				};
+				
+			// Append the template.
+			node.append( template );
 			
-			if ( ! nodeId ) {
-				nodeId = button.parents( '[data-node]' ).attr( 'data-node' );
+			// Add the active class to the node.
+			node.addClass( 'fl-block-overlay-active' );
+			
+			// Init TipTips
+			FLBuilder._initTipTips();
+			
+			// Get a reference to the overlay.
+			overlay = node.find( '> .fl-block-overlay' );
+			
+			// Adjust the overlay positions to account for negative margins.
+			if ( margins.top < 0 ) {
+				overlayPos = parseInt( overlay.css( 'top' ), 10 );
+				overlayPos = isNaN( overlayPos ) ? 0 : overlayPos;
+				overlay.css( 'top', ( margins.top + overlayPos ) + 'px' );
 			}
-
-			FLBuilder._nodeEditTemplate( nodeId );
+			if ( margins.bottom < 0 ) {
+				overlayPos = parseInt( overlay.css( 'bottom' ), 10 );
+				overlayPos = isNaN( overlayPos ) ? 0 : overlayPos;
+				overlay.css( 'bottom', ( margins.bottom + overlayPos ) + 'px' );
+			}
+			
+			// Put row action headers on the bottom if they're hidden.
+			if ( isRow && overlay.offset().top < 43 ) {
+				overlay.addClass( 'fl-row-overlay-header-bottom' );
+			}
 		},
-
-		/**
-		 * Open a new editor to edit a global template.
-		 *
-		 * @since 2.10
-		 * @param {String} nodeId The node ID of the node.
-		 */
-		_nodeEditTemplate: function( nodeId )
-		{
-			const node = $( '[data-node="' + nodeId + '"]' );
-			const win = window.parent.open( node.attr( 'data-template-url' ) );
-			win.FLBuilderGlobalNodeId = nodeId;
-		},
-
+		
 		/* Rows
 		----------------------------------------------------------*/
+		
+		/**
+		 * Adds a dashed border to empty columns.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _highlightEmptyCols
+		 */
+		_highlightEmptyCols: function()
+		{
+			var noHighlight = 'row' == FLBuilderConfig.userTemplateType ? '' : ':not(.fl-node-global)';
+				rows 		= $(FLBuilder._contentClass + ' .fl-row' + noHighlight),
+				cols 		= $(FLBuilder._contentClass + ' .fl-col' + noHighlight);
+			
+			rows.removeClass('fl-row-highlight');
+			cols.removeClass('fl-col-highlight');
+			
+			cols.each(function(){
+				
+				var col = $(this);
+				
+				if(col.find('.fl-module').length === 0) {
+					col.addClass('fl-col-highlight');
+				}
+			});
+		},
+		
+		/**
+		 * Removes all row overlays from the page.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _removeRowOverlays
+		 */
+		_removeRowOverlays: function()
+		{
+			$('.fl-row').removeClass('fl-block-overlay-active');
+			$('.fl-row-overlay').remove();
+		},
+		
+		/**
+		 * Removes all row overlays from the page.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _removeRowOverlays
+		 */
+		_disableGlobalRows: function()
+		{
+			if ( 'row' == FLBuilderConfig.userTemplateType ) {
+				return;
+			}
+			
+			var rows = $('.fl-row.fl-node-global');
+			
+			rows.addClass( 'fl-node-disabled' );
+			rows.append( '<div class="fl-node-disabled-overlay"></div>' );
+		},
+		
+		/**
+		 * Removes all row overlays from the page.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _removeRowOverlays
+		 */
+		_enableGlobalRows: function()
+		{
+			if ( 'row' == FLBuilderConfig.userTemplateType ) {
+				return;
+			}
+			
+			$( '.fl-node-disabled' ).removeClass( 'fl-node-disabled' );
+			$( '.fl-node-disabled-overlay' ).remove();
+		},
+		
+		/**
+		 * Shows an overlay with actions when the mouse enters a row.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _rowMouseenter
+		 */
+		_rowMouseenter: function()
+		{
+			var row      = $( this ),
+				template = wp.template( 'fl-row-overlay' );
 
+			if ( ! row.hasClass( 'fl-block-overlay-active' ) ) {
+				FLBuilder._appendOverlay( row, template( { 
+					global : row.hasClass( 'fl-node-global' ), 
+					node   : row.attr('data-node')
+				} ) );
+			}
+		},
+		
+		/**
+		 * Removes overlays when the mouse leaves a row.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _rowMouseleave
+		 * @param {Object} e The event object.
+		 */
+		_rowMouseleave: function(e)
+		{
+			var toElement       = $(e.toElement) || $(e.relatedTarget),
+				isOverlay       = toElement.hasClass('fl-row-overlay'),
+				isOverlayChild  = toElement.closest('.fl-row-overlay').length > 0,
+				isTipTip        = toElement.is('#tiptip_holder'),
+				isTipTipChild   = toElement.closest('#tiptip_holder').length > 0;
+			
+			if(isOverlay || isOverlayChild || isTipTip || isTipTipChild) {
+				return;
+			}
+			
+			FLBuilder._removeRowOverlays();
+		},
+		
 		/**
 		 * Returns a helper element for row drag operations.
 		 *
@@ -3775,94 +2531,9 @@
 		 */
 		_rowDragHelper: function()
 		{
-			return $('<div class="fl-builder-block-drag-helper">' + FLBuilderStrings.row + '</div>');
+			return $('<div class="fl-builder-block-drag-helper" style="width: 190px; height: 45px;">' + FLBuilderStrings.row + '</div>');
 		},
-
-		/**
-		 * Initializes dragging for row. Rows themselves aren't sortables
-		 * as nesting that many sortables breaks down quickly and draggable by
-		 * itself is slow. Instead, we are programmatically triggering the drag
-		 * of our helper div that isn't a nested sortable but connected to the
-		 * sortables in the main layout.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _rowDragInit
-		 * @param {Object} e The event object.
-		 */
-		_rowDragInit: function( e )
-		{
-			var handle = $( e.target ),
-				content = $( FLBuilder._contentClass ),
-				overlay = handle.closest( '.fl-block-overlay' ),
-				nodeId = overlay.data( 'node' ),
-				helper = $( '.fl-row-sortable-proxy-item', window.parent.document ),
-				row = content.find( '.fl-block-overlay-active[data-node="' + nodeId + '"]' );
-
-			if ( handle.closest( '.fl-block-move-menu' ).length ) {
-				return;
-			}
-
-			row.addClass( 'fl-node-dragging' );
-
-			FLBuilder._blockDragInit( e );
-
-			e.target = helper[ 0 ];
-
-			helper.trigger( e );
-		},
-
-		/**
-		 * @method _rowDragInitTouch
-		 * @param {Object} e The event object.
-		 */
-		_rowDragInitTouch: function( startEvent )
-		{
-			var handle = $( startEvent.target ),
-				helper = $( '.fl-row-sortable-proxy-item', window.parent.document ),
-				row    = handle.closest( '.fl-row' ),
-				moved  = false;
-
-			handle.on( 'touchmove', function( moveEvent ) {
-				if ( ! moved ) {
-					startEvent.currentTarget = row[0];
-					FLBuilder._rowDragInit( startEvent );
-					moved = true;
-				}
-				moveEvent.target = helper[0];
-				helper.trigger( moveEvent );
-			} );
-
-			handle.on( 'touchend', function( endEvent ) {
-				endEvent.target = helper[0];
-		        helper.trigger( endEvent );
-		        endEvent.stopPropagation();
-			} );
-		},
-
-		/**
-		 * Callback that fires when dragging starts for a row.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _rowDragStart
-		 * @param {Object} e The event object.
-		 * @param {Object} ui An object with additional info for the drag.
-		 */
-		_rowDragStart: function( e, ui )
-		{
-			var rows = $( FLBuilder._contentClass ).find( '.fl-row, .fl-module' ),
-				row  = $( '.fl-node-dragging' );
-
-			if ( 1 === rows.length ) {
-				$( FLBuilder._contentClass ).addClass( 'fl-builder-empty' );
-			}
-
-			row.hide();
-
-			FLBuilder._blockDragStart( e, ui );
-		},
-
+		
 		/**
 		 * Callback for when a row drag operation completes.
 		 *
@@ -3872,111 +2543,75 @@
 		 * @param {Object} e The event object.
 		 * @param {Object} ui An object with additional info for the drag.
 		 */
-		_rowDragStop: function( e, ui )
+		_rowDragStop: function(e, ui)
 		{
-			var item     = ui.item,
-				parent   = item.parent(),
-				row      = null,
-				group    = null,
-				position = 0;
-
-			FLBuilder._blockDragStop( e, ui );
+			var item   = ui.item,
+				parent = item.parent();
+				
+			FLBuilder._blockDragStop(e, ui);
 
 			// A row was dropped back into the row list.
-			if ( parent.hasClass( 'fl-builder-rows' ) ) {
+			if(parent.hasClass('fl-builder-rows')) {
 				item.remove();
 				return;
 			}
-			// A row was dropped back into the sortable proxy.
-			else if ( parent.hasClass( 'fl-row-sortable-proxy' ) ) {
-				$( '.fl-node-dragging' ).removeClass( 'fl-node-dragging' ).show();
-				return;
-			}
 			// Add a new row.
-			else if ( item.hasClass( 'fl-builder-block' ) ) {
-
-				// Cancel the drop if the sortable is disabled?
-				if ( parent.hasClass( 'fl-sortable-disabled' ) ) {
-					item.remove();
-					FLBuilder._showPanel();
-					return;
-				}
-				// A new row was dropped into column.
-				else if ( parent.hasClass( 'fl-col-content' ) ) {
+			else if(item.hasClass('fl-builder-block')) {
+			
+				// A row was dropped into another row.
+				if(parent.hasClass('fl-row-content')) {
 					FLBuilder._addColGroup(
-						item.closest( '.fl-col' ).attr( 'data-node' ),
-						item.attr( 'data-cols' ),
-						parent.find( '> .fl-module, .fl-col-group, .fl-builder-block' ).index( item )
+						item.closest('.fl-row').attr('data-node'),
+						item.attr('data-cols'), 
+						parent.children('.fl-col-group, .fl-builder-block').index(item)
 					);
 				}
-				// A new row was dropped next to a column.
-				else if ( parent.hasClass( 'fl-col-drop-target' ) ) {
-					FLBuilder._addCols(
-						parent.closest( '.fl-col' ),
-						parent.hasClass( 'fl-col-drop-target-last' ) ? 'after' : 'before',
-						item.attr( 'data-cols' ),
-						parent.closest( '.fl-col-group-nested' ).length > 0
-					);
-				}
-				// A new row was dropped into a column group position.
-				else if ( parent.hasClass( 'fl-col-group-drop-target' ) ) {
-
-					group    = item.closest( '.fl-col-group, .fl-module' );
-					position = item.closest( '.fl-row' ).find( '.fl-row-content' ).find( '> .fl-col-group, > .fl-module' ).index( group );
-
-					FLBuilder._addColGroup(
-						item.closest( '.fl-row' ).attr( 'data-node' ),
-						item.attr( 'data-cols' ),
-						parent.hasClass( 'fl-drop-target-last' ) ? position + 1 : position
-					);
-				}
-				// A row was dropped into a row position.
-				else {
-
-					row = item.closest( '.fl-row, .fl-module' );
-					position = $( FLBuilder._contentClass ).find( '> .fl-row, > .fl-module' ).index( row );
-					position = ! row.length ? 0 : position;
-
+				// A row was dropped into the main layout.
+				else {  
 					FLBuilder._addRow(
-						item.attr('data-cols'),
-						parent.hasClass( 'fl-drop-target-last' ) ? position + 1 : position
+						item.attr('data-cols'), 
+						parent.children('.fl-row, .fl-builder-block').index(item)
 					);
 				}
 
 				// Remove the helper.
 				item.remove();
-
+				
 				// Show the builder panel.
 				FLBuilder._showPanel();
+				
+				// Show the module list.
+				$('.fl-builder-modules').siblings('.fl-builder-blocks-section-title').eq(0).trigger('click');
 			}
 			// Reorder a row.
 			else {
-
-				row = $( '.fl-node-dragging' ).removeClass( 'fl-node-dragging' ).show();
-
-				// Make sure a single row wasn't dropped back into the main layout.
-				if ( ! parent.parent().hasClass( 'fl-builder-content' ) ) {
-
-					// Move the row in the UI.
-					if ( parent.hasClass( 'fl-drop-target-last' ) ) {
-						parent.parent().after( row );
-					}
-					else {
-						parent.parent().before( row );
-					}
-
-					// Reorder the row.
-					FLBuilder._reorderNode(
-						row.attr('data-node'),
-						row.index()
-					);
-				}
-
-				// Revert the proxy to its parent.
-				$( '.fl-row-sortable-proxy', window.parent.document ).append( ui.item );
+				FLBuilder._reorderRow(
+					item.attr('data-node'), 
+					parent.children('.fl-row').index(item)
+				);
 			}
 		},
-
+		
+		/**
+		 * Reorders a row within the layout.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _reorderRow
+		 * @param {String} node_id The node ID of the row.
+		 * @param {Number} position The new position.
+		 */     
+		_reorderRow: function(node_id, position)
+		{
+			FLBuilder.ajax({
+				action: 'fl_builder_save',
+				method: 'reorder_node',
+				node_id: node_id,
+				position: position,
+				silent: true
+			}); 
+		},
+		
 		/**
 		 * Adds a new row to the layout.
 		 *
@@ -3985,44 +2620,64 @@
 		 * @method _addRow
 		 * @param {String} cols The type of column layout to use.
 		 * @param {Number} position The position of the new row.
-		 * @param {String} module Optional. The node ID of an existing module to move to this row.
-		 */
-		_addRow: function(cols, position, module)
+		 */     
+		_addRow: function(cols, position)
 		{
-			FLBuilder._showNodeLoadingPlaceholder( $( FLBuilder._contentClass ), position );
-
+			FLBuilder.showAjaxLoader();
+		
 			FLBuilder._newRowPosition = position;
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.addRow( cols, position, module )
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_new_row',
+				cols: cols,
+				position: position
+			}, FLBuilder._addRowComplete);
 		},
-
+		
 		/**
 		 * Adds the HTML for a new row to the layout when the AJAX
-		 * add operation is complete.
+		 * add operation is complete. Adds a module if one is queued
+		 * to go in the new row.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _addRowComplete
-		 * @param {String} response The JSON response with the HTML for the new row.
-		 */
+		 * @param {String} response The HTML for the new row.
+		 */     
 		_addRowComplete: function(response)
 		{
-			var data 	= 'object' === typeof response ? response : FLBuilder._jsonParse(response),
-				content = $(FLBuilder._contentClass),
-				rowId   = $(data.html).data('node');
-
-			// Add new row info to the data.
-			data.nodeParent 	= content;
-			data.nodePosition 	= FLBuilder._newRowPosition;
-
-			// Render the layout.
-			FLBuilder._renderLayout( data, function(){
-				FLBuilder._removeNodeLoadingPlaceholder( $( '.fl-node-' + rowId ) );
-				FLBuilder.triggerHook( 'didAddRow', rowId );
-			} );
+			var content = $(FLBuilder._contentClass),
+				rows    = content.find('.fl-row'),
+				row     = $(response),
+				module  = null,
+				form    = null;
+				
+			if(rows.length === 0 || rows.length == FLBuilder._newRowPosition) {
+				content.append(row);
+			}
+			else {
+				rows.eq(FLBuilder._newRowPosition).before(row);
+			}
+			
+			FLBuilder._setupEmptyLayout();
+			FLBuilder._highlightEmptyCols();
+			FLBuilder._initSortables();
+			
+			// Add a module to the newly created row.
+			if(FLBuilder._addModuleAfterRowRender !== null) {
+			
+				// Add an existing module. 
+				if(FLBuilder._addModuleAfterRowRender.hasClass('fl-module')) {
+					module = FLBuilder._addModuleAfterRowRender;
+					row.find('.fl-col-content').eq(0).append(module);
+					FLBuilder._reorderModule(module);
+				}
+				
+				FLBuilder._highlightEmptyCols();
+				FLBuilder._addModuleAfterRowRender = null;
+			}
 		},
-
+		
 		/**
 		 * Callback for when the delete row button is clicked.
 		 *
@@ -4033,13 +2688,25 @@
 		 */
 		_deleteRowClicked: function( e )
 		{
-			var id    = $( e.target ).closest( '.fl-row' ).data( 'node' );
-			var actions = FL.Builder.getActions()
-			actions.deleteNode( id )
+			var nodeId = $(this).closest('.fl-row-overlay').attr('data-node'),
+				row    = $('.fl-row[data-node='+ nodeId +']'),
+				result = null;
 
+			if(!row.find('.fl-module').length) {
+				FLBuilder._deleteRow(row);
+			} 
+			else {
+				result = confirm(FLBuilderStrings.deleteRowMessage);
+				
+				if(result) {
+					FLBuilder._deleteRow(row);
+				}
+			}
+			
+			FLBuilder._removeAllOverlays();
 			e.stopPropagation();
 		},
-
+		
 		/**
 		 * Deletes a row.
 		 *
@@ -4050,821 +2717,234 @@
 		 */
 		_deleteRow: function(row)
 		{
-			var nodeId = row.attr('data-node');
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.deleteNode( nodeId )
-
+			FLBuilder.ajax({
+				action: 'fl_builder_save',
+				method: 'delete_node',
+				node_id: row.attr('data-node'),
+				silent: true
+			});
+			
 			row.empty();
 			row.remove();
 			FLBuilder._setupEmptyLayout();
 			FLBuilder._removeRowOverlays();
-			FLBuilder.triggerHook( 'didDeleteRow', nodeId );
 		},
-
+		
 		/**
-		 * Listen for duplicate click.
+		 * Duplicates a row.
 		 *
 		 * @since 1.3.8
 		 * @access private
 		 * @method _rowCopyClicked
 		 * @param {Object} e The event object.
-		 */
+		 */ 
 		_rowCopyClicked: function(e)
 		{
-			var id = $( this ).closest( '.fl-row' ).attr( 'data-node' );
-			FLBuilder._copyRow( id );
-
+			var nodeId = $(this).closest('.fl-row-overlay').attr('data-node');
+			
+			FLBuilder.showAjaxLoader();
+			
+			FLBuilder._removeAllOverlays();
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_save',
+				method: 'copy_row',
+				node_id: nodeId
+			}, FLBuilder._updateLayout);
+			
 			e.stopPropagation();
 		},
-
+		
 		/**
-		 * Copy settings of a row.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _rowCopySettingsClicked
-		 */
-		_rowCopySettingsClicked: function () {
-			const menuEl = $(this);
-			let nodeId = menuEl.data('target-node');
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-row-overlay').data('node');
-			}
-
-			// bind copy to the el
-			FLBuilderSettingsCopyPaste._bindCopyToElement(menuEl, 'row', nodeId, true);
-		},
-
-		/**
-		 * Paste settings of a row.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _rowPasteSettingsClicked
-		 */
-		_rowPasteSettingsClicked: function () {
-			const menuEl   = $(this);
-			const menuText = menuEl.text();
-			let nodeId = menuEl.data('target-node');
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-row-overlay').data('node');
-			}
-
-			const success  = FLBuilderSettingsCopyPaste._importFromClipboard('row', nodeId);
-
-			if (!success) {
-				// set button text
-				menuEl.text(FLBuilderStrings.module_import.error);
-
-				// restore button text
-				setTimeout(() => {
-					menuEl.text(menuText)
-				}, 1000);
-			}
-		},
-
-		/**
-		 * Duplicate a row.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _copyRow
-		 * @param String id of node
-		 * @return void
-		 */
-		_copyRow: function( nodeId ) {
-			var row      	= FLBuilder._getJQueryElement( nodeId ),
-				clone    	= row.clone(),
-				form	 	= $( '.fl-builder-settings[data-node]', window.parent.document ),
-				formNodeId 	= form.attr( 'data-node' ),
-				formNode	= ( formNodeId === nodeId ) ? row : row.find( '[data-node="' + formNodeId + '"]' ),
-				settings 	= null;
-
-			if ( form.length && formNode.length ) {
-				settings = FLBuilder._getSettings( form );
-				FLBuilderSettingsConfig.nodes[ formNodeId ] = settings;
-			}
-
-			clone.addClass( 'fl-node-' + nodeId + '-clone fl-builder-node-clone' );
-			clone.find( '.fl-block-overlay' ).remove();
-			clone.removeAttr( 'data-node' );
-			row.after( clone );
-			FLBuilder._showNodeLoading( nodeId + '-clone' );
-
-			// Animate scroll to new element
-			const el  = clone.get(0);
-			el.scrollIntoView( {
-				behavior: 'smooth',
-				block: 'center',
-			} );
-
-			const actions = FL.Builder.data.getLayoutActions()
-			const callback = function( response ) {
-				var data = FLBuilder._jsonParse( response );
-				data.nodeParent = $( FLBuilder._contentClass );
-				data.nodePosition = $( FLBuilder._contentClass + ' > .fl-row' ).index( clone );
-				data.duplicatedRow = nodeId;
-				data.onAddNewHTML = function() { clone.remove() };
-				FLBuilder._rowCopyComplete( data );
-			}
-			actions.copyRow( nodeId, settings, formNodeId, callback )
-		},
-
-		/**
-		 * Callback for when a row has been duplicated.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _rowCopyComplete
-		 * @param {Object} data
-		 */
-		_rowCopyComplete: function( data )
-		{
-			FLBuilder._renderLayout( data, function() {
-				FLBuilder.triggerHook( 'didDuplicateRow', {
-					newNodeId : data.nodeId,
-					oldNodeId : data.duplicatedRow
-				} );
-			} );
-		},
-
-		/**
-		 * Shows or hides the row max-width setting when the
-		 * row or row content width is changed.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _rowWidthChanged
-		 */
-		_rowWidthChanged: function()
-		{
-			var rowWidth     = $( '#fl-field-width select', window.parent.document ).val(),
-				contentWidth = $( '#fl-field-content_width select', window.parent.document ).val(),
-				maxWidth     = $( '#fl-field-max_content_width', window.parent.document );
-
-			if ( 'fixed' == rowWidth || ( 'full' == rowWidth && 'fixed' == contentWidth ) ) {
-				maxWidth.show();
-			} else {
-				maxWidth.hide();
-			}
-		},
-
-		/**
-		 * Toggles the Content Alignment field based on the value of the Aspect Ratio.
-		 *
-		 * @since  2.8.2
-		 * @access private
-		 * @param {Object} e An event object.
-		 * @method _rowToggleContentAlignment
-		 */
-		_rowToggleContentAlignment: function(e)
-		{
-			const contentAlignmentField = $( '#fl-field-content_alignment', window.parent.document );
-
-			if ( $( e.target ).val().trim() === '' ) {
-				contentAlignmentField.hide();
-			} else {
-				contentAlignmentField.show();
-			}
-		},
-
-		/**
-		 * Resets the max-width of a row.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _resetRowWidthClicked
-		 */
-		_resetRowWidthClicked: function( e )
-		{
-			var button   = $( this ),
-				row      = button.closest( '.fl-row' ),
-				nodeId   = row.attr( 'data-node' ),
-				content  = row.find( '.fl-row-content' ),
-				width    = FLBuilderConfig.global.row_width + 'px',
-				settings = $( '.fl-builder-row-settings', window.parent.document );
-
-			if ( row.hasClass( 'fl-row-fixed-width' ) ) {
-				row.css( 'max-width', width );
-			}
-
-			content.css( 'max-width', width );
-
-			if ( settings.length ) {
-				settings.find( '[name=max_content_width]' ).val( '' );
-			}
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.resetRowWidth( nodeId )
-
-			FLBuilder._closeAllSubmenus();
-			FLBuilder.triggerHook( 'didResetRowWidth', nodeId );
-
-			e.stopPropagation();
-		},
-
-		/**
-		 * Copy settings of a row.
-		 *
-		 * @method _rowCopySettingsFromOutlinePanel
-		 */
-		_rowCopySettingsFromOutlinePanel: function ( nodeId ) {
-			const menuEl = $(this);
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-row').data('node');
-			}
-
-			// bind copy to the el
-			FLBuilderSettingsCopyPaste._bindCopyToElement(menuEl, 'row', nodeId, true);
-		},
-
-		/**
-		 * Paste settings of a row from outline panel.
-		 *
-		 * @method _rowPasteSettingsFromOutlinePanel
-		 */
-		_rowPasteSettingsFromOutlinePanel: function ( nodeId ) {
-			const menuEl   = $(this);
-			const menuText = menuEl.text();
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-row').data('node');
-			}
-
-			const success  = FLBuilderSettingsCopyPaste._importFromClipboard('row', nodeId);
-
-			if (!success) {
-				// set button text
-				menuEl.text(FLBuilderStrings.module_import.error);
-
-				// restore button text
-				setTimeout(() => {
-					menuEl.text(menuText)
-				}, 1000);
-			}
-		},
-
-
-		/* Columns
-		----------------------------------------------------------*/
-
-		/**
-		 * Adds a dashed border to empty columns.
+		 * Shows the settings lightbox and loads the row settings
+		 * when the row settings button is clicked.
 		 *
 		 * @since 1.0
 		 * @access private
-		 * @method _highlightEmptyCols
+		 * @method _rowSettingsClicked
 		 */
-		_highlightEmptyCols: function()
+		_rowSettingsClicked: function( e )
 		{
-			var notGlobal = FLBuilderConfig.userTemplateType ? '' : ':not(.fl-node-global)',
-				cols 	  = $(FLBuilder._sortableRootClass + ' .fl-col' + notGlobal),
-				modules   = $( FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-has-children-wrapper])' + notGlobal ),
-				wrappers  = $( FLBuilder._sortableRootClass + '[data-children-wrapper],' + FLBuilder._sortableRootClass + ' [data-children-wrapper]' );
-
-			cols.removeClass('fl-col-highlight').find('.fl-col-content').css( 'min-height', '' );
-			modules.removeClass('fl-module-highlight');
-			wrappers.removeClass('fl-module-highlight');
-
-			cols.each(function(){
-				var col = $(this);
-				if(!col.find('.fl-module, .fl-col').length && !col.closest('.fl-builder-shortcode-mask-wrap').length) {
-					col.addClass('fl-col-highlight');
-				}
-			});
-
-			modules.each(function(){
-				var module = $(this);
-				if(!module.find('.fl-module').length && !module.closest('.fl-builder-shortcode-mask-wrap').length) {
-					module.addClass('fl-module-highlight');
-				}
-			});
-
-			wrappers.each(function(){
-				var wrapper = $(this);
-				if(!wrapper.find('.fl-module').length && !wrapper.closest('.fl-builder-shortcode-mask-wrap').length) {
-					wrapper.addClass('fl-module-highlight');
-				}
-			});
-		},
-
-		/**
-		 * Sets up dashed borders to show where things can
-		 * be dropped in rows and columns.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _highlightRowsAndColsForDrag
-		 * @param {Object} target The event target for the drag.
-		 */
-		_highlightRowsAndColsForDrag: function( target )
-		{
-			var notGlobal = 'row' == FLBuilderConfig.userTemplateType ? '' : ':not(.fl-node-global)';
-
-			// Do not highlight root parent column.
-			if ( 'column' == FLBuilderConfig.userTemplateType ) {
-				notGlobal = ':not(:first)';
-			}
-
-			// Highlight rows.
-			$( FLBuilder._sortableRootClass + ' > .fl-row' ).addClass( 'fl-row-highlight' );
-
-			// Highlight columns.
-			if ( ! target || ! target.closest( '.fl-row-overlay' ).length ) {
-				$( FLBuilder._sortableRootClass + ' .fl-col' + notGlobal ).each( function() {
-					if ( ! $( this ).closest( '.fl-builder-shortcode-mask-wrap' ).length ) {
-						$( this ).addClass( 'fl-col-highlight' );
-					}
-				} );
-			}
-
-			// Highlight container modules and top-level non-container modules.
-			var containerSelector = FLBuilder._sortableRootClass + ' .fl-module[data-accepts]:not([data-popover]), ' +
-				FLBuilder._sortableRootClass + ' .fl-module[data-top-level="true"]:not([data-accepts]):not([data-popover])';
-			var childContainerSelector = FLBuilder._sortableRootClass + ' [data-children-wrapper]';
-			$( containerSelector + ', ' + childContainerSelector ).each( function() {
-				if ( ! $( this ).closest( '.fl-builder-shortcode-mask-wrap' ).length ) {
-					$( this ).addClass( 'fl-module-highlight' );
-
-					if ( 0 === parseInt( $( this ).css( 'padding' ) ) ) {
-						$( this ).css( 'padding', '10px' );
-					}
-				}
-			} );
-		},
-
-		/**
-		 * Remove any column highlights
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _removeEmptyRowAndColHighlights
-		 */
-		_removeEmptyRowAndColHighlights: function() {
-			$( '.fl-row-highlight' ).removeClass('fl-row-highlight');
-			$( '.fl-col-highlight' ).removeClass('fl-col-highlight');
-			$( '.fl-module-highlight[data-accepts], .fl-module-highlight[data-top-level="true"]' ).css('padding', '');
-			$( '.fl-module-highlight' ).removeClass('fl-module-highlight');
-			$( '.fl-sortable-fixed-width' ).css( 'max-width', '' ).removeClass( 'fl-sortable-fixed-width' );
-		},
-
-		/**
-		 * Adjust the height of columns with modules in them
-		 * to account for the drop zone and keep the layout
-		 * from jumping around.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _adjustColHeightsForDrag
-		 */
-		_adjustColHeightsForDrag: function()
-		{
-			var notGlobalRow = 'row' == FLBuilderConfig.userTemplateType ? '' : '.fl-row:not(.fl-node-global) ',
-				notGlobalCol = 'column' == FLBuilderConfig.userTemplateType ? '' : '.fl-col:not(.fl-node-global) ',
-				content      = $( FLBuilder._sortableRootClass ),
-				notNested    = content.find( notGlobalRow + '.fl-col-group:not(.fl-col-group-nested) > ' + notGlobalCol + '> .fl-col-content' ),
-				nested       = content.find( notGlobalRow + '.fl-col-group-nested ' + notGlobalCol + '.fl-col-content' ),
-				col          = null,
-				i            = 0;
-
-			$( '.fl-node-drag-init' ).hide();
-
-			for ( ; i < nested.length; i++ ) {
-				if ( ! nested.eq( i ).closest( '.fl-builder-shortcode-mask-wrap' ).length ) {
-					FLBuilder._adjustColHeightForDrag( nested.eq( i ) );
+			var button = $( this ),
+				nodeId = button.closest( '.fl-row-overlay' ).attr( 'data-node' ),
+				global = button.closest( '.fl-block-overlay-global' ).length > 0;
+			
+			if ( global && 'row' != FLBuilderConfig.userTemplateType ) {
+				if ( FLBuilderConfig.userCanEditGlobalTemplates ) {
+					window.open( $( '.fl-row[data-node="' + nodeId + '"]' ).attr( 'data-template-url' ) );
 				}
 			}
-
-			for ( i = 0; i < notNested.length; i++ ) {
-				if ( ! notNested.eq( i ).closest( '.fl-builder-shortcode-mask-wrap' ).length ) {
-					FLBuilder._adjustColHeightForDrag( notNested.eq( i ) );
-				}
+			else if ( button.hasClass( 'fl-block-settings' ) ) {
+				
+				FLBuilder._closePanel();
+				FLBuilder._showLightbox();
+				
+				FLBuilder.ajax({
+					action: 'fl_builder_render_row_settings',
+					node_id: nodeId
+				}, FLBuilder._rowSettingsLoaded);
 			}
-
-			$( '.fl-node-drag-init' ).show();
-		},
-
-		/**
-		 * Adjust the height of a single column for dragging.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _adjustColHeightForDrag
-		 */
-		_adjustColHeightForDrag: function( col )
-		{
-			if ( col.find( '.fl-module:visible, .fl-col:visible' ).length ) {
-				col.css( 'min-height', col.height() + 45 );
-			}
-		},
-
-		/**
-		 * Returns a helper element for column drag operations.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _colDragHelper
-		 * @return {Object} The helper element.
-		 */
-		_colDragHelper: function()
-		{
-			return $('<div class="fl-builder-block-drag-helper">' + FLBuilderStrings.column + '</div>');
-		},
-
-		/**
-		 * Initializes dragging for columns. Columns themselves aren't sortables
-		 * as nesting that many sortables breaks down quickly and draggable by
-		 * itself is slow. Instead, we are programmatically triggering the drag
-		 * of our helper div that isn't a nested sortable but connected to the
-		 * sortables in the main layout.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _colDragInit
-		 * @param {Object} e The event object.
-		 */
-		_colDragInit: function( e )
-		{
-			var handle = $( e.target ),
-				content = $( FLBuilder._contentClass ),
-				overlay = handle.closest( '.fl-block-overlay' ),
-				nodeId = overlay.data( 'node' ),
-				helper = $( '.fl-col-sortable-proxy-item', window.parent.document ),
-				col = content.find( '.fl-block-overlay-active[data-node="' + nodeId + '"]' );
-
-			if ( handle.closest( '.fl-block-move-menu' ).length ) {
-				return;
-			} else if ( handle.hasClass( 'fl-block-col-move-parent' ) ) {
-				col = col.parents( '.fl-col' );
-			} else if ( handle.data( 'target-node' ) ) {
-				col = $( '.fl-col[data-node=' + handle.data( 'target-node' ) + ']' );
-			}
-
-			col.addClass( 'fl-node-dragging' );
-
-			FLBuilder._blockDragInit( e );
-
-			e.target = helper[ 0 ];
-
-			helper.trigger( e );
-		},
-
-		/**
-		 * @method _colDragInitTouch
-		 * @param {Object} e The event object.
-		 */
-		_colDragInitTouch: function( startEvent )
-		{
-			var handle = $( startEvent.target ),
-				helper = $( '.fl-col-sortable-proxy-item', window.parent.document ),
-				col    = handle.closest( '.fl-col' ),
-				moved  = false;
-
-			if ( handle.data( 'target-node' ) ) {
-				col = $( '.fl-col[data-node=' + handle.data( 'target-node' ) + ']' );
-			}
-
-			handle.on( 'touchmove', function( moveEvent ) {
-				if ( ! moved ) {
-					startEvent.currentTarget = col[0];
-					FLBuilder._colDragInit( startEvent );
-					moved = true;
-				}
-				moveEvent.target = helper[0];
-				helper.trigger( moveEvent );
-			} );
-
-			handle.on( 'touchend', function( endEvent ) {
-				endEvent.target = helper[0];
-		        helper.trigger( endEvent );
-		        endEvent.stopPropagation();
-			} );
-		},
-
-		/**
-		 * Callback that fires when dragging starts for a column.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _colDragStart
-		 * @param {Object} e The event object.
-		 * @param {Object} ui An object with additional info for the drag.
-		 */
-		_colDragStart: function( e, ui )
-		{
-			var col = $( '.fl-node-dragging' );
-
-			col.hide();
-
-			FLBuilder._resetColumnWidths( col.parent() );
-			FLBuilder._blockDragStart( e, ui );
-		},
-
-		/**
-		 * Callback that fires when dragging stops for a column.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _colDragStop
-		 * @param {Object} e The event object.
-		 * @param {Object} ui An object with additional info for the drag.
-		 */
-		_colDragStop: function( e, ui )
-		{
-			FLBuilder._blockDragStop( e, ui );
-
-			var col        = $( '.fl-node-dragging' ).removeClass( 'fl-node-dragging' ).show(),
-				colId      = col.attr( 'data-node' ),
-				newParent  = ui.item.parent(),
-				oldGroup   = col.parent(),
-				oldGroupId = oldGroup.attr( 'data-node' )
-				newGroup   = newParent.closest( '.fl-col-group' ),
-				newGroupId = newGroup.attr( 'data-node' ),
-				newRow     = newParent.closest('.fl-row, .fl-module'),
-				position   = 0,
-				actions    = FL.Builder.data.getLayoutActions();
-
-			// Cancel if a column was dropped into itself.
-			if ( newParent.closest( '[data-node="' + colId + '"]' ).length ) {
-				FLBuilder._resetColumnWidths( oldGroup );
-			}
-			// Cancel the drop if the sortable is disabled?
-			else if ( newParent.hasClass( 'fl-sortable-disabled' ) ) {
-				FLBuilder._resetColumnWidths( oldGroup );
-			}
-			// A column was dropped back into the sortable proxy.
-			else if ( newParent.hasClass( 'fl-col-sortable-proxy' ) ) {
-				FLBuilder._resetColumnWidths( oldGroup );
-			}
-			// A column was dropped into a column.
-			else if ( newParent.hasClass( 'fl-col-content' ) ) {
-
-				// Remove the column.
-				col.remove();
-
-				// Remove empty old groups (needs to be done here for correct position).
-				if ( 0 === oldGroup.find( '.fl-col' ).length ) {
-					actions.removeNode( oldGroup.attr( 'data-node' ) );
-					oldGroup.remove();
-				}
-
-				// Find the new group position.
-				position = newParent.find( '> .fl-module, .fl-col-group, .fl-col-sortable-proxy-item' ).index( ui.item );
-
-				// Add the new group.
-				FLBuilder._addColGroup( newParent.closest( '.fl-col' ).attr('data-node'), colId, position );
-			}
-			// A column was dropped into a column position.
-			else if ( newParent.hasClass( 'fl-col-drop-target' ) ) {
-
-				// Move the column in the UI.
-				if ( newParent.hasClass( 'fl-col-drop-target-last' ) ) {
-					newParent.parent().after( col );
-				}
-				else {
-					newParent.parent().before( col );
-				}
-
-				// Reset the UI column widths.
-				FLBuilder._resetColumnWidths( newGroup );
-
-				// Save the column move via AJAX.
-				const actions = FL.Builder.data.getLayoutActions()
-
-				if ( oldGroupId == newGroupId ) {
-
-					FL.Builder.getActions().moveNode( colId, col.index() )
-				}
-				else {
-
-					FL.Builder.getActions().moveNode( colId, col.index(), newGroupId, [ oldGroupId, newGroupId ] )
-				}
-
-				// Trigger a layout resize.
-				FLBuilder._resizeLayout();
-			}
-			// A column was dropped into a column group position.
-			else if ( newParent.hasClass( 'fl-col-group-drop-target' ) ) {
-
-				// Remove the column.
-				col.remove();
-
-				// Remove empty old groups (needs to be done here for correct position).
-				if ( 0 === oldGroup.find( '.fl-col' ).length ) {
-					actions.removeNode( oldGroup.attr( 'data-node' ) );
-					oldGroup.remove();
-				}
-
-				// Find the new group position.
-				position = newRow.find( '.fl-row-content' ).find( ' > .fl-col-group,  > .fl-module' ).index( newGroup );
-				position = newParent.hasClass( 'fl-drop-target-last' ) ? position + 1 : position;
-
-				// Add the new group.
-				FLBuilder._addColGroup( newRow.attr('data-node'), colId, position );
-			}
-			// A column was dropped into a row position.
-			else if ( newParent.hasClass( 'fl-row-drop-target' ) ) {
-
-				// Remove the column.
-				col.remove();
-
-				// Find the new row position.
-				position = newParent.closest( '.fl-builder-content' ).find( '.fl-row, > .fl-module' ).index( newRow );
-				position = newParent.hasClass( 'fl-drop-target-last' ) ? position + 1 : position;
-
-				// Add the new row.
-				FLBuilder._addRow( colId, position );
-			}
-
-			// Remove empty old groups.
-			if ( 0 === oldGroup.find( '.fl-col' ).length ) {
-				actions.removeNode( oldGroup.attr( 'data-node' ) );
-				oldGroup.remove();
-			}
-
-			// Revert the proxy to its parent.
-			$( '.fl-col-sortable-proxy', window.parent.document ).append( ui.item );
-
-			// Finish the drag.
-			FLBuilder._highlightEmptyCols();
-			FLBuilder._initDropTargets();
-			FLBuilder._initSortables();
-			FLBuilder._closeAllSubmenus();
-		},
-
-		/**
-		 * Copy settings of a column.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _colCopySettingsClicked
-		 */
-		_colCopySettingsClicked: function () {
-			const menuEl = $(this);
-			let nodeId = menuEl.data('target-node');
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-col-overlay').data('node');
-			}
-
-			// bind copy to the el
-			FLBuilderSettingsCopyPaste._bindCopyToElement(menuEl, 'column', nodeId);
-		},
-
-		/**
-		 * Paste settings of a column.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _colPasteSettingsClicked
-		 */
-		_colPasteSettingsClicked: function () {
-			const menuEl   = $(this);
-			const menuText = menuEl.text();
-			let nodeId = menuEl.data('target-node');
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-col-overlay').data('node');
-			}
-
-			const success  = FLBuilderSettingsCopyPaste._importFromClipboard('column', nodeId);
-
-			if (!success) {
-				// set button text
-				menuEl.text(FLBuilderStrings.module_import.error);
-
-				// restore button text
-				setTimeout(() => {
-					menuEl.text(menuText)
-				}, 1000);
-			}
-		},
-
-		/**
-		 * Copy settings of a column from outline panel.
-		 *
-		 * @access private
-		 * @method _colCopySettingsFromOutlinePanel
-		 */
-		_colCopySettingsFromOutlinePanel: function ( nodeId ) {
-			const menuEl = $(this);
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-col').data('node');
-			}
-
-			// bind copy to the el
-			FLBuilderSettingsCopyPaste._bindCopyToElement(menuEl, 'column', nodeId);
-		},
-
-		/**
-		 * Paste settings of a column from outline panel.
-		 *
-		 * @access private
-		 * @method _colPasteSettingsFromOutlinePanel
-		 */
-		_colPasteSettingsFromOutlinePanel: function ( nodeId ) {
-			const menuEl   = $(this);
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-col').data('node');
-			}
-
-			const success  = FLBuilderSettingsCopyPaste._importFromClipboard('column', nodeId);
-
-			if (!success) {
-				// set button text
-				menuEl.text(FLBuilderStrings.module_import.error);
-
-				// restore button text
-				setTimeout(() => {
-					menuEl.text(menuText)
-				}, 1000);
-			}
-		},
-
-		/**
-		 * Callback for when the copy column button is clicked.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _copyColClicked
-		 * @param {Object} e The event object.
-		 */
-		_copyColClicked: function( e )
-		{
-			var id = $( this ).closest( '.fl-col' ).attr( 'data-node' );
-			FLBuilder._copyColumn( id );
-
+			
 			e.stopPropagation();
 		},
-
+		
 		/**
-		 * Handle Column Duplication
+		 * Sets the lightbox content when the row settings have 
+		 * loaded and creates a new preview.
 		 *
-		 * @since 2.5
+		 * @since 1.0
 		 * @access private
-		 * @method _copyColumn
-		 * @param String id of node
-		 * @return void
+		 * @method _rowSettingsLoaded
+		 * @param {String} response The HTML for the row settings form.
 		 */
-		_copyColumn: function( nodeId ) {
-			var col         = FLBuilder._getJQueryElement( nodeId ),
-				clone  		= col.clone(),
-				group  		= col.parent(),
-				form	 	= $( '.fl-builder-settings[data-node]', window.parent.document ),
-				formNodeId 	= form.attr( 'data-node' ),
-				formNode	= ( formNodeId === nodeId ) ? col : col.find( '[data-node="' + formNodeId + '"]' ),
-				settings 	= null;
-
-			if ( form.length && formNode.length ) {
-				settings = FLBuilder._getSettings( form );
-				FLBuilderSettingsConfig.nodes[ formNodeId ] = settings;
-			}
-
-			clone.addClass( 'fl-node-' + nodeId + '-clone fl-builder-node-clone' );
-			clone.find( '.fl-block-overlay' ).remove();
-			clone.removeAttr( 'data-node' );
-			col.after( clone );
-
-			FLBuilder._showNodeLoading( nodeId + '-clone' );
-			FLBuilder._resetColumnWidths( group );
-
-			const actions = FL.Builder.data.getLayoutActions()
-			const callback = function( response ) {
-				var data = FLBuilder._jsonParse( response );
-				data.nodeParent = group;
-				data.nodePosition = clone.index();
-				data.duplicatedColumn = nodeId;
-				data.onAddNewHTML = function() { clone.remove() };
-				FLBuilder._copyColComplete( data );
-			}
-			actions.copyColumn( nodeId, settings, formNodeId, callback )
-		},
-
-		/**
-		 * Callback for when a column has been duplicated.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _copyColComplete
-		 * @param {Object} data
-		 */
-		_copyColComplete: function( data )
+		_rowSettingsLoaded: function(response)
 		{
-			FLBuilder._renderLayout( data, function(){
-				FLBuilder._resetColumnWidths( data.nodeParent );
-				FLBuilder.triggerHook( 'didDuplicateColumn', {
-					newNodeId : data.nodeId,
-					oldNodeId : data.duplicatedColumn
-				} );
-			} );
+			FLBuilder._setSettingsFormContent(response);
+			
+			FLBuilder.preview = new FLBuilderPreview({ type : 'row' });
 		},
+		
+		/* Columns
+		----------------------------------------------------------*/
+		
+		/**
+		 * Shows an overlay with actions when the mouse enters a column.
+		 *
+		 * @since 1.1.9
+		 * @access private
+		 * @method _colMouseenter
+		 */
+		_colMouseenter: function()
+		{
+			var col 	 	  	= $( this ),
+				global		  	= col.hasClass( 'fl-node-global' ),
+				parentGlobal  	= col.parents( '.fl-node-global' ).length > 0,
+				numCols		  	= col.parents( '.fl-col-group' ).find( '.fl-col' ).length,
+				first   		= 0 === col.index(),
+				last    		= numCols === col.index() + 1,
+				template 		= wp.template( 'fl-col-overlay' );
 
+			if ( FLBuilderConfig.simpleUi ) {
+				return;
+			}
+			else if ( global && parentGlobal && 'row' != FLBuilderConfig.userTemplateType ) {
+				return;
+			}
+			else if ( col.find( '.fl-module' ).length > 0 ) {
+				return;
+			}
+			else if ( ! col.hasClass( 'fl-block-overlay-active' ) ) {
+				
+				// Remove existing overlays.
+				FLBuilder._removeColOverlays();
+				FLBuilder._removeModuleOverlays();
+				
+				// Append the template.
+				FLBuilder._appendOverlay( col, template( {
+					global	: global,
+					numCols	: numCols,
+					first   : first,
+					last   	: last
+				} ) );
+				
+				// Init column resizing.
+				FLBuilder._initColDragResizing();
+			}
+			
+			$( 'body' ).addClass( 'fl-block-overlay-muted' );
+		},
+		
+		/**
+		 * Removes overlays when the mouse leaves a column.
+		 *
+		 * @since 1.1.9
+		 * @access private
+		 * @method _colMouseleave
+		 * @param {Object} e The event object.
+		 */
+		_colMouseleave: function(e)
+		{
+			var col             = $(this),
+				toElement       = $(e.toElement) || $(e.relatedTarget),
+				hasModules      = col.find('.fl-module').length > 0,
+				isTipTip        = toElement.is('#tiptip_holder'),
+				isTipTipChild   = toElement.closest('#tiptip_holder').length > 0;
+			
+			if(hasModules || isTipTip || isTipTipChild) {
+				return;
+			}
+			
+			FLBuilder._removeColOverlays();
+		},
+		
+		/**
+		 * Removes all column overlays from the page.
+		 *
+		 * @since 1.6.4
+		 * @access private
+		 * @method _removeColOverlays
+		 */
+		_removeColOverlays: function()
+		{
+			var cols = $( '.fl-col' );
+			
+			cols.removeClass('fl-block-overlay-active');
+			cols.find('.fl-col-overlay').remove();
+			$('body').removeClass('fl-block-overlay-muted');
+		},
+		
+		/**
+		 * Shows the settings lightbox and loads the column settings
+		 * when the column settings button is clicked.
+		 *
+		 * @since 1.1.9
+		 * @access private
+		 * @method _colSettingsClicked
+		 * @param {Object} e The event object.
+		 */
+		_colSettingsClicked: function(e)
+		{
+			var nodeId = $(this).closest('.fl-col').attr('data-node');
+			
+			if ( FLBuilder._colResizing ) {
+				return;
+			}
+			
+			FLBuilder._closePanel();
+			FLBuilder._showLightbox();
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_column_settings',
+				node_id: nodeId
+			}, FLBuilder._colSettingsLoaded);
+			
+			e.stopPropagation();
+		},
+		
+		/**
+		 * Sets the lightbox content when the column settings have 
+		 * loaded and creates a new preview.
+		 *
+		 * @since 1.1.9
+		 * @access private
+		 * @method _colSettingsLoaded
+		 * @param {String} response The HTML for the column settings form.
+		 */
+		_colSettingsLoaded: function(response)
+		{
+			FLBuilder._setSettingsFormContent(response);
+			
+			var settings = $('.fl-builder-col-settings'),
+				nodeId   = settings.data('node'),
+				col      = $('.fl-col[data-node="' + nodeId + '"]');
+				
+			if(col.siblings('.fl-col').length === 0) {
+				$(settings).find('#fl-builder-settings-section-general').css('display', 'none');
+			}
+			
+			FLBuilder.preview = new FLBuilderPreview({ type : 'col' });
+		},
+		
 		/**
 		 * Callback for when the delete column button is clicked.
 		 *
@@ -4875,67 +2955,51 @@
 		 */
 		_deleteColClicked: function( e )
 		{
-			var id = $( e.target ).closest( '.fl-col' ).data( 'node' );
-			var actions = FL.Builder.getActions();
-			actions.deleteNode( id );
-
+			var button = $( this ),
+				col    = button.closest( '.fl-col' ),
+				module = button.closest( '.fl-module' ),
+				result = true;
+				
+			if ( module.length > 0 ) {
+				result = confirm( FLBuilderStrings.deleteColumnMessage );	
+			}
+			if ( result ) {
+				FLBuilder._deleteCol( col );
+				FLBuilder._removeAllOverlays();
+			}
+			
 			e.stopPropagation();
 		},
-
-		/**
-		 * Handle selecting the proper dom node to delete in nested column situations.
-		 */
-		_getColToDelete: function( initialCol ) {
-			var col            = initialCol,
-			parentGroup        = col.closest( '.fl-col-group' ),
-			parentCol          = col.parents( '.fl-col:not(:has(.fl-builder-content-primary))' ),
-			hasParentCol       = parentCol.length > 0,
-			parentChildren     = parentCol.find( '> .fl-col-content > .fl-module, > .fl-col-content > .fl-col-group' ),
-			siblingCols        = col.siblings( '.fl-col' );
-
-			// Handle deleting of nested columns.
-			if ( hasParentCol && 1 === parentChildren.length ) {
-
-				if ( 0 === siblingCols.length ) {
-					col = parentCol;
-				}
-				else if ( 1 === siblingCols.length && ! siblingCols.find( '.fl-module' ).length ) {
-					col = parentGroup;
-				}
-			}
-			return col
-		},
-
+		
 		/**
 		 * Deletes a column.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _deleteCol
-		 * @param {Object} col A jQuery reference of the column to delete (can also be a group).
+		 * @param {Object} col A jQuery reference of the column to delete.
 		 */
 		_deleteCol: function(col)
 		{
-			var nodeId = col.attr('data-node'),
-				row    = col.closest('.fl-row'),
-				group  = col.closest('.fl-col-group'),
-				cols   = null,
-				width  = 0;
-
+			var row   = col.closest('.fl-row'),
+				group = col.closest('.fl-col-group'),
+				cols  = null,
+				width = 0;
+				
 			col.remove();
-			rowCols   = row.find('.fl-row-content > .fl-col-group > .fl-col, .fl-row-content > .fl-module');
-			groupCols = group.find(' > .fl-col');
-
-			if(0 === rowCols.length && 'row' != FLBuilderConfig.userTemplateType && 'column' != FLBuilderConfig.userTemplateType) {
+			rowCols   = row.find('.fl-col');
+			groupCols = group.find('.fl-col');
+			
+			if(0 === rowCols.length && 'row' != FLBuilderConfig.userTemplateType) {
 				FLBuilder._deleteRow(row);
 			}
 			else {
-
+				
 				if(0 === groupCols.length) {
 					group.remove();
 				}
 				else {
-
+					
 					if ( 6 === groupCols.length ) {
 						width = 16.65;
 					}
@@ -4945,104 +3009,74 @@
 					else {
 						width = Math.round( 100 / groupCols.length * 100 ) / 100;
 					}
-
+					
 					groupCols.css('width', width + '%');
-
-					FLBuilder.triggerHook( 'didResetColumnWidths', {
-						cols : groupCols
-					} );
 				}
-
-				const actions = FL.Builder.data.getLayoutActions()
-				actions.deleteColumn( nodeId, width )
-
-				FLBuilder._initDropTargets();
-				FLBuilder._initSortables();
-				FLBuilder.triggerHook( 'col-deleted' );
-				FLBuilder.triggerHook( 'didDeleteColumn', nodeId );
+			
+				FLBuilder.ajax({
+					action          : 'fl_builder_save',
+					method          : 'delete_col',
+					node_id         : col.attr('data-node'),
+					new_width       : width,
+					silent          : true
+				});
 			}
 		},
-
+		
 		/**
-		 * Deletes a column group.
-		 *
-		 * @since 2.8
-		 * @param {Object} group A jQuery reference of the group to delete.
-		 */
-		_deleteColGroup: function( group )
-		{
-			var nodeId = group.attr( 'data-node' );
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.deleteNode( nodeId )
-
-			group.empty();
-			group.remove();
-			FLBuilder.triggerHook( 'didDeleteColumnGroup', nodeId );
-		},
-
-		/**
-		 * Inserts a column (or columns) before or after another column.
+		 * Inserts a column before another column when the insert
+		 * column before link is clicked.
 		 *
 		 * @since 1.6.4
 		 * @access private
-		 * @method _addCols
-		 * @param {Object|String} col A jQuery reference of the column to insert before or after.
-		 * @param {String} insert Either before or after.
-		 * @param {String} type The type of column(s) to insert.
-		 * @param {Boolean} nested Whether these columns are nested or not.
-		 * @param {String} module Optional. The node ID of an existing module to move to this group.
+		 * @method _insertColBeforeClicked
+		 * @param {Object} e The event object.
 		 */
-		_addCols: function( col, insert, type, nested, module )
+		_insertColBeforeClicked: function( e )
 		{
-			var col      = 'string' === typeof col ? $( '.fl-node-' + col ) : col,
-				parent   = col.closest( '.fl-col-group' ),
-				position = parent.find( '.fl-col' ).index( col ),
-				id       = col.attr('data-node');
-
-			type   = typeof type == 'undefined' ? '1-col' : type;
-			nested = typeof nested == 'undefined' ? false : nested;
-			nested = nested ? 1 : 0
-
-			if ( 'after' == insert ) {
-				position++;
-			}
-
-			FLBuilder._showNodeLoadingPlaceholder( parent, position );
-			FLBuilder._removeAllOverlays();
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.addColumns( id, insert, type, nested, module )
+			FLBuilder._insertCol( $( this ).closest( '.fl-col' ), 'before' );
+			
+			e.stopPropagation();
 		},
-
+		
 		/**
-		 * Adds the HTML for columns to the layout when the AJAX add
-		 * operation is complete. Adds a module if one is queued to
-		 * go in a new column.
+		 * Inserts a column after another column when the insert
+		 * column after link is clicked.
 		 *
-		 * @since 1.9
+		 * @since 1.6.4
 		 * @access private
-		 * @method _addColsComplete
-		 * @param {Object|String} response The JSON response with the HTML for the new column(s).
+		 * @method _insertColAfterClicked
+		 * @param {Object} e The event object.
 		 */
-		_addColsComplete: function( response )
+		_insertColAfterClicked: function( e )
 		{
-			var data = 'object' === typeof response ? response : FLBuilder._jsonParse( response ),
-				col = null;
-
-			data.nodeParent   = FLBuilder._newColParent;
-			data.nodePosition = FLBuilder._newColPosition;
-
-			// Render the layout.
-			FLBuilder._renderLayout( data, function() {
-				FLBuilder._removeNodeLoadingPlaceholder( $( '.fl-node-' + data.nodeId ) );
-				FLBuilder.triggerHook( 'didAddColumn', data.nodeId );
-				FLBuilder.triggerHook( 'didResetColumnWidths', {
-					cols : $( '.fl-node-' + data.nodeId ).find( '> .fl-col' )
-				} );
-			} );
+			FLBuilder._insertCol( $( this ).closest( '.fl-col' ), 'after' );
+			
+			e.stopPropagation();
 		},
-
+		
+		/**
+		 * Inserts a column before or after another column.
+		 *
+		 * @since 1.6.4
+		 * @access private
+		 * @method _insertCol
+		 * @param {Object} col A jQuery reference of the column to insert before or after.
+		 * @param {String} insert Either before or after.
+		 */
+		_insertCol: function( col, insert )
+		{
+			FLBuilder.showAjaxLoader();
+			FLBuilder._removeAllOverlays();
+			
+			FLBuilder.ajax( {
+				action          : 'fl_builder_save',
+				method          : 'insert_col',
+				node_id         : col.attr('data-node'),
+				insert 			: insert
+			}, FLBuilder._updateLayout );
+		},
+		
 		/**
 		 * Adds a new column group to the layout.
 		 *
@@ -5052,64 +3086,65 @@
 		 * @param {String} nodeId The node ID of the parent row.
 		 * @param {String} cols The type of column layout to use.
 		 * @param {Number} position The position of the new column group.
-		 * @param {String} module Optional. The node ID of an existing module to move to this group.
 		 */
-		_addColGroup: function( nodeId, cols, position, module )
+		_addColGroup: function(nodeId, cols, position)
 		{
-			var parent = $( '.fl-node-' + nodeId );
-
-			// Save the new column group info.
+			FLBuilder.showAjaxLoader();
+			
+			FLBuilder._newColGroupParent = $('.fl-node-' + nodeId + ' .fl-row-content');
 			FLBuilder._newColGroupPosition = position;
-
-			if ( parent.hasClass( 'fl-col' ) ) {
-				FLBuilder._newColGroupParent = parent.find( ' > .fl-col-content' );
-			}
-			else {
-				FLBuilder._newColGroupParent = parent.find( '.fl-row-content' );
-			}
-
-			// Show the loader.
-			FLBuilder._showNodeLoadingPlaceholder( FLBuilder._newColGroupParent, position );
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.addColumnGroup( nodeId, cols, position, module )
+			
+			FLBuilder.ajax({
+				action      : 'fl_builder_render_new_column_group',
+				cols        : cols,
+				node_id     : nodeId,
+				position    : position
+			}, FLBuilder._addColGroupComplete);
 		},
-
+		
 		/**
-		 * Adds the HTML for a new column group to the layout when
-		 * the AJAX add operation is complete. Adds a module if one
+		 * Adds the HTML for a new column group to the layout when 
+		 * the AJAX add operation is complete. Adds a module if one 
 		 * is queued to go in the new column group.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _addColGroupComplete
-		 * @param {String} response The JSON response with the HTML for the new column group.
-		 */
+		 * @param {String} response The HTML for the new column group.
+		 */     
 		_addColGroupComplete: function(response)
 		{
-			var data    = FLBuilder._jsonParse(response),
-				html    = $(data.html),
-				groupId = html.data('node'),
-				colId   = html.find('.fl-col').data('node');
+			var rowContent  = FLBuilder._newColGroupParent,
+				groups      = rowContent.find('.fl-col-group'),
+				group       = $(response),
+				col         = group.find('.fl-col-content').eq(0),
+				module      = null,
+				form        = null;
+			  
+			if(groups.length === 0 || groups.length == FLBuilder._newColGroupPosition) {
+				rowContent.append(group);
+			}
+			else {
+				groups.eq(FLBuilder._newColGroupPosition).before(group);
+			}
 
-			// Add new column group info to the data.
-			data.nodeParent 	= FLBuilder._newColGroupParent;
-			data.nodePosition 	= FLBuilder._newColGroupPosition;
-
-			// Render the layout.
-			FLBuilder._renderLayout( data, function(){
-
-				// Added the nested columns class if needed.
-				if ( data.nodeParent.hasClass( 'fl-col-content' ) ) {
-					data.nodeParent.parents( '.fl-col' ).addClass( 'fl-col-has-cols' );
+			// Add a module to the newly created column group.
+			if(FLBuilder._addModuleAfterRowRender !== null) {
+			
+				// Add an existing module. 
+				if(FLBuilder._addModuleAfterRowRender.hasClass('fl-module')) {
+					module = FLBuilder._addModuleAfterRowRender;
+					col.append(module);
+					FLBuilder._reorderModule(module);
 				}
-
-				// Remove the loading placeholder.
-				FLBuilder._removeNodeLoadingPlaceholder( $( '.fl-node-' + groupId ) );
-				FLBuilder.triggerHook( 'didAddColumnGroup', groupId );
-			} );
+				
+				FLBuilder._addModuleAfterRowRender = null;
+			}
+			
+			FLBuilder._highlightEmptyCols();
+			FLBuilder._initSortables();
 		},
-
+		
 		/**
 		 * Initializes draggables for column resizing.
 		 *
@@ -5119,14 +3154,14 @@
 		 */
 		_initColDragResizing: function()
 		{
-			$( '.fl-block-col-resize' ).not( '.fl-block-row-resize' ).draggable( {
+			$( '.fl-block-col-resize' ).draggable( {
 				axis 	: 'x',
 				start 	: FLBuilder._colDragResizeStart,
 				drag	: FLBuilder._colDragResize,
 				stop 	: FLBuilder._colDragResizeStop
 			} );
 		},
-
+		
 		/**
 		 * Fires when dragging for a column resize starts.
 		 *
@@ -5139,61 +3174,38 @@
 		_colDragResizeStart: function( e, ui )
 		{
 			// Setup resize vars.
-			var handle 		   = $( ui.helper ),
-				overlay 	   = handle.closest( '.fl-block-overlay' ),
-				nodeId 		   = overlay.attr( 'data-node' ),
-				thisCol		   = $( `.fl-node-${ nodeId }` ).closest( '.fl-col' ),
-				direction 	   = '',
-				resizeParent   = handle.hasClass( 'fl-block-col-resize-parent' ),
-				parentCol      = resizeParent ? thisCol.parents( '.fl-col' ) : null,
-				group		   = resizeParent ? parentCol.parents( '.fl-col-group' ) : thisCol.closest( '.fl-col-group' ),
-				cols 		   = group.find( '> .fl-col' ),
-				col 		   = resizeParent ? parentCol : thisCol,
-				colId		   = col.attr( 'data-node' ),
-				colSetting	   = $( '[data-node=' + colId + '] #fl-field-size input', window.parent.document ),
-				sibling 	   = null,
-				siblingId 	   = null,
-				siblingSetting = null,
-				availWidth     = 100,
-				i 			   = 0,
-				setting		   = null,
-				settingType    = null;
-
+			var handle 		= $( ui.helper ),
+				direction 	= '',
+				group		= handle.closest( '.fl-col-group' ),
+				cols 		= group.find( '.fl-col' ),
+				col 		= handle.closest( '.fl-col' ),
+				sibling 	= null,
+				availWidth  = 100,
+				i 			= 0;
+			
 			// Find the direction and sibling.
 			if ( handle.hasClass( 'fl-block-col-resize-e' ) ) {
 				direction = 'e';
-				sibling   = col.nextAll( '.fl-col' ).first();
+				sibling = col.next( '.fl-col' );
 			}
 			else {
 				direction = 'w';
-				sibling   = col.prevAll( '.fl-col' ).first();
+				sibling = col.prev( '.fl-col' );
 			}
-
-			siblingId 	   = sibling.attr( 'data-node' );
-			siblingSetting = $( '[data-node=' + siblingId + '] #fl-field-size input', window.parent.document );
-
+			
 			// Find the available width.
 			for ( ; i < cols.length; i++ ) {
-
+				
 				if ( cols.eq( i ).data( 'node' ) == col.data( 'node' ) ) {
 					continue;
 				}
 				if ( cols.eq( i ).data( 'node' ) == sibling.data( 'node' ) ) {
 					continue;
 				}
-
+				
 				availWidth -= parseFloat( cols.eq( i )[ 0 ].style.width );
 			}
-
-			// Find the setting if a column form is open.
-			if ( colSetting.length ) {
-				setting = colSetting;
-				settingType = 'col';
-			} else if ( siblingSetting.length ) {
-				setting = siblingSetting;
-				settingType = 'sibling';
-			}
-
+			
 			// Build the resize data object.
 			FLBuilder._colResizeData = {
 				handle			: handle,
@@ -5202,31 +3214,20 @@
 				direction		: direction,
 				groupWidth		: group.outerWidth(),
 				col 			: col,
-				id				: col.attr( 'data-node' ),
 				colWidth 		: parseFloat( col[ 0 ].style.width ) / 100,
 				sibling 		: sibling,
-				siblingId		: sibling.attr( 'data-node' ),
 				offset  		: ui.position.left,
-				availWidth		: availWidth,
-				setting			: setting,
-				settingType		: settingType,
-				layoutActions	: FL.Builder.data.getLayoutActions()
+				availWidth		: availWidth
 			};
-
+			
 			// Set the resizing flag.
 			FLBuilder._colResizing = true;
-
-			// Add the body col resize class.
-			$( 'body' ).addClass( 'fl-builder-col-resizing' );
-
+			
 			// Close the builder panel and destroy overlay events.
 			FLBuilder._closePanel();
 			FLBuilder._destroyOverlayEvents();
-
-			// Trigger the col-resize-start hook.
-			FLBuilder.triggerHook( 'col-resize-start' );
 		},
-
+		
 		/**
 		 * Fires when dragging for a column resize is in progress.
 		 *
@@ -5240,70 +3241,39 @@
 		{
 			// Setup resize vars.
 			var data 			= FLBuilder._colResizeData,
-				directionRef	= FLBuilderConfig.isRtl ? 'w' : 'e',
-				overlay 		= data.handle.closest( '.fl-block-overlay' ),
 				change 			= ( data.offset - ui.position.left ) / data.groupWidth,
-				colWidth 		= directionRef == data.direction ? ( data.colWidth - change ) * 100 : ( data.colWidth + change ) * 100,
+				colWidth 		= 'e' == data.direction ? ( data.colWidth - change ) * 100 : ( data.colWidth + change ) * 100,
 				colRound 		= Math.round( colWidth * 100 ) / 100,
 				siblingWidth	= data.availWidth - colWidth,
 				siblingRound	= Math.round( siblingWidth * 100 ) / 100,
-				minRound		= 8,
-				maxRound		= Math.round( ( data.availWidth - minRound ) * 100 ) / 100;
-
+				minRound		= 10,
+				maxRound		= Math.round( ( data.availWidth - 10 ) * 100 ) / 100;
+			
 			// Set the min/max width if needed.
-			if ( colRound < minRound ) {
+			if ( colRound < 10 ) {
 				colRound 		= minRound;
 				siblingRound 	= maxRound;
 			}
-			else if ( siblingRound < minRound ) {
+			else if ( siblingRound < 10 ) {
 				colRound 		= maxRound;
 				siblingRound 	= minRound;
 			}
-
-			// Show the feedback divs. Race condition with requestAnimationFrame
-			// and drag stop requires it to be done here.
-			data.feedbackLeft.show();
-			data.feedbackRight.show();
-
-			requestAnimationFrame( () => {
-
-				// rapid DOM manipulations should generally happen inside a requestAnimationFrame
-
-				// Set the feedback values.
-				if ( directionRef == data.direction ) {
-					data.feedbackLeft.html( colRound.toFixed( 1 ) + '%'  );
-					data.feedbackRight.html( siblingRound.toFixed( 1 ) + '%'  );
-				}
-				else {
-					data.feedbackLeft.html( siblingRound.toFixed( 1 ) + '%'  );
-					data.feedbackRight.html( colRound.toFixed( 1 ) + '%'  );
-				}
-
-				// Set the width attributes.
-				data.col.css( 'width', colRound + '%' );
-				data.sibling.css( 'width', siblingRound + '%' );
-
-				// Update the setting if the col or sibling's settings are open.
-				if ( data.setting ) {
-					if ( 'col' === data.settingType ) {
-						data.setting.val( parseFloat( data.col[ 0 ].style.width ) );
-					} else if ( 'sibling' === data.settingType ) {
-						data.setting.val( parseFloat( data.sibling[ 0 ].style.width ) );
-					}
-				}
-
-				// Dispatch to store
-				data.layoutActions.resizeColumn( data.id, colRound, data.siblingId, siblingRound, false );
-
-				// Build the overlay overflow menu if needed.
-				FLBuilder._buildOverlayOverflowMenu( overlay );
-				FLBuilder._repositionOverlays();
-			} )
-
-			// Trigger the col-resize-drag hook.
-			FLBuilder.triggerHook( 'col-resize-drag' );
+			
+			// Set the feedback values.
+			if ( 'e' == data.direction ) {
+				data.feedbackLeft.html( colRound.toFixed( 1 ) + '%'  ).show();
+				data.feedbackRight.html( siblingRound.toFixed( 1 ) + '%'  ).show();
+			}
+			else {
+				data.feedbackLeft.html( siblingRound.toFixed( 1 ) + '%'  ).show();
+				data.feedbackRight.html( colRound.toFixed( 1 ) + '%'  ).show();
+			}
+			
+			// Set the width attributes.
+			data.col.css( 'width', colRound + '%' );
+			data.sibling.css( 'width', siblingRound + '%' );
 		},
-
+		
 		/**
 		 * Fires when dragging for a column resize stops.
 		 *
@@ -5315,121 +3285,48 @@
 		 */
 		_colDragResizeStop: function( e, ui )
 		{
-			var data      	 = FLBuilder._colResizeData,
-				overlay   	 = FLBuilder._colResizeData.handle.closest( '.fl-block-overlay' ),
-				colId     	 = data.id,
-				colWidth  	 = parseFloat( data.col[ 0 ].style.width ),
-				siblingId 	 = data.sibling.data( 'node' ),
-				siblingWidth = parseFloat( data.sibling[ 0 ].style.width );
-
+			var data = FLBuilder._colResizeData;
+			
 			// Hide the feedback divs.
 			FLBuilder._colResizeData.feedbackLeft.hide();
 			FLBuilder._colResizeData.feedbackRight.hide();
-
-			// Update layout store
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.resizeColumn( colId, colWidth, siblingId, siblingWidth )
-
-			// Build the overlay overflow menu if needed.
-			FLBuilder._buildOverlayOverflowMenu( overlay );
-
+			
+			// Save the resize data.
+			FLBuilder.ajax({
+				action			: 'fl_builder_save',
+				method			: 'resize_cols',
+				col_id			: data.col.data( 'node' ),
+				col_width		: parseFloat( data.col[ 0 ].style.width ),
+				sibling_id		: data.sibling.data( 'node' ),
+				sibling_width	: parseFloat( data.sibling[ 0 ].style.width ),
+				silent			: true
+			});
+			
 			// Reset the resize data.
 			FLBuilder._colResizeData = null;
-
-			// Remove the body col resize class.
-			$( 'body' ).removeClass( 'fl-builder-col-resizing' );
-
+			
 			// Rebind overlay events.
 			FLBuilder._bindOverlayEvents();
-
+			
 			// Set the resizing flag to false with a timeout so other events get the right value.
 			setTimeout( function() { FLBuilder._colResizing = false; }, 50 );
-
-			// Trigger the col-resize-stop hook.
-			FLBuilder.triggerHook( 'col-resize-stop' );
-
-			FLBuilder.triggerHook( 'didResizeColumn', {
-				colId			: colId,
-				colWidth		: colWidth,
-				siblingId		: siblingId,
-				siblingWidth	: siblingWidth
-			} );
 		},
-
-		/**
-		 * Resets the widths of all columns in a row when the
-		 * Reset Column Widths button is clicked.
-		 *
-		 * @since 1.6.4
-		 * @access private
-		 * @method _resetColumnWidthsClicked
-		 * @param {Object} e The event object.
-		 */
-		_resetColumnWidthsClicked: function( e )
-		{
-			var button   = $( this ),
-				isRow    = !! button.closest( '.fl-row-overlay' ).length,
-				group    = null,
-				groups   = null,
-				groupIds = [],
-				children = null,
-				i        = 0,
-				settings = $( '.fl-builder-col-settings', window.parent.document ),
-				col		 = null;
-
-			if ( isRow ) {
-				groups = button.closest( '.fl-row' ).find( '.fl-row-content > .fl-col-group' );
-			} else {
-				groups = button.parents( '.fl-col-group' ).last();
-			}
-
-			groups.each( function() {
-
-				group = $( this );
-				children = group.find( '.fl-col-group' );
-				groupIds.push( group.data( 'node' ) );
-				FLBuilder._resetColumnWidths( group );
-
-				for ( i = 0; i < children.length; i++ ) {
-					FLBuilder._resetColumnWidths( children.eq( i ) );
-					groupIds.push( children.eq( i ).data( 'node' ) );
-				}
-			} );
-
-			if ( settings.length ) {
-				col = $( '.fl-node-' + settings.attr( 'data-node' ) );
-				settings.find( '#fl-field-size input' ).val( parseFloat( col[ 0 ].style.width ) );
-			}
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.resetColWidths( groupIds )
-
-			FLBuilder.triggerHook( 'col-reset-widths' );
-			FLBuilder._closeAllSubmenus();
-
-			e.stopPropagation();
-		},
-
+		
 		/**
 		 * Resets the widths of all columns in a group.
 		 *
 		 * @since 1.6.4
 		 * @access private
 		 * @method _resetColumnWidths
-		 * @param {Object} jQuery|HTMLElement - the column group node.
+		 * @param {Object} e The event object.
 		 */
-		_resetColumnWidths: function( group )
+		_resetColumnWidths: function( e )
 		{
-			// Check jQuery object first. This allows passing a plain HTMLElement in.
-			var isJQueryObject = group instanceof jQuery
-			var colGroup = group
-			if ( ! isJQueryObject ){
-				colGroup = $( group );
-			}
-
-			var cols  = colGroup.find( ' > .fl-col:visible' ),
+			var group = $( this ).closest( '.fl-col-group' ),
+				cols  = group.find( '.fl-col' ),
 				width = 0;
-
+			
+			// Get the new width.
 			if ( 6 === cols.length ) {
 				width = 16.65;
 			}
@@ -5439,17 +3336,114 @@
 			else {
 				width = Math.round( 100 / cols.length * 100 ) / 100;
 			}
-
-			cols.css( 'width', width + '%' );
-
-			FLBuilder.triggerHook( 'didResetColumnWidths', {
-				cols : cols
-			} );
+			
+			// Apply it to the columns.
+			cols.css('width', width + '%');
+			
+			// Save the resize data.
+			FLBuilder.ajax({
+				action		: 'fl_builder_save',
+				method		: 'reset_col_widths',
+				group_id	: group.data( 'node' ),
+				silent		: true
+			});
+			
+			e.stopPropagation();
 		},
-
+		
 		/* Modules
 		----------------------------------------------------------*/
+		
+		/**
+		 * Shows an overlay with actions when the mouse enters a module.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _moduleMouseenter
+		 */
+		_moduleMouseenter: function()
+		{
+			var module        = $( this ),
+				moduleName    = module.attr( 'data-name' ),
+				global		  = module.hasClass( 'fl-node-global' ),
+				parentGlobal  = module.parents( '.fl-node-global' ).length > 0,
+				numCols		  = module.parents( '.fl-col-group' ).find( '.fl-col' ).length,
+				parentCol	  = module.parents( '.fl-col' ),
+				parentFirst   = 0 === parentCol.index(),
+				parentLast    = numCols === parentCol.index() + 1,
+				template	  = wp.template( 'fl-module-overlay' );
+				
+			// Remove existing overlays.
+			FLBuilder._removeColOverlays();
+			FLBuilder._removeModuleOverlays();
+			
+			// Don't show if this is a global row in a standard layout.
+			if ( global && parentGlobal && 'row' != FLBuilderConfig.userTemplateType ) {
+				return;
+			}
+			// Show the overlay.
+			else if ( ! module.hasClass( 'fl-block-overlay-active' ) ) {
 
+				// Adjust the height if needed.
+				if ( module.outerHeight( true ) < 20 ) {
+					module.addClass( 'fl-module-adjust-height' );
+				}
+				
+				// Append the template.
+				FLBuilder._appendOverlay( module, template( { 
+					global 		: global, 
+					moduleName	: moduleName,
+					numCols		: numCols,
+					parentFirst : parentFirst,
+					parentLast  : parentLast
+				} ) );
+				
+				// Init column resizing.
+				FLBuilder._initColDragResizing();
+			}
+			
+			$( 'body' ).addClass( 'fl-block-overlay-muted' );
+		},
+		
+		/**
+		 * Removes overlays when the mouse leaves a module.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _moduleMouseleave
+		 * @param {Object} e The event object.
+		 */
+		_moduleMouseleave: function(e)
+		{
+			var module          = $(this),
+				toElement       = $(e.toElement) || $(e.relatedTarget),
+				isTipTip        = toElement.is('#tiptip_holder'),
+				isTipTipChild   = toElement.closest('#tiptip_holder').length > 0;
+			
+			if(isTipTip || isTipTipChild) {
+				return;
+			}
+			
+			FLBuilder._removeModuleOverlays();
+		},
+		
+		/**
+		 * Removes all module overlays from the page.
+		 *
+		 * @since 1.6.4
+		 * @access private
+		 * @method _removeModuleOverlays
+		 */
+		_removeModuleOverlays: function()
+		{
+			var modules = $('.fl-module');
+			
+			modules.removeClass('fl-module-adjust-height');
+			modules.removeClass('fl-block-overlay-active');
+			modules.find('.fl-module-overlay').remove();
+			$('body').removeClass('fl-block-overlay-muted');
+		},
+		
 		/**
 		 * Returns a helper element for module drag operations.
 		 *
@@ -5461,100 +3455,10 @@
 		 * @return {Object} The helper element.
 		 */
 		_moduleDragHelper: function(e, item)
-		{
-			var module = $( '.fl-node-' + item.data( 'node' ) )
-
-			return $('<div class="fl-builder-block-drag-helper">' + module.attr('data-name') + '</div>');
+		{   
+			return $('<div class="fl-builder-block-drag-helper">' + item.attr('data-name') + '</div>');
 		},
-
-		/**
-		 * @method _moduleDragInit
-		 * @param {Object} e The event object.
-		 */
-		_moduleDragInit: function( e )
-		{
-			var handle = $( e.target ),
-				content = $( FLBuilder._contentClass ),
-				overlay = handle.closest( '.fl-block-overlay' ),
-				nodeId = overlay.data( 'node' ),
-				helper = $( '.fl-module-sortable-proxy-item', window.parent.document ),
-				module = content.find( '.fl-block-overlay-active[data-node="' + nodeId + '"]' );
-
-			if ( handle.closest( '.fl-block-move-menu' ).length ) {
-				return;
-			} else if ( handle.data( 'target-node' ) ) {
-				module = $( '.fl-module[data-node=' + handle.data( 'target-node' ) + ']' );
-			}
-
-			helper.data( 'type', module.data('type' ) );
-			module.addClass( 'fl-node-dragging' );
-
-			FLBuilder._blockDragInit( e );
-
-			e.target = helper[ 0 ];
-
-			helper.data( 'node', module.data( 'node' ) )
-			helper.data( 'name', module.data( 'name' ) )
-			helper.data( 'type', module.data('type' ) )
-			helper.trigger( e );
-		},
-
-		/**
-		 * @method _moduleDragInitTouch
-		 * @param {Object} e The event object.
-		 */
-		_moduleDragInitTouch: function( startEvent )
-		{
-			var handle = $( startEvent.target ),
-				helper = $( '.fl-module-sortable-proxy-item', window.parent.document ),
-				module = handle.closest( '.fl-module' ),
-				moved  = false;
-
-			if ( handle.data( 'target-node' ) ) {
-				module = $( '.fl-module[data-node=' + handle.data( 'target-node' ) + ']' );
-			}
-
-			handle.on( 'touchmove', function( moveEvent ) {
-				if ( ! moved ) {
-					startEvent.currentTarget = module[0];
-					FLBuilder._moduleDragInit( startEvent );
-					moved = true;
-				}
-				moveEvent.target = helper[0];
-				helper.trigger( moveEvent );
-			} );
-
-			handle.on( 'touchend', function( endEvent ) {
-				endEvent.target = helper[0];
-				helper.trigger( endEvent );
-				endEvent.stopPropagation();
-			} );
-		},
-
-		/**
-		 * Callback that fires when dragging starts for a module.
-		 *
-		 * @since 1.9
-		 * @access private
-		 * @method _moduleDragStart
-		 * @param {Object} e The event object.
-		 * @param {Object} ui An object with additional info for the drag.
-		 */
-		_moduleDragStart: function( e, ui )
-		{
-			var module = $( '.fl-node-dragging' );
-			var rows = $( FLBuilder._contentClass ).find( '.fl-row, .fl-module' );
-
-			if ( 1 === rows.length ) {
-				$( FLBuilder._contentClass ).addClass( 'fl-builder-empty' );
-			}
-
-			module.hide();
-
-			FLBuilder._removeRowOverlays();
-			FLBuilder._blockDragStart( e, ui );
-		},
-
+		
 		/**
 		 * Callback for when a module drag operation completes.
 		 *
@@ -5566,171 +3470,65 @@
 		 */
 		_moduleDragStop: function(e, ui)
 		{
-			var dropCarrier = { intercepted: false, e: e, ui: ui };
-			FLBuilder.triggerHook( 'willDropModule', dropCarrier );
-			if ( dropCarrier.intercepted ) {
-				FLBuilder._blockDragStop( e, ui );
-				// ui.item is the throwaway .fl-builder-block proxy on content-panel drops
-				// (safe to remove). For in-layout module drags ui.item wraps the real
-				// module DOM — DS is responsible for only setting intercepted=true on
-				// proxy drops, but defense-in-depth: gate the remove on the same class.
-				if ( ui.item.hasClass( 'fl-builder-block' ) ) {
-					ui.item.remove();
-				}
-				FLBuilder._resizeLayout();
-				FLBuilder._initDropTargets();
-				FLBuilder.triggerHook( 'didDropModule' );
-				return;
-			}
-
-			FLBuilder._blockDragStop( e, ui );
-
-			var module	 = $( '.fl-node-dragging' ).removeClass( 'fl-node-dragging' ),
-				accepts  = module.attr( 'data-accepts' ),
-				topLevel = module.attr( 'data-top-level' ),
-				item     = ui.item,
-				parent   = ui.item.parent(),
-				node     = null,
+			var item     = ui.item,
+				parent   = item.parent(),
 				position = 0,
 				parentId = 0;
-
+			
+			FLBuilder._blockDragStop(e, ui);
+			
 			// A module was dropped back into the module list.
-			if ( parent.hasClass( 'fl-builder-modules' ) || parent.hasClass( 'fl-builder-widgets' ) ) {
+			if(parent.hasClass('fl-builder-modules') || parent.hasClass('fl-builder-widgets')) {
 				item.remove();
 				return;
 			}
 			// A new module was dropped.
-			else if ( item.hasClass( 'fl-builder-block' ) ) {
-
-				// Cancel the drop if the sortable is disabled?
-				if ( parent.hasClass( 'fl-sortable-disabled' ) ) {
-					item.remove();
-					FLBuilder._showPanel();
-					FLBuilder._setupEmptyLayout();
-					return;
-				}
+			else if(item.hasClass('fl-builder-block')) {
+			
 				// A new module was dropped into a row position.
-				else if ( parent.hasClass( 'fl-row-drop-target' ) ) {
-					parent   = item.closest('.fl-builder-content');
+				if(parent.hasClass('fl-builder-content')) {
+					position = parent.children('.fl-row, .fl-builder-block').index(item);
 					parentId = 0;
-					node     = item.closest('.fl-row, .fl-module');
-					position = parent.find( '.fl-row, > .fl-module' ).index( node );
-				}
-				// A new module was dropped into a column group position.
-				else if ( parent.hasClass( 'fl-col-group-drop-target' ) ) {
-					parent   = item.closest( '.fl-row-content' );
-					parentId = parent.closest( '.fl-row' ).attr( 'data-node' );
-					node     = item.closest( '.fl-col-group, .fl-module' );
-					position = parent.find( '> .fl-col-group, > .fl-module' ).index( node );
 				}
 				// A new module was dropped into a column position.
-				else if ( parent.hasClass( 'fl-col-drop-target' ) ) {
-					parent   = item.closest( '.fl-col-group' );
-					parentId = parent.attr( 'data-node' );
-					node     = item.closest( '.fl-col' );
-					position = parent.find( ' > .fl-col' ).index( node );
-				}
-				// A new module was dropped into a container module WITHOUT a wrapper.
-				else if ( parent.hasClass( 'fl-module' ) ) {
-					var layoutDirection = FLBuilder._getNodeLayoutDirection( item );
-					if ( 'layered' === layoutDirection ) {
-						// Drop as top most item in layers.
-						position = parent.find( '> .fl-module' ).length;
-					} else {
-						position = parent.find( '> .fl-module, .fl-builder-block' ).index( item );
-					}
-					parentId = parent.attr( 'data-node' );
-				}
-				// A new module was dropped into a container module WITH a wrapper.
-				else if ( parent.hasClass( 'fl-module-content' ) || parent.attr( 'data-children-wrapper' ) ) {
-					position = parent.find( '> .fl-module, .fl-builder-block' ).index( item );
-					parentId = item.closest( '.fl-module' ).attr( 'data-node' );
+				else if(parent.hasClass('fl-row-content')) {
+					position = parent.children('.fl-col-group, .fl-builder-block').index(item);
+					parentId = item.closest('.fl-row').attr('data-node');
 				}
 				// A new module was dropped into a column.
 				else {
-					position = parent.find( '> .fl-module, .fl-col-group, .fl-builder-block' ).index( item );
-					parentId = item.closest( '.fl-col' ).attr( 'data-node' );
+					position = parent.children('.fl-module, .fl-builder-block').index(item);
+					parentId = item.closest('.fl-col').attr('data-node');
 				}
-
-				// Increment the position?
-				if ( item.closest( '.fl-drop-target-last' ).length ) {
-					position += 1;
-				}
-
+				
 				// Add the new module.
-				FLBuilder._addModule( parent, parentId, item.attr( 'data-type' ), position, item.attr( 'data-widget' ), item.attr( 'data-alias' ) );
-
+				FLBuilder._addModule(parentId, item.attr('data-type'), position, item.attr('data-widget'))
+				
 				// Remove the drag helper.
+				ui.item.remove();
+			}
+			// A module was dropped into the main layout.
+			else if(parent.hasClass('fl-builder-content')) {
+				position = parent.children('.fl-row, .fl-module').index(item);
+				FLBuilder._addModuleAfterRowRender = item;
+				FLBuilder._addRow('1-col', position);
 				item.remove();
 			}
-			// An existing module was dropped.
-			else {
-
-				// Cancel the drop if the sortable is disabled?
-				if ( parent.hasClass( 'fl-sortable-disabled' ) ) {
-					FLBuilder._highlightEmptyCols();
-					module.show();
-				}
-				// A module was dropped into a row position.
-				else if ( parent.hasClass( 'fl-row-drop-target' ) ) {
-					node     = item.closest( '.fl-row, .fl-module' );
-					position = item.closest( '.fl-builder-content' ).children( '.fl-row, .fl-module' ).not( module ).index( node );
-					position = item.closest( '.fl-drop-target-last' ).length ? position + 1 : position;
-					if ( accepts || topLevel ) {
-						FLBuilder._moveNode( 0, module.attr( 'data-node' ), position );
-						module.show();
-					} else {
-						FLBuilder._addRow( '1-col', position, module.attr( 'data-node' ) );
-						module.remove();
-					}
-				}
-				// A module was dropped into a column group position.
-				else if ( parent.hasClass( 'fl-col-group-drop-target' ) ) {
-					node     = item.closest( '.fl-col-group, .fl-module' );
-					position = item.closest( '.fl-row-content ').find( ' > .fl-col-group, > .fl-module' ).not( module ).index( node );
-					position = item.closest( '.fl-drop-target-last' ).length ? position + 1 : position;
-					parentId = item.closest( '.fl-row' ).attr( 'data-node' );
-					if ( accepts || topLevel ) {
-						FLBuilder._moveNode( parentId, module.attr( 'data-node' ), position );
-						module.show();
-					} else {
-						FLBuilder._addColGroup( parentId, '1-col', position, module.attr( 'data-node' ) );
-						module.remove();
-					}
-				}
-				// A module was dropped into a column position.
-				else if ( parent.hasClass( 'fl-col-drop-target' ) ) {
-					node     = item.closest( '.fl-col' );
-					position = item.closest( '.fl-col-drop-target-last' ).length ? 'after' : 'before';
-					FLBuilder._addCols( node, position, '1-col', item.closest( '.fl-col-group-nested' ).length > 0, module.attr( 'data-node' ) );
-					module.remove();
-				}
-				// A module was dropped into another column or container module.
-				else {
-					var isContainer = item.closest( '[data-accepts]' ).length;
-					var layoutDirection = FLBuilder._getNodeLayoutDirection( item );
-
-					if ( isContainer && 'layered' === layoutDirection ) {
-						// Drop as top most item in layers.
-						item.parent().append( module );
-					} else {
-						item.after( module );
-					}
-
-					item.remove();
-					module.show();
-					FLBuilder._reorderModule( module );
-				}
-
-				// Revert the proxy to its parent.
-				$( '.fl-module-sortable-proxy', window.parent.document ).append( item );
+			// A module was dropped into a column position.
+			else if(parent.hasClass('fl-row-content')) {
+				position = parent.children('.fl-col-group, .fl-module').index(item);
+				FLBuilder._addModuleAfterRowRender = item;
+				FLBuilder._addColGroup(item.closest('.fl-row').attr('data-node'), '1-col', position);
+				item.remove();
 			}
-
+			// A module was dropped into another column.
+			else {
+				FLBuilder._reorderModule(item);
+			}
+			
 			FLBuilder._resizeLayout();
-			FLBuilder._initDropTargets();
-			FLBuilder.triggerHook( 'didDropModule' );
 		},
-
+		
 		/**
 		 * Reorders a module within a column.
 		 *
@@ -5741,19 +3539,34 @@
 		 */
 		_reorderModule: function(module)
 		{
-			var newParent = module.parents('.fl-row, .fl-col, .fl-module').eq(0).attr('data-node'),
+			var newParent = module.closest('.fl-col').attr('data-node'),
 				oldParent = module.attr('data-parent'),
-				nodeId    = module.attr('data-node'),
-				position  = module.parent().find( '> .fl-col-group, > .fl-module' ).index( module );
-
+				node_id   = module.attr('data-node'),
+				position  = module.index();
+				 
 			if(newParent == oldParent) {
-				FLBuilder._reorderNode( nodeId, position );
+				FLBuilder.ajax({
+					action: 'fl_builder_save',
+					method: 'reorder_node',
+					node_id: node_id,
+					position: position,
+					silent: true
+				});
 			}
 			else {
-				FLBuilder._moveNode( newParent, nodeId, position );
+				module.attr('data-parent', newParent);
+			
+				FLBuilder.ajax({
+					action: 'fl_builder_save',
+					method: 'move_node',
+					new_parent: newParent,
+					node_id: node_id,
+					position: position,
+					silent: true
+				});
 			}
 		},
-
+		
 		/**
 		 * Callback for when the delete module button is clicked.
 		 *
@@ -5764,13 +3577,17 @@
 		 */
 		_deleteModuleClicked: function(e)
 		{
-			var id = $( e.target ).closest('.fl-module').data( 'node' );
-			var actions = FL.Builder.getActions()
-			actions.deleteNode( id )
-
+			var module = $(this).closest('.fl-module'),
+				result = confirm(FLBuilderStrings.deleteModuleMessage);
+			
+			if(result) {
+				FLBuilder._deleteModule(module);
+				FLBuilder._removeAllOverlays();
+			}
+			
 			e.stopPropagation();
 		},
-
+		
 		/**
 		 * Deletes a module.
 		 *
@@ -5781,39 +3598,22 @@
 		 */
 		_deleteModule: function(module)
 		{
-			var row    = module.closest('.fl-row'),
-				rowNodes = row.find( '[data-node]' ),
-				nodeId = module.attr('data-node'),
-				parentId = module.parents('[data-node]').attr('data-node'),
-				acceptsChildren = module.attr('data-accepts');
+			var row = module.closest('.fl-row');
 
-			FLBuilder.triggerHook( 'beforeDeleteModule', {
-				nodeId: nodeId,
-				parentId: parentId,
-				moduleType: module.attr( 'data-type' ),
-			} );
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.deleteNode( nodeId )
-
-			// Delete the row if this is the last node in it.
-			if ( acceptsChildren && 1 === rowNodes.length ) {
-				FLBuilder._deleteRow( row );
-			}
-
+			FLBuilder.ajax({
+				action: 'fl_builder_save',
+				method: 'delete_node',
+				node_id: module.attr('data-node'),
+				silent: true
+			});
+			
 			module.empty();
 			module.remove();
 			row.removeClass('fl-block-overlay-muted');
-			FLBuilder._setupEmptyLayout();
 			FLBuilder._highlightEmptyCols();
 			FLBuilder._removeAllOverlays();
-			FLBuilder.triggerHook( 'didDeleteModule', {
-				nodeId: nodeId,
-				parentId: parentId,
-				moduleType: module.attr( 'data-type' ),
-			} );
 		},
-
+		
 		/**
 		 * Duplicates a module.
 		 *
@@ -5821,191 +3621,132 @@
 		 * @access private
 		 * @method _moduleCopyClicked
 		 * @param {Object} e The event object.
-		 */
+		 */ 
 		_moduleCopyClicked: function(e)
 		{
-			const id = $( this ).closest( '.fl-module' ).data( 'node' );
-			const actions = FL.Builder.getActions()
-			actions.copyNode( id );
+			var module = $(this).closest('.fl-module');
+			
+			FLBuilder.showAjaxLoader();
+			FLBuilder._removeAllOverlays();
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_save',
+				method: 'copy_module',
+				node_id: module.attr('data-node')
+			}, FLBuilder._updateLayout);
+			
 			e.stopPropagation();
 		},
-
+		
 		/**
-		  * Duplicate a module for a given id.
-		  */
-		_copyModule: function( id )
+		 * Shows the settings lightbox and loads the module settings
+		 * when the module settings button is clicked.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _moduleSettingsClicked
+		 * @param {Object} e The event object.
+		 */ 
+		_moduleSettingsClicked: function(e)
 		{
-			var module   = FLBuilder._getJQueryElement( id ),
-				clone    = module.clone(),
-				parent   = module.parent(),
-				form	 = $( '.fl-builder-module-settings[data-node=' + id + ']', window.parent.document ),
-				settings = {},
-				elements = module.length;
-
-			if ( form.length ) {
-				settings = FLBuilder._getSettings( form );
-				FLBuilderSettingsConfig.nodes[ id ] = settings;
-			}
-
-			// Setup clone
-			clone.addClass( 'fl-node-' + id + '-clone fl-builder-node-clone' );
-			clone.find( '.fl-block-overlay' ).remove();
-			clone.removeAttr( 'data-node' );
-
-			if( 1 == elements ) {
-				module.after( clone );
-			}
-
-			// Show Loader
-			FLBuilder._showNodeLoading( id + '-clone' );
-			if ( 1 == elements ) {
-				// Animate scroll to new element
-				const el  = clone.get(0);
-				el.scrollIntoView( {
-					behavior: 'smooth',
-					block: 'center',
-				} );
-			}
-
-			const actions = FL.Builder.data.getLayoutActions()
-			const callback = function( response ) {
-				var data = FLBuilder._jsonParse( response );
-				data.nodeParent   = parent;
-				data.nodePosition = parent.find( ' > .fl-col-group, > .fl-module' ).index( clone );
-				data.duplicatedModule = id;
-				data.onAddNewHTML = function() { clone.remove() };
-				FLBuilder._moduleCopyComplete( data );
-			}
-			actions.copyModule( id, settings, callback )
-		},
-
-		/**
-		 * Callback for when a module has been duplicated.
-		 *
-		 * @since 1.7
-		 * @access private
-		 * @method _moduleCopyComplete
-		 * @param {Object}
-		 */
-		_moduleCopyComplete: function( data )
-		{
-			FLBuilder._renderLayout( data, function(){
-				FLBuilder.triggerHook( 'didDuplicateModule', {
-					newNodeId  : data.nodeId,
-					oldNodeId  : data.duplicatedModule,
-					moduleType : data.moduleType,
-				} );
-			} );
-		},
-
-		/**
-		 * Copy settings of a module.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _moduleCopySettingsClicked
-		 */
-		_moduleCopySettingsClicked: function () {
-			const menuEl = $(this);
-			let nodeId = menuEl.data('target-node');
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-module-overlay').data('node');
-			}
-
-			const module = $( '.fl-node-' + nodeId );
-			const type = module.data('type');
-
-			// bind copy to the el
-			FLBuilderSettingsCopyPaste._bindCopyToElement(menuEl, type, nodeId);
-		},
-
-		/**
-		 * Copy settings of a module.
-		 *
-		 * @since 2.6
-		 * @access private
-		 * @method _modulePasteSettingsClicked
-		 */
-		_modulePasteSettingsClicked: function () {
-			const menuEl   = $(this);
-			const menuText = menuEl.text();
-			let nodeId = menuEl.data('target-node');
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-module-overlay').data('node');
-			}
-
-			const module = $( '.fl-node-' + nodeId );
-			const type = module.data('type');
-			const success  = FLBuilderSettingsCopyPaste._importFromClipboard(type, nodeId);
-
-			if (!success) {
-				// set button text
-				menuEl.text(FLBuilderStrings.module_import.error);
-
-				// restore button text
-				setTimeout(() => {
-					menuEl.text(menuText)
-				}, 1000);
-			}
-		},
-
-		/**
-		 * Copy settings of a module from outline panel.
-		 *
-		 * @method _moduleCopySettingsFromOutlinePanel
-		 */
-		_moduleCopySettingsFromOutlinePanel: function ( nodeId ) {
-			const menuEl = $(this);
+			var button   = $( this ),
+				nodeId   = button.closest( '.fl-module' ).attr( 'data-node' ),
+				parentId = button.closest( '.fl-col' ).attr( 'data-node' ),
+				type     = button.closest( '.fl-module' ).attr( 'data-type' ),
+				global 	 = button.closest( '.fl-block-overlay-global' ).length > 0;
 			
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-module').data('node');
+			e.stopPropagation();
+			
+			if ( FLBuilder._colResizing ) {
+				return;
 			}
-
-			const module = $( '.fl-node-' + nodeId );
-			const type = module.data('type');
-
-			// bind copy to the el
-			FLBuilderSettingsCopyPaste._bindCopyToElement(menuEl, type, nodeId);
+			if ( global && ! FLBuilderConfig.userCanEditGlobalTemplates ) {
+				return;
+			}
+			
+			FLBuilder._showModuleSettings(nodeId, parentId, type);
 		},
-
+		
 		/**
-		 * Copy settings of a module from outline panel.
+		 * Shows the lightbox and loads the settings for a module.
 		 *
-		 * @method _modulePasteSettingsFromOutlinePanel
+		 * @since 1.0
+		 * @access private
+		 * @method _showModuleSettings
+		 * @param {String} nodeId The node ID for the module.
+		 * @param {String} parentId The node ID for the module's parent.
+		 * @param {String} type The type of module.
 		 */
-		_modulePasteSettingsFromOutlinePanel: function ( nodeId ) {
-			const menuEl   = $(this);
-			const menuText = menuEl.text();
-
-			if ( ! nodeId ) {
-				nodeId = menuEl.closest('.fl-module').data('node');
+		_showModuleSettings: function(nodeId, parentId, type)
+		{
+			FLBuilder._closePanel();
+			FLBuilder._showLightbox();
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_module_settings',
+				node_id: nodeId,
+				type: type,
+				parent_id: parentId
+			}, FLBuilder._moduleSettingsLoaded);
+		},
+		
+		/**
+		 * Sets the lightbox content when the module settings have 
+		 * loaded and creates a new preview.
+		 *
+		 * @since 1.0
+		 * @access private
+		 * @method _moduleSettingsLoaded
+		 * @param {Object} data Preview layout data. Can also be a JSON encoded string.
+		 */ 
+		_moduleSettingsLoaded: function(data)
+		{
+			var preview   = typeof data == 'string' ? null : data.layout,
+				content   = typeof data == 'string' ? data : data.settings,
+				html      = $('<div>'+ content +'</div>'),
+				link      = html.find('link.fl-builder-settings-css'),
+				script    = html.find('script.fl-builder-settings-js'),
+				form      = html.find('.fl-builder-settings'),
+				type      = form.attr('data-type'),
+				helper    = null;
+			
+			// Append the settings css and js?
+			if($.inArray(type, FLBuilder._loadedModuleAssets) > -1) {
+				link.remove();
+				script.remove();
 			}
-
-			const module = $( '.fl-node-' + nodeId );
-			const type = module.data('type');
-			const success  = FLBuilderSettingsCopyPaste._importFromClipboard(type, nodeId);
-
-			if (!success) {
-				// set button text
-				menuEl.text(FLBuilderStrings.module_import.error);
-
-				// restore button text
-				setTimeout(() => {
-					menuEl.text(menuText)
-				}, 1000);
+			else {
+				$('head').append(link);
+				$('head').append(script);
+				FLBuilder._loadedModuleAssets.push(type);
+			}
+			
+			// Set the content.
+			FLBuilder._setSettingsFormContent(html);
+			
+			// Create a new preview.
+			FLBuilder.preview = new FLBuilderPreview({ 
+				type    : 'module',
+				layout  : preview
+			});
+			
+			// Init the settings form helper.
+			helper = FLBuilder._moduleHelpers[type];
+			
+			if(typeof helper !== 'undefined') {
+				FLBuilder._initSettingsValidation(helper.rules);
+				helper.init();
 			}
 		},
-
+		
 		/**
-		 * Validates the module settings and saves them if
+		 * Validates the module settings and saves them if 
 		 * the form is valid.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _saveModuleClicked
-		 */
+		 */ 
 		_saveModuleClicked: function()
 		{
 			var form      = $(this).closest('.fl-builder-settings'),
@@ -6013,62 +3754,51 @@
 				id        = form.attr('data-node'),
 				helper    = FLBuilder._moduleHelpers[type],
 				valid     = true;
-
+			
 			if(typeof helper !== 'undefined') {
-
+				
 				form.find('label.error').remove();
 				form.validate().hideErrors();
 				valid = form.validate().form();
-
+				
 				if(valid) {
 					valid = helper.submit();
 				}
 			}
 			if(valid) {
 				FLBuilder._saveSettings();
+				FLBuilder._lightbox.close();
 			}
 			else {
 				FLBuilder._toggleSettingsTabErrors();
 			}
 		},
-
+		
 		/**
 		 * Adds a new module to a column and loads the settings.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _addModule
-		 * @param {Object} parent A jQuery reference to the new module's parent.
 		 * @param {String} parentId The node id of the new module's parent.
 		 * @param {String} type The type of module to add.
 		 * @param {Number} position The position of the new module within its parent.
 		 * @param {String} widget The type of widget if this module is a widget.
-		 * @param {String} alias A module alias key if this module is an alias to another module.
-		 */
-		_addModule: function( parent, parentId, type, position, widget, alias )
+		 */ 
+		_addModule: function(parentId, type, position, widget)
 		{
-			// Show the loader.
-			FLBuilder._showNodeLoadingPlaceholder( parent, position );
-
-			// Save the new module data.
-			if ( parent.hasClass( 'fl-col-group' ) ) {
-				FLBuilder._newModuleParent 	 = null;
-				FLBuilder._newModulePosition = 0;
-			}
-			else {
-				FLBuilder._newModuleParent 	 = parent;
-				FLBuilder._newModulePosition = position;
-			}
-
-			// Dispatch to layout store
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.addModule( type, parentId, position, {
-				widget: typeof widget === 'undefined' ? '' : widget,
-				alias: typeof alias === 'undefined' ? '' : alias,
-				nodePreview: {}
-			} )
+			FLBuilder.showAjaxLoader();
+			
+			FLBuilder.ajax({
+				action          : 'fl_builder_render_new_module_settings',
+				parent_id       : parentId,
+				type            : type,
+				position        : position,
+				node_preview    : 1,
+				widget          : typeof widget === 'undefined' ? '' : widget
+			}, FLBuilder._addModuleComplete);
 		},
-
+		
 		/**
 		 * Shows the settings lightbox and sets the content when
 		 * the module settings have finished loading.
@@ -6077,67 +3807,17 @@
 		 * @access private
 		 * @method _addModuleComplete
 		 * @param {String} response The JSON encoded response.
-		 */
-		_addModuleComplete: function( response, showSettingsForm = null )
+		 */ 
+		_addModuleComplete: function(response)
 		{
-			var data = FLBuilder._jsonParse( response );
-			var renderedLayout = false;
-
-			const isDynamicGlobal = data.dynamic;
-			const dynamicFields = data.settings.dynamic_fields;
-
-			if ( false === data ) {
-				FLBuilder.alert( FLBuilderStrings.savedModuleNotExists );
-				FLBuilder._newModuleParent.find( '.fl-builder-node-loading-placeholder' ).remove();
-				return false;
-			}
-
-			// Setup a preview layout if we have one.
-			if ( data.layout ) {
-				if ( FLBuilder._newModuleParent ) {
-					FLBuilder._newModuleParent.find( '.fl-builder-node-loading-placeholder' ).remove();
-				}
-				data.layout.nodeParent 	 = FLBuilder._newModuleParent;
-				data.layout.nodePosition = FLBuilder._newModulePosition;
-			}
-
-			// Make sure we have settings before rendering the form.
-			if ( ! data.settings ) {
-				data.settings = FLBuilderSettingsConfig.defaults.modules[ data.type ];
-			}
-
-			// Render the module if a settings form is already open.
-			if ( $( 'form.fl-builder-settings', window.parent.document ).length && data.layout ) {
-				FLBuilder._renderLayout( data.layout );
-				showSettingsForm =  null === showSettingsForm ? true : showSettingsForm;
-				renderedLayout = true;
-			}
-			else if ( isDynamicGlobal ) {
-
-				data.dynamicEditing = true;
-
-				if ( ( typeof( dynamicFields ) === 'object' && ! dynamicFields ) || FLBuilderConfig.postType === 'fl-builder-template' ) {
-					showSettingsForm =  null === showSettingsForm ? true : showSettingsForm;
-				}
-				else {
-					showSettingsForm = false;
-				}
-			}
-			else {
-				showSettingsForm =  null === showSettingsForm ? true : showSettingsForm;
-			}
-
-			if ( showSettingsForm ) {
-				data.isNewModule = true;
-				data.dynamicEditing = data.dynamic;
-				FLBuilder._showModuleSettings( data, function() {
-					$( '.fl-builder-module-settings', window.parent.document ).data( 'new-module', '1' );
-				} );
-			} else if ( ! renderedLayout ) {
-				FLBuilder._renderLayout( data.layout );
-			}
+			var data = JSON.parse(response);
+			
+			FLBuilder._showLightbox();
+			FLBuilder._moduleSettingsLoaded(data);
+			
+			$('.fl-builder-module-settings').data('new-module', '1');
 		},
-
+		
 		/**
 		 * Registers a helper class for a module's settings.
 		 *
@@ -6145,34 +3825,19 @@
 		 * @method registerModuleHelper
 		 * @param {String} type The type of module.
 		 * @param {Object} obj The module helper.
-		 */
+		 */ 
 		registerModuleHelper: function(type, obj)
 		{
 			var defaults = {
-				node: null,
-				form: null,
 				rules: {},
 				init: function(){},
-				initForComponent: function(){},
 				submit: function(){ return true; },
-				preview: function(){},
-				getForm: function() {
-					this.form = $( 'form.fl-builder-settings:visible', window.parent.document ).get(0)
-					return this.form
-				},
-				getSettings: function() { return FLBuilder._getSettings( $( this.getForm() ) ) },
-				getNodeID: function() { return this.getForm().dataset.node },
-				getNode: function() {
-					if ( ! this.node ) {
-						this.node = document.querySelector( `${FLBuilder._contentClass} .fl-module[data-node="${this.getNodeID()}"]` )
-					}
-					return this.node
-				},
+				preview: function(){}
 			};
-
+			
 			FLBuilder._moduleHelpers[type] = $.extend({}, defaults, obj);
 		},
-
+		
 		/**
 		 * Deprecated. Use the public method registerModuleHelper instead.
 		 *
@@ -6181,226 +3846,125 @@
 		 * @method _registerModuleHelper
 		 * @param {String} type The type of module.
 		 * @param {Object} obj The module helper.
-		 */
+		 */ 
 		_registerModuleHelper: function(type, obj)
 		{
 			FLBuilder.registerModuleHelper(type, obj);
-		},
-
-		/**
-		 * Update the margin placeholders for modules inside containers
-		 * such as the box module that set different default margins.
-		 *
-		 * @since 2.8
-		 * @return void
-		 */
-		_initModuleMarginPlaceholders: function()
-		{
-			var form = $( '.fl-builder-module-settings:visible', window.parent.document );
-			var nodeId = form.data( 'node' );
-			var node = $( '.fl-node-' + nodeId );
-			var content = node.find( '> .fl-node-content' );
-			var sides = [ 'top', 'right', 'bottom', 'left' ];
-
-			if ( ! form.length ) {
-				return;
-			} else if ( node.closest( '[popover]' ).length ) {
-				return;
-			} else if ( ! node.closest( '.fl-module[data-accepts]' ).length ) {
-				return;
-			} else if ( ! content.length ) {
-				content = node;
-			}
-
-			for ( var key in sides ) {
-				var input = form.find( 'input[name="margin_' + sides[ key ] + '"]' );
-
-				node.removeClass( 'fl-node-' + nodeId );
-				input.attr( 'placeholder', parseInt( content.css( 'margin-' + sides[ key ] ) ) );
-				node.addClass( 'fl-node-' + nodeId );
-			}
 		},
 
 		/* Node Templates
 		----------------------------------------------------------*/
 
 		/**
-		 * @since 2.10
-		 */
-		_nodeOverlaySaveAsClicked: function()
-		{
-			if ( FLBuilderConfig.lite ) {
-				FLBuilder._showProMessage( 'Saving Templates' );
-				return
-			}
-
-			const button = $( this );
-			let nodeId = button.attr( 'data-target-node' );
-
-			if ( ! nodeId ) {
-				nodeId = button.parents( '[data-node]' ).attr( 'data-node' );
-			}
-
-			if ( ! FLBuilder._triggerSettingsSave( false, false, false ) ) {
-				return false;
-			}
-
-			FLBuilder._showNodeTemplateSettings( nodeId );
-		},
-
-		/**
-		 * @since 2.10
-		 */
-		_nodeSaveAsClicked: function()
-		{
-			const form = $( '.fl-builder-settings-lightbox .fl-builder-settings', window.parent.document );
-			const nodeId = form.attr( 'data-node' );
-
-			if ( ! FLBuilder._triggerSettingsSave( false, false, false ) ) {
-				return false;
-			}
-
-			FLBuilder._showNodeTemplateSettings( nodeId );
-		},
-
-		/**
 		 * Saves a node's settings and shows the node template settings
 		 * when the Save As button is clicked.
 		 *
 		 * @since 1.6.3
-		 */
-		_showNodeTemplateSettings: function( nodeId )
+		 * @access private
+		 * @method _showNodeTemplateSettings
+		 * @param {Object} e An event object.
+		 */ 
+		_showNodeTemplateSettings: function( e )
 		{
-			const node = FL.Builder.data.getNode( nodeId );
-			let title = FLBuilderStrings.saveModule;
-
-			if ( 'row' === node.type ) {
-				title = FLBuilderStrings.saveRow;
-			} else if ( 'column' === node.type ) {
-				title = FLBuilderStrings.saveColumn;
-			}
-
-			FLBuilderSettingsForms.render( {
-				id        : 'node_template',
-				nodeId    : nodeId,
-				title     : title,
-				attrs     : 'data-node="' + nodeId + '"',
-				className : 'fl-builder-node-template-settings',
-				rules     : {
-					name: {
-						required: true
-					}
-				}
-			}, function() {
-				var form = $( '.fl-builder-settings:visible' );
-				var cats = FLBuilderConfig.nodeCategories;
-				const select         = form.find('#fl-field-categories').find('select');
-				const desc           = select.parent().find( '.fl-field-description' ).hide();
-
-				$.each(cats, function (i, item) {
-					select.append($('<option>', {
-						value: item.id,
-						text : item.name
-					}
-					));
-				});
-				select.on('change', function(){
-					if ( 'add_new' === $(this).val() ) {
-						$( '<input type="text" name="categories" value="" class="text text-full">' ).insertBefore(select);
-						select.remove();
-						desc.show();
-					}
-				});
-
-				if ( ! FLBuilderConfig.userCanEditGlobalTemplates ) {
-					$( '#fl-field-type', window.parent.document ).hide();
-				}
-			} );
+			var form = $( '.fl-builder-settings-lightbox .fl-builder-settings' );
+				
+			FLBuilder._saveSettings();
+			
+			FLBuilder.ajax( {
+				action  : 'fl_builder_render_node_template_settings',
+				node_id : form.attr( 'data-node' )
+			}, FLBuilder._nodeTemplateSettingsLoaded );
 		},
-
+		
+		/**
+		 * Sets the lightbox content when the node template settings have loaded.
+		 *
+		 * @since 1.6.3
+		 * @access private
+		 * @method _nodeTemplateSettingsLoaded
+		 * @param {String} response The HTML for the settings form.
+		 */
+		_nodeTemplateSettingsLoaded: function( response )
+		{
+			FLBuilder._showLightbox( false );
+			FLBuilder._setSettingsFormContent( response );
+			
+			FLBuilder._initSettingsValidation({
+				name: {
+					required: true
+				}
+			});
+		},
+		
 		/**
 		 * Saves a node as a template when the save button is clicked.
 		 *
 		 * @since 1.6.3
 		 * @access private
 		 * @method _saveNodeTemplate
-		 */
+		 */ 
 		_saveNodeTemplate: function()
 		{
-			var form   = $( '.fl-builder-node-template-settings', window.parent.document ),
-				nodeId = form.attr( 'data-node' ),
-				valid  = form.validate().form();
-
+			var form  = $( '.fl-builder-settings-lightbox .fl-builder-settings' ),
+				valid = form.validate().form();
+				
 			if ( valid ) {
-
-				FLBuilder._showNodeLoading( nodeId );
-
-				const actions = FL.Builder.data.getLayoutActions()
-				actions.saveNodeTemplate( nodeId, FLBuilder._getSettings( form ) )
-
+					 
+				FLBuilder.showAjaxLoader();
+				
+				FLBuilder.ajax({
+					action	 : 'fl_builder_save',
+					method	 : 'save_node_template',
+					node_id  : form.attr( 'data-node' ),
+					settings : FLBuilder._getSettings( form )
+				}, FLBuilder._saveNodeTemplateComplete);
+					
 				FLBuilder._lightbox.close();
 			}
 		},
-
+		
 		/**
 		 * Callback for when a node template has been saved.
 		 *
 		 * @since 1.6.3
 		 * @access private
 		 * @method _saveNodeTemplateComplete
-		 */
+		 */ 
 		_saveNodeTemplateComplete: function( response )
 		{
-			var data 		   = FLBuilder._jsonParse( response ),
-				panel 		   = $( '.fl-builder-saved-' + data.type + 's', window.parent.document ),
-				blocks 		   = panel.find( '.fl-builder-block' ),
-				block   	   = null,
-				text    	   = '',
-				name    	   = data.name.toLowerCase(),
-				i			   = 0,
-				template 	   = wp.template( 'fl-node-template-block' ),
-				newLibraryItem = {
-					name: data.name,
-					isGlobal: data.global,
-					isDynamicEditing: data.dynamic_editing,
-					content: data.type,
-					id: data.id,
-					postID: data.postID,
-					kind: "template",
-					type: "user",
-					link: data.link,
-					category: {
-						uncategorized: FLBuilderStrings.uncategorized
-					}
-				};
+			var data 		= JSON.parse( response ),
+				panel 		= $( '.fl-builder-saved-' + data.type + 's' ),
+				blocks 		= panel.find( '.fl-builder-block' ),
+				block   	= null,
+				text    	= '',
+				name    	= data.name.toLowerCase(),
+				i			= 0,
+				template 	= wp.template( 'fl-node-template-block' );
 			
-			// If the template is dynamic editing, open it in a new window to edit.
-			if ( data.dynamic_editing ) {
-				const win = window.parent.open( data.link );
-				win.FLBuilderGlobalNodeId = data.template_node_id;
+			// Show the success alert.
+			if ( 'row' == data.type ) {
+				FLBuilder.alert( FLBuilderStrings.rowTemplateSaved );
 			}
-
-			// Add the new template to the library.
-			FLBuilderConfig.contentItems.template.push(newLibraryItem);
-			FLBuilder.triggerHook('contentItemsChanged');
-
-			// Update the layout for global templates.
-			if ( data.layout ) {
-				FLBuilder._renderLayout( data.layout );
-				FLBuilder.triggerHook( 'didSaveGlobalNodeTemplate', data.config );
+			else if ( 'module' == data.type ) {
+				FLBuilder.alert( FLBuilderStrings.moduleTemplateSaved );
 			}
-
+			
+			// Update the layout for global templates.			
+			if ( data.global ) {
+				FLBuilder._updateLayout();
+			}
+			
 			// Add the new template to the builder panel.
 			if ( 0 === blocks.length ) {
 				panel.append( template( data ) );
 			}
 			else {
-
+				
 				for ( ; i < blocks.length; i++ ) {
-
+					
 					block = blocks.eq( i );
 					text  = block.text().toLowerCase().trim();
-
+					
 					if ( 0 === i && name < text ) {
 						panel.prepend( template( data ) );
 						break;
@@ -6415,13 +3979,13 @@
 					}
 				}
 			}
-
+			
 			// Remove the no templates placeholder.
 			panel.find( '.fl-builder-block-no-node-templates' ).remove();
 		},
-
+		
 		/**
-		 * Callback for when a node template drag from the
+		 * Callback for when a node template drag from the 
 		 * builder panel has stopped.
 		 *
 		 * @since 1.6.3
@@ -6429,193 +3993,67 @@
 		 * @method _nodeTemplateDragStop
 		 * @param {Object} e The event object.
 		 * @param {Object} ui An object with additional info for the drag.
-		 */
+		 */ 
 		_nodeTemplateDragStop: function( e, ui )
 		{
-			FLBuilder._blockDragStop( e, ui );
-
 			var item   		= ui.item,
 				parent 		= item.parent(),
 				parentId	= null,
 				position 	= 0,
-				node        = null,
 				action 		= '',
+				method 		= '',
 				callback	= null;
-
-			// A node template was dropped back into the templates list.
-			if ( parent.hasClass( 'fl-builder-blocks-section-content' ) ) {
-				item.remove();
-				return;
-			}
+			
+			// Stop the drag.
+			FLBuilder._blockDragStop(e, ui);
+			
 			// A saved row was dropped.
-			else if ( item.hasClass( 'fl-builder-block-saved-row' ) || item.hasClass( 'fl-builder-block-row-template' ) ) {
-				node     = item.closest( '.fl-row, .fl-module' );
-				position = $( FLBuilder._contentClass ).find( '.fl-row, > .fl-module' ).index( node );
-				position = ! node.length ? 0 : position;
-				position = parent.hasClass( 'fl-drop-target-last' ) ? position + 1 : position;
+			if ( item.hasClass( 'fl-builder-block-saved-row' ) || item.hasClass( 'fl-builder-block-row-template' ) ) {
+				position = parent.children('.fl-row, .fl-builder-block').index( item );
 				parentId = null;
-				action	 = 'render_new_row_template';
-				callback = FLBuilder._addRowComplete;
-				FLBuilder._newRowPosition = position;
-				FLBuilder._showNodeLoadingPlaceholder( $( FLBuilder._contentClass ), position );
-			}
-			// A saved column was dropped.
-			else if ( item.hasClass( 'fl-builder-block-saved-column' ) ) {
-				node       = item.closest( '.fl-col' ),
-				colGroup   = parent.closest( '.fl-col-group' ),
-				colGroupId = colGroup.attr( 'data-node' );
-
-				action	 = 'render_new_col_template';
-				callback = FLBuilder._addColsComplete;
-
-				// Cancel the drop if the sortable is disabled?
-				if ( parent.hasClass( 'fl-sortable-disabled' ) ) {
-					item.remove();
-					FLBuilder._showPanel();
-					FLBuilder._setupEmptyLayout();
-					return;
-				}
-				// A column was dropped into a row position.
-				else if ( parent.hasClass( 'fl-row-drop-target' ) ) {
-					node     = item.closest( '.fl-row, .fl-module' ),
-					parentId = 0;
-					parent   = $( FLBuilder._contentClass );
-					position = ! node.length ? 0 : parent.find( '.fl-row, > .fl-module' ).index( node );
-				}
-				// A column was dropped into a column group position.
-				else if ( parent.hasClass( 'fl-col-group-drop-target' ) ) {
-					parent   = item.closest( '.fl-row-content' );
-					parentId = item.closest( '.fl-row' ).attr( 'data-node' );
-					position = item.closest( '.fl-row' ).find( '.fl-row-content' ).find( ' > .fl-col-group,  > .fl-module' ).index( item.closest( '.fl-col-group, .fl-module' ) );
-				}
-				// A column was dropped into a column position.
-				else if ( parent.hasClass( 'fl-col-drop-target' ) ) {
-				    parent   = item.closest('.fl-col-group');
-				    position = parent.children('.fl-col').index( item.closest('.fl-col') );
-				    parentId = parent.attr('data-node');
-				}
-
-				// Increment the position?
-				if ( item.closest( '.fl-drop-target-last' ).length ) {
-					position += 1;
-				}
-
-				if ( parent.hasClass( 'fl-col-group' ) ) {
-					FLBuilder._newColParent   = null;
-				}
-				else {
-					FLBuilder._newColParent   = parent;
-				}
-
-				FLBuilder._newColPosition = position;
-
-				// Show the loader.
-				FLBuilder._showNodeLoadingPlaceholder( parent, position );
+				action	 = 'fl_builder_save';
+				method	 = 'apply_node_template';
+				callback = FLBuilder._updateLayout;
 			}
 			// A saved module was dropped.
 			else if ( item.hasClass( 'fl-builder-block-saved-module' ) || item.hasClass( 'fl-builder-block-module-template' ) ) {
-
-				action	 = 'render_new_module';
-				callback = response => FLBuilder._addModuleComplete( response, false );
-
-				// Cancel the drop if the sortable is disabled?
-				if ( parent.hasClass( 'fl-sortable-disabled' ) ) {
-					item.remove();
-					FLBuilder._showPanel();
-					FLBuilder._setupEmptyLayout();
-					return;
-				}
+				
+				action	 = 'fl_builder_render_module_template_settings';
+				callback = FLBuilder._addModuleComplete;
+				
 				// Dropped into a row position.
-				else if ( parent.hasClass( 'fl-row-drop-target' ) ) {
-					parent   = item.closest('.fl-builder-content');
+				if ( parent.hasClass( 'fl-builder-content' ) ) {
+					position = parent.children( '.fl-row, .fl-builder-block' ).index( item );
 					parentId = 0;
-					position = parent.find( '.fl-row, > .fl-module' ).index( item.closest('.fl-row, .fl-module') );
-				}
-				// Dropped into a column group position.
-				else if ( parent.hasClass( 'fl-col-group-drop-target' ) ) {
-					parent   = item.closest( '.fl-row-content' );
-					parentId = parent.closest( '.fl-row' ).attr( 'data-node' );
-					position = parent.find( ' > .fl-col-group, > .fl-module' ).index( item.closest( '.fl-col-group, .fl-module' ) );
 				}
 				// Dropped into a column position.
-				else if ( parent.hasClass( 'fl-col-drop-target' ) ) {
-					parent   = item.closest('.fl-col-group');
-					position = parent.children('.fl-col').index( item.closest('.fl-col') );
-					parentId = parent.attr('data-node');
-				}
-				// Dropped into a container module WITHOUT a wrapper.
-				else if ( parent.hasClass( 'fl-module' ) ) {
-					var layoutDirection = FLBuilder._getNodeLayoutDirection( item );
-					if ( 'layered' === layoutDirection ) {
-						// Drop as top most item in layers.
-						position = parent.find( '> .fl-module' ).length;
-					} else {
-						position = parent.find( '> .fl-module, .fl-builder-block' ).index( item );
-					}
-					parentId = parent.attr( 'data-node' );
-				}
-				// Dropped into a container module WITH a wrapper.
-				else if ( parent.hasClass( 'fl-module-content' ) || parent.attr( 'data-children-wrapper' ) ) {
-					position = parent.find( '> .fl-module, .fl-builder-block' ).index( item );
-					parentId = item.closest( '.fl-module' ).attr( 'data-node' );
+				else if ( parent.hasClass( 'fl-row-content' ) ) {
+					position = parent.children( '.fl-col-group, .fl-builder-block' ).index( item );
+					parentId = item.closest( '.fl-row' ).attr( 'data-node' );
 				}
 				// Dropped into a column.
 				else {
 					position = parent.children( '.fl-module, .fl-builder-block' ).index( item );
 					parentId = item.closest( '.fl-col' ).attr( 'data-node' );
 				}
-
-				// Increment the position?
-				if ( item.closest( '.fl-drop-target-last' ).length ) {
-					position += 1;
-				}
-
-				// Save the new module data.
-				if ( parent.hasClass( 'fl-col-group' ) ) {
-					FLBuilder._newModuleParent 	 = null;
-					FLBuilder._newModulePosition = 0;
-				}
-				else {
-					FLBuilder._newModuleParent 	 = parent;
-					FLBuilder._newModulePosition = position;
-				}
-
-				// Show the loader.
-				FLBuilder._showNodeLoadingPlaceholder( parent, position );
 			}
-
-			const templateId = item.attr( 'data-id' )
-			const templateType = item.attr( 'data-type' )
-			const ajaxCallback = function( response ) {
-				var data = FLBuilder._jsonParse( response );
-				if ( action.indexOf( 'row' ) > -1 ) {
-					FLBuilder.triggerHook( 'didApplyRowTemplateComplete', data.config );
-					callback( data.layout );
-				} else if ( action.indexOf( 'col' ) > -1 ) {
-					FLBuilder.triggerHook( 'didApplyColTemplateComplete', data.config );
-					callback( data.layout );
-				} else {
-					FLBuilder.triggerHook( 'didApplyModuleTemplateComplete', data.config );
-					callback( response );
-				}
-			}
-
-			let type = 'module'
-			if ( 'render_new_col_template' === action ) {
-				type = 'column'
-			}
-			if ( 'render_new_row_template' === action ) {
-				type = 'row'
-			}
-
-			// Dispatch to layout store
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.addNodeTemplate( type, templateId, templateType, parentId, position, ajaxCallback )
-
+			
+			// Show the loader.
+			FLBuilder.showAjaxLoader();
+			
+			// Apply and render the node template.
+			FLBuilder.ajax({
+				action	 	 : action,
+				method 	     : method,
+				template_id  : item.attr( 'data-id' ),
+				parent_id    : parentId,
+				position 	 : position
+			}, callback );
+			
 			// Remove the helper.
 			item.remove();
 		},
-
+		
 		/**
 		 * Launches the builder in a new tab to edit a user
 		 * defined node template when the edit link is clicked.
@@ -6629,10 +4067,10 @@
 		{
 			e.preventDefault();
 			e.stopPropagation();
-
-			window.parent.open( $( this ).attr( 'href' ) );
+			
+			window.open( $( this ).attr( 'href' ) );
 		},
-
+		
 		/**
 		 * Fires when the delete node template icon is clicked in the builder's panel.
 		 *
@@ -6649,20 +4087,14 @@
 				blocks  	= panel.find( '.fl-builder-block' ),
 				block  		= button.closest( '.fl-builder-block' ),
 				global 		= block.hasClass( 'fl-builder-block-global' ),
-				isDynamic   = global && block.hasClass( 'fl-builder-block-dynamic' ),
-				message     = FLBuilderStrings.deleteTemplate,
-				index       = null,
-				id          = block.attr( 'data-id' );
-
-			if ( global ) {
-				message = isDynamic ? FLBuilderStrings.deleteDynamicTemplate : FLBuilderStrings.deleteGlobalTemplate
-			}
-
+				callback 	= global ? FLBuilder._updateLayout : undefined,
+				message     = global ? FLBuilderStrings.deleteGlobalTemplate : FLBuilderStrings.deleteTemplate;
+			
 			if ( confirm( message ) ) {
-
-				// Delete the UI block.
+				
+				// Delete the UI block. 
 				block.remove();
-
+				
 				// Add the no templates placeholder?
 				if ( 1 === blocks.length ) {
 					if ( block.hasClass( 'fl-builder-block-saved-row' ) ) {
@@ -6672,122 +4104,51 @@
 						panel.append( '<span class="fl-builder-block-no-node-templates">' + FLBuilderStrings.noSavedModules + '</span>' );
 					}
 				}
-
-				// Show the loader?
-				if ( block.hasClass( 'fl-builder-block-global' ) ) {
-					FLBuilder.showAjaxLoader();
-				}
-
+			
 				// Delete the template.
-				const actions = FL.Builder.data.getLayoutActions()
-				actions.deleteNodeTemplate( id, global )
-
-				// Remove the item from library
-				index = _.findIndex(FLBuilderConfig.contentItems.template, {
-					id: block.attr('data-id'),
-					type: 'user'
-				});
-
-				FLBuilderConfig.contentItems.template.splice(index, 1);
-				FLBuilder.triggerHook('contentItemsChanged');
+				FLBuilder.ajax({
+					action	 	 : 'fl_builder_save',
+					method 	     : 'delete_node_template',
+					template_id  : block.attr( 'data-id' ),
+					silent		 : block.hasClass( 'fl-builder-block-global' ) ? false : true
+				}, callback);
 			}
 		},
 
 		/* Settings
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes logic for settings forms.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _initSettingsForms
-		 */
+		 */ 
 		_initSettingsForms: function()
 		{
-			// Initialization that can wait until after the form paints
-			// allowing us to speed up the initial display...
-			requestAnimationFrame(() => {
-				const form = $( '.fl-builder-settings:visible', window.parent.document );
-				FL.Builder.settingsForms.initEvents( form );
-
-				FLBuilder._CodeFieldSSLCheck();
-				FLBuilder._initCodeFields();
-				FLBuilder._initColorPickers();
-				FLBuilder._initGradientPickers();
-				FLBuilder._initIconFields();
-				FLBuilder._initIconClassesFields();
-				FLBuilder._initPhotoFields();
-				FLBuilder._initSelectFields();
-				FLBuilder._initEditorFields();
-				FLBuilder._initMultipleFields();
-				FLBuilder._initAutoSuggestFields();
-				FLBuilder._initLinkFields();
-				FLBuilder._initFontFields();
-				FLBuilder._initPostTypeFields();
-				FLBuilder._initOrderingFields();
-				FLBuilder._initTimezoneFields();
-				FLBuilder._initDimensionFields();
-				FLBuilder._initFieldPopupSliders();
-				FLBuilder._initPresetFields();
-				FLBuilder._initModuleMarginPlaceholders();
-				FL.Builder.settingsForms.focusFirstSettingsControl();
-				FLBuilder._calculateSettingsTabsOverflow();
-				FLBuilder._lightbox._resizeEditors();
-
-				$( '.fl-builder-settings-fields', window.parent.document ).css( 'visibility', 'visible' );
-				$( '.fl-builder-settings button', window.parent.document ).on( 'click', function( e ) { e.preventDefault() } )
-				/**
-				 * Hook for settings form init.
-				 */
-				FLBuilder.triggerHook('settings-form-init');
-			})
+			FLBuilder._initColorPickers();
+			FLBuilder._initSelectFields();
+			FLBuilder._initMultipleFields();
+			FLBuilder._initAutoSuggestFields();
+			FLBuilder._initLinkFields();
+			FLBuilder._initFontFields();
 		},
-
+		
 		/**
-		 * Reinitializes all active settings forms.
-		 *
-		 * @since 2.9
-		 * @access private
-		 * @method _reinitSettingsForms
-		 */
-		_reinitSettingsForms: function()
-		{
-			FLBuilder._reinitEditorFields();
-
-			FLBuilder.triggerHook('settings-form-init');
-		},
-
-		/**
-		 * Destroys all active settings forms.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _destroySettingsForms
-		 */
-		_destroySettingsForms: function()
-		{
-			FLBuilder._destroyEditorFields();
-			FLBuilder._hideColorPicker();
-		},
-
-		/**
-		 * Inserts settings forms rendered with PHP. This method is only around for
-		 * backwards compatibility with third party settings forms that are
-		 * still being rendered via AJAX. Going forward, all settings forms
-		 * should be rendered on the frontend using FLBuilderSettingsForms.render.
+		 * Sets the content for the settings lightbox.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _setSettingsFormContent
-		 * @param {String} html
-		 */
-		_setSettingsFormContent: function( html )
+		 * @param {String} html The HTML content for the lightbox.
+		 */ 
+		_setSettingsFormContent: function(html)
 		{
-			$( '.fl-legacy-settings', window.parent.document ).remove();
-			$( 'body', window.parent.document ).append( html );
+			FLBuilder._setLightboxContent(html);
+			FLBuilder._initSettingsForms();
 		},
-
+		
 		/**
 		 * Shows the content for a settings form tab when it is clicked.
 		 *
@@ -6795,282 +4156,60 @@
 		 * @access private
 		 * @method _settingsTabClicked
 		 * @param {Object} e The event object.
-		 */
+		 */ 
 		_settingsTabClicked: function(e)
 		{
-			var tab  = $( this ),
-				form = tab.closest( '.fl-builder-settings' ),
-				id   = tab.attr( 'href' ).split( '#' ).pop();
-
-			FLBuilder._resetSettingsTabsState();
-
-			form.find( '.fl-builder-settings-tab' ).removeClass( 'fl-active' );
-			form.find( '#' + id ).addClass( 'fl-active' );
-			form.find( '.fl-builder-settings-tabs .fl-active' ).removeClass( 'fl-active' );
-			form.find( 'a[href*=' + id + ']' ).addClass( 'fl-active' );
-
-			if ( FLBuilderConfig.rememberTab ) {
-				localStorage.setItem( 'fl-builder-settings-tab', id );
-			} else {
-				localStorage.setItem( 'fl-builder-settings-tab', '' );
-			}
-
-			FL.Builder.settingsForms.focusFirstSettingsControl();
-
+			var tab  = $(this),
+				form = tab.closest('.fl-builder-settings'),
+				id   = tab.attr('href').split('#').pop();
+			
+			form.find('.fl-builder-settings-tab').removeClass('fl-active');
+			form.find('#' + id).addClass('fl-active');
+			form.find('.fl-builder-settings-tabs .fl-active').removeClass('fl-active');
+			$(this).addClass('fl-active');
 			e.preventDefault();
 		},
-
-		_resetSettingsTabsState: function() {
-			var $lightbox = $('.fl-lightbox:visible', window.parent.document);
-
-			FLBuilder._hideTabsOverflowMenu();
-
-			$lightbox.find('.fl-builder-settings-tabs .fl-active').removeClass('fl-active');
-			$lightbox.find('.fl-builder-settings-tabs-overflow-menu .fl-active').removeClass('fl-active');
-			$lightbox.find('.fl-contains-active').removeClass('fl-contains-active');
-		},
-
+		
 		/**
-		* Calculate width of text from DOM element or string.
-		* Move from fl-builder-ui.js for 2.9 module blocks.
-		*
-		* @since 2.9
-		* @param {Object} ele
-		* @return {String}
-		*/
-		_calculateTextWidth: function(ele) {
-			var temp = $('<span>').hide().appendTo(document.body);
-			ele = $(ele);
-			temp.text(ele.val() || ele.text()).css('font', ele.css('font'));
-			var width = temp.width();
-			temp.remove();
-			return width;
-		},
-
-		/**
-		* Measures tabs and adds extra items to overflow menu.
-		*
-		* @since 2.0
-		* @access private
-		* @return void
-		* @method _settingsTabsToOverflowMenu
-		*/
-		_calculateSettingsTabsOverflow: function() {
-
-			var $lightbox = $('.fl-lightbox:visible', window.parent.document),
-				lightboxWidth = $lightbox.outerWidth(),
-				isSlim = $lightbox.hasClass('fl-lightbox-width-slim'),
-				$tabWrap = $lightbox.find('.fl-builder-settings-tabs'),
-				$overflowMenu = $lightbox.find('.fl-builder-settings-tabs-overflow-menu'),
-				$overflowMenuBtn = $lightbox.find('.fl-builder-settings-tabs-more'),
-				$tabs = $tabWrap.find('a'),
-				shouldEjectRemainingTabs = false,
-				tabsAreaWidth = lightboxWidth - 44, /* 60 is size of "more" btn */
-				tabsWidthTotal = 0,
-				tabPadding = isSlim ? ( 5 * 2 ) : ( 10 * 2 );
-
-			// Reset the menu
-			$overflowMenu.html('');
-			FLBuilder._hideTabsOverflowMenu();
-
-			$tabs.removeClass('fl-overflowed');
-
-			// Measure each tab
-			$tabs.each(function() {
-
-				if ( !$(this).is(":visible") ) {
-					return true;
-				}
-
-				// Calculate size until too wide for tab area.
-				if ( !shouldEjectRemainingTabs ) {
-
-					// Width of text + padding + bumper space
-					var textWidth = FLBuilder._calculateTextWidth(this);
-					var currentTabWidth = textWidth + tabPadding + 12;
-					tabsWidthTotal += currentTabWidth;
-
-					if ( tabsWidthTotal >= tabsAreaWidth ) {
-						shouldEjectRemainingTabs = true;
-					} else {
-					}
-				}
-
-				if ( shouldEjectRemainingTabs ) {
-
-					var label = $(this).html(),
-						handle = $(this).attr('href'),
-						classAttr = "";
-
-					if ( $(this).hasClass('fl-active') ) {
-						classAttr = 'fl-active';
-					}
-					if ( $(this).hasClass('error') ) {
-						classAttr += ' error';
-					}
-					if ( classAttr !== '' ) {
-						classAttr = 'class="' + classAttr + '"';
-					}
-
-					var $item = $('<a href="' + handle + '" ' + classAttr + '>' + label + '</a>');
-
-					$overflowMenu.append( $item );
-					$(this).addClass('fl-overflowed');
-				} else {
-
-					$(this).removeClass('fl-overflowed');
-				}
-
-			});
-
-			if ( shouldEjectRemainingTabs ) {
-				$lightbox.addClass('fl-lightbox-has-tab-overflow');
-			} else {
-				$lightbox.removeClass('fl-lightbox-has-tab-overflow');
-			}
-
-			if ( $overflowMenu.find('.fl-active').length > 0 ) {
-				$overflowMenuBtn.addClass('fl-contains-active');
-			} else {
-				$overflowMenuBtn.removeClass('fl-contains-active');
-			}
-
-			if ( $overflowMenu.find('.error').length > 0 ) {
-				$overflowMenuBtn.addClass('fl-contains-errors');
-			} else {
-				$overflowMenuBtn.removeClass('fl-contains-errors');
-			}
-		},
-
-		/**
-		* Trigger the original tab when a menu item is clicked.
-		*
-		* @since 2.0
-		* @var {Event} e
-		* @return void
-		*/
-		_settingsTabsToOverflowMenuItemClicked: function(e) {
-			var $item = $(e.currentTarget, window.parent.document),
-				handle = $item.attr('href'),
-				$tabsWrap = $item.closest('.fl-lightbox-header-wrap').find('.fl-builder-settings-tabs'),
-				$tab = $tabsWrap.find('a[href="' + handle + '"]'),
-				$moreBtn = $tabsWrap.find('.fl-builder-settings-tabs-more');
-
-			FLBuilder._resetSettingsTabsState();
-			$tab.trigger('click');
-			$item.addClass('fl-active');
-			$moreBtn.addClass('fl-contains-active');
-			FLBuilder._hideTabsOverflowMenu();
-			e.preventDefault();
-		},
-
-		/**
-		* Check if overflow menu contains any tabs
-		*
-		* @since 2.0
-		* @return bool
-		*/
-		_hasOverflowTabs: function() {
-			var $lightbox = $('.fl-lightbox:visible', window.parent.document),
-				$tabs = $lightbox.find('.fl-builder-settings-tabs-overflow-menu a');
-
-			if ( $tabs.length > 0 ) {
-				return true;
-			} else {
-				return false;
-			}
-		},
-
-		/**
-		* Show the overflow menu
-		*
-		*/
-		_showTabsOverflowMenu: function() {
-
-			if ( ! FLBuilder._hasOverflowTabs() ) return;
-
-			var $lightbox = $('.fl-lightbox:visible', window.parent.document);
-			$lightbox.find('.fl-builder-settings-tabs-overflow-menu').css('display', 'flex');
-			$lightbox.find('.fl-builder-settings-tabs-overflow-click-mask').show();
-			this.isShowingSettingsTabsOverflowMenu = true;
-		},
-
-		/**
-		* Hide the overflow menu
-		*/
-		_hideTabsOverflowMenu: function() {
-			var $lightbox = $('.fl-lightbox:visible', window.parent.document);
-			$lightbox.find('.fl-builder-settings-tabs-overflow-menu').css('display', 'none');
-			$lightbox.find('.fl-builder-settings-tabs-overflow-click-mask').hide();
-			this.isShowingSettingsTabsOverflowMenu = false;
-		},
-
-		/**
-		* Toggle the overflow menu
-		*/
-		_toggleTabsOverflowMenu: function( e ) {
-			if ( FLBuilder.isShowingSettingsTabsOverflowMenu ) {
-				FLBuilder._hideTabsOverflowMenu();
-			} else {
-				FLBuilder._showTabsOverflowMenu();
-			}
-			e.stopPropagation();
-		},
-
-		/**
-		 * Reverts an active preview and hides the lightbox when
+		 * Reverts an active preview and hides the lightbox when 
 		 * the cancel button of a settings lightbox is clicked.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _settingsCancelClicked
 		 * @param {Object} e The event object.
-		 */
+		 */ 
 		_settingsCancelClicked: function(e)
 		{
-			var nestedLightbox = $( '.fl-builder-lightbox[data-parent]', window.parent.document ),
-				moduleSettings = $( '.fl-builder-module-settings', window.parent.document ),
+			var moduleSettings = $('.fl-builder-module-settings'),
 				existingNodes  = null,
 				previewModule  = null,
-				previewContainer = null,
 				previewCol     = null,
-				existingCol    = null,
-				isRootCol      = 'column' == FLBuilderConfig.userTemplateType;
-
-			// Close a nested settings lightbox.
-			if ( nestedLightbox.length > 0 ) {
-				FLBuilder._closeNestedSettings();
-				return;
-			}
-			// Delete a new module preview?
-			else if(moduleSettings.length > 0 && typeof moduleSettings.data('new-module') != 'undefined') {
-
+				existingCol    = null;
+			
+			if(moduleSettings.length > 0 && typeof moduleSettings.data('new-module') != 'undefined') {
+			
 				existingNodes = $(FLBuilder.preview.state.html);
 				previewModule = $('.fl-node-' + moduleSettings.data('node'));
-				previewContainer = previewModule.parents('.fl-module[data-accepts]');
 				previewCol    = previewModule.closest('.fl-col');
 				existingCol   = existingNodes.find('.fl-node-' + previewCol.data('node'));
-
-				if(previewContainer.length > 0 || existingCol.length > 0 || isRootCol) {
+				
+				if(existingCol.length > 0) {
 					FLBuilder._deleteModule(previewModule);
 				}
 				else {
 					FLBuilder._deleteCol(previewCol);
 				}
 			}
-			// Do a standard preview revert.
-			else if( FLBuilder.preview ) {
-				FLBuilder.preview.revert();
-			}
-
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.cancelDisplaySettings()
-
-			FLBuilder.preview = null;
+			
 			FLLightbox.closeParent(this);
-			FLBuilder.triggerHook( 'didCancelNodeSettings' );
+			
+			if(FLBuilder.preview) {
+				FLBuilder.preview.revert();
+				FLBuilder.preview = null;
+			}
 		},
-
+		
 		/**
 		 * Initializes validation logic for a settings form.
 		 *
@@ -7079,23 +4218,19 @@
 		 * @method _initSettingsValidation
 		 * @param {Object} rules The validation rules object.
 		 * @param {Object} messages Custom messages to show for invalid fields.
-		 */
+		 */ 
 		_initSettingsValidation: function(rules, messages)
 		{
-			var form = $('.fl-builder-settings', window.parent.document).last();
-
-			if ( ! messages ) {
-				messages = {}
-			}
-
+			var form = $('.fl-builder-settings').last();
+			
 			form.validate({
-				ignore: '.fl-ignore-validation, .fl-ds-field-control input, .fl-ds-field-control textarea, .fl-ds-field-control select',
+				ignore: [],
 				rules: rules,
 				messages: messages,
 				errorPlacement: FLBuilder._settingsErrorPlacement
 			});
 		},
-
+		
 		/**
 		 * Places a validation error after the invalid field.
 		 *
@@ -7104,12 +4239,12 @@
 		 * @method _settingsErrorPlacement
 		 * @param {Object} error The error element.
 		 * @param {Object} element The invalid field.
-		 */
+		 */ 
 		_settingsErrorPlacement: function(error, element)
 		{
 			error.appendTo(element.parent());
 		},
-
+		
 		/**
 		 * Resets all tab error icons and then shows any for tabs
 		 * that have fields with errors.
@@ -7117,32 +4252,30 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _toggleSettingsTabErrors
-		 */
+		 */ 
 		_toggleSettingsTabErrors: function()
 		{
-			var form      = $('.fl-builder-settings:visible', window.parent.document),
+			var form      = $('.fl-builder-settings:visible'),
 				tabs      = form.find('.fl-builder-settings-tab'),
 				tab       = null,
 				tabErrors = null,
 				i         = 0;
-
+			
 			for( ; i < tabs.length; i++) {
-
+				
 				tab = tabs.eq(i);
 				tabErrors = tab.find('label.error');
 				tabLink = form.find('.fl-builder-settings-tabs a[href*='+ tab.attr('id') +']');
 				tabLink.find('.fl-error-icon').remove();
 				tabLink.removeClass('error');
-
+				
 				if(tabErrors.length > 0) {
 					tabLink.append('<span class="fl-error-icon"></span>');
 					tabLink.addClass('error');
 				}
 			}
-
-			FLBuilder._calculateSettingsTabsOverflow();
 		},
-
+		
 		/**
 		 * Returns an object with key/value pairs for all fields
 		 * within a settings form.
@@ -7152,90 +4285,94 @@
 		 * @method _getSettings
 		 * @param {Object} form The settings form element.
 		 * @return {Object} The settings object.
-		 */
-		_getSettings: function( form )
+		 */ 
+		_getSettings: function(form)
 		{
 			FLBuilder._updateEditorFields();
-
+			
 			var data     	= form.serializeArray(),
 				i        	= 0,
 				k        	= 0,
 				value	 	= '',
+				name     	= '',
 				key      	= '',
 				keys      	= [],
-				setting		= null,
+				matches	 	= [],
 				settings 	= {};
-
-			const ignore = [
-				'fl_auto_style_',
-				'flrich'
-			];
-
+			
 			// Loop through the form data.
 			for ( i = 0; i < data.length; i++ ) {
-
-				value = data[ i ].value.replace( /\r/gm, '' ).replace( /&#39;/g, "'" );
-
-				// Don't save fields without a name.
-				if ( 'undefined' === data[ i ].name ) {
+				
+				value = data[ i ].value.replace( /\r/gm, '' );
+				
+				// Don't save text editor textareas.
+				if ( data[ i ].name.indexOf( 'flrich' ) > -1 ) {
 					continue;
 				}
-
-				// Ignore fields that start with a certain prefix.
-				if ( ignore.some( ( item ) => data[ i ].name.startsWith( item ) ) ) {
-					continue;
-				}
-
 				// Support foo[]... setting keys.
-				if ( data[ i ].name.indexOf( '[' ) > -1 ) {
-
-					// Get the top level settings key and subkeys.
-					key = data[ i ].name.replace( /\[(.*)\]/, '' );
-					keys = data[ i ].name.replace( key, '' ).replace( '[', '' ).replaceAll( ']', '' ).split( '[' );
-
-					// Set the top level settings key.
-					if ( 'undefined' === typeof settings[ key ] ) {
-						if ( 1 === keys.length && '' === keys[ 0 ] ) {
-							settings[ key ] = [];
-						} else {
-							settings[ key ] = {};
+				else if ( data[ i ].name.indexOf( '[' ) > -1 ) {
+					
+					name 	= data[ i ].name.replace( /\[(.*)\]/, '' );
+					key  	= data[ i ].name.replace( name, '' );
+					keys	= [];
+					matches = key.match( /\[[^\]]*\]/g );
+					
+					// Remove [] from the keys.
+					for ( k = 0; k < matches.length; k++ ) {
+						
+						if ( '[]' == matches[ k ] ) {
+							continue;
 						}
+						
+						keys.push( matches[ k ].replace( /\[|\]/g, '' ) );
 					}
-
-					// Reference to use in the keys loop below.
-					setting = settings[ key ];
-
-					// Set the subkeys and value.
-					for ( k = 0; k < keys.length; k++ ) {
-
-						// Handle foo[] arrays otherwise ignore empty keys.
-						if ( '' === keys[ k ] ) {
-							if ( 1 === keys.length ) {
-								setting.push( value );
-								break;
-							} else {
-								continue;
-							}
+					
+					// foo[][key][key]
+					if ( key.match( /\[\]\[[^\]]*\]\[[^\]]+\]/ ) ) {
+						
+						if ( 'undefined' == typeof settings[ name ] ) {
+							settings[ name ] = {};
 						}
-
-						// Handle foo[][bar][] or foo[][bar][][baz][] style arrays.
-						if ( keys.length - 2 === k && '' === keys[ keys.length - 1 ] ) {
-							if ( $.inArray( typeof setting[ keys[ k ] ], [ 'undefined', 'string' ] ) > -1 ) {
-								setting[ keys[ k ] ] = [];
-							}
-							setting[ keys[ k ] ].push( value );
-							break;
+						if ( 'undefined' == typeof settings[ name ][ keys[ 0 ] ] ) {
+							settings[ name ][ keys[ 0 ] ] = {};
 						}
-
-						// Handle everything else as objects like foo[bar], foo[][bar] or foo[bar][baz].
-						if ( keys.length - 1 === k ) {
-							setting[ keys[ k ] ] = value;
-						} else {
-							if ( $.inArray( typeof setting[ keys[ k ] ], [ 'undefined', 'string' ] ) > -1 ) {
-								setting[ keys[ k ] ] = {};
-							}
-							setting = setting[ keys[ k ] ];
+						if ( 'undefined' == typeof settings[ name ][ keys[ 0 ] ][ keys[ 1 ] ] ) {
+							settings[ name ][ keys[ 0 ] ][ keys[ 1 ] ] = {};
 						}
+						
+						settings[ name ][ keys[ 0 ] ][ keys[ 1 ] ] = value;
+						
+					}
+					// foo[][key][]
+					else if ( key.match( /\[\]\[[^\]]*\]\[\]/ ) ) {
+						
+						if ( 'undefined' == typeof settings[ name ] ) {
+							settings[ name ] = {};
+						}
+						if ( 'undefined' == typeof settings[ name ][ keys[ 0 ] ] ) {
+							settings[ name ][ keys[ 0 ] ] = [];
+						}
+						
+						settings[ name ][ keys[ 0 ] ].push( value );
+					}
+					// foo[][key]
+					else if ( key.match( /\[\]\[[^\]]*\]/ ) ) {
+						
+						if ( 'undefined' == typeof settings[ name ] ) {
+							settings[ name ] = {};
+						}
+						
+						settings[ name ][ keys[ 0 ] ] = value;
+						
+					}
+					// foo[]
+					else if ( key.match( /\[\]/ ) ) {
+						
+						if ( 'undefined' == typeof settings[ name ] ) {
+							settings[ name ] = [];
+						}
+						
+						settings[ name ].push( value );
 					}
 				}
 				// Standard name/value pair.
@@ -7243,217 +4380,30 @@
 					settings[ data[ i ].name ] = value;
 				}
 			}
-
+			
 			// Update auto suggest values.
 			for ( key in settings ) {
-
-				if ( 'undefined' !== typeof settings[ 'as_values_' + key ] ) {
-
-					settings[ key ] = $.grep(
-						settings[ 'as_values_' + key ].split( ',' ),
-						function( n ) {
-							return n !== '';
+				
+				if ( 'undefined' != typeof settings[ 'as_values_' + key ] ) {
+					
+					settings[ key ] = $.grep( 
+						settings[ 'as_values_' + key ].split( ',' ), 
+						function( n ) { 
+							return n != ''; 
 						}
 					).join( ',' );
-
+					
 					try {
 						delete settings[ 'as_values_' + key ];
 					}
 					catch( e ) {}
 				}
 			}
-
-			// In the case of multi-select or checkboxes we need to put the blank setting back in.
-			$.each( form.find( '[name]' ), function( key, input ) {
-				var name = $( input ).attr( 'name' ).replace( /\[(.*)\]/, '' );
-				if ( 'undefined' === name ) {
-					return;
-				}
-				if ( ignore.some( ( item ) => name.startsWith( item ) ) ) {
-					return;
-				}
-				if ( ! ( name in settings ) ) {
-					settings[ name ] = '';
-					if ( name.startsWith( 'as_values_' ) ) {
-						settings[ name.replace( 'as_values_', '' ) ] = '';
-					}
-				}
-			});
-
-			var currentSuggestNames = [],
-				setNestedSuggestValue = function( name, val ) {
-					var topKey, keys, setting, k;
-					if ( name.indexOf( '[' ) > -1 ) {
-						topKey = name.replace( /\[(.*)\]/, '' );
-						keys  = name.replace( topKey, '' ).replace( '[', '' ).replaceAll( ']', '' ).split( '[' );
-						if ( 'undefined' === typeof settings[ topKey ] ) {
-							settings[ topKey ] = {};
-						}
-						setting = settings[ topKey ];
-						for ( k = 0; k < keys.length; k++ ) {
-							if ( keys.length - 1 === k ) {
-								setting[ keys[ k ] ] = val;
-							} else {
-								if ( $.inArray( typeof setting[ keys[ k ] ], [ 'undefined', 'string' ] ) > -1 ) {
-									setting[ keys[ k ] ] = {};
-								}
-								setting = setting[ keys[ k ] ];
-							}
-						}
-					} else {
-						settings[ name ] = val;
-					}
-				};
-			form.find( '.fl-suggest-field' ).each( function() {
-				var $field = $( this ),
-					name   = $field.attr( 'name' ),
-					$vals  = $field.siblings( '.as-values' ),
-					// Until autoSuggest initializes there is no .as-values sibling, so fall back to the stored value in data-value.
-					val    = $vals.length ? $vals.val() : FLBuilder._getStoredSuggestValue( $field );
-				if ( name ) {
-					currentSuggestNames.push( name );
-					val = $.grep( ( val || '' ).split( ',' ), function( n ) { return n !== ''; } ).join( ',' );
-					setNestedSuggestValue( name, val );
-				}
-			} );
-
-			// Merge in the original settings in case legacy fields haven't rendered yet.
-			settings = $.extend( {}, FLBuilder._getOriginalSettings( form ), settings );
-
-			// Clear suggest field values for fields that were removed from the form (e.g. filter row deleted).
-			var storedSuggestNames = form.data( 'suggest-field-names' ) || [];
-			$.each( storedSuggestNames, function( i, name ) {
-				if ( currentSuggestNames.indexOf( name ) === -1 ) {
-					setNestedSuggestValue( name, '' );
-				}
-			} );
-
-			for ( key in settings ) {
-				if ( key.startsWith( 'as_values_' ) ) {
-					try {
-						delete settings[ key ];
-					} catch ( e ) {}
-				}
-			}
-
+			
+			// Return the settings.
 			return settings;
 		},
-
-		/**
-		 * Returns JSON encoded settings to be used in HTML form elements.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _getSettingsJSONForHTML
-		 * @param {Object} settings The settings object.
-		 * @return {String} The settings JSON.
-		 */
-		_getSettingsJSONForHTML: function( settings )
-		{
-			return JSON.stringify( settings ).replace( /\'/g, '&#39;' ).replace( '<wbr \/>', '<wbr>' );
-		},
-
-		/**
-		 * Returns an uninitialized suggest field's stored value from data-value.
-		 * Lookup JSON lands there uninitialized only when init never ran on this
-		 * form (a same-named field in another form, or an _initAutoSuggestField
-		 * throw); it is reduced to its ids, and anything unrecognized is kept as
-		 * stored rather than cleared.
-		 *
-		 * @since TBD
-		 * @param {Object} $field The .fl-suggest-field input.
-		 * @return {String} The stored value.
-		 */
-		_getStoredSuggestValue: function( $field )
-		{
-			var stored = $field.attr( 'data-value' ) || '',
-				items  = null;
-
-			if ( 0 !== stored.indexOf( '[' ) ) {
-				return stored;
-			}
-			try {
-				items = JSON.parse( stored );
-			} catch ( e ) {
-				console.error( 'FLBuilder: unparsable suggest field data-value, keeping it as stored.', stored, e );
-				return stored;
-			}
-
-			var isLookup = Array.isArray( items ) && items.every( function( item ) {
-				return item && undefined !== item.value;
-			} );
-
-			return isLookup ? $.map( items, function( item ) { return item.value; } ).join( ',' ) : stored;
-		},
-
-		/**
-		 * Returns the original settings for a settings form. This is only
-		 * used to work with legacy PHP settings fields.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _getOriginalSettings
-		 * @param {Object} form The settings form element.
-		 * @param {Boolean} all Whether to include all of the settings or just those with fields.
-		 * @return {Object} The settings object.
-		 */
-		_getOriginalSettings: function( form, all )
-		{
-			var formJSON = form.find( '.fl-builder-settings-json' ),
-				nodeId	 = form.data( 'node' ),
-				config   = FLBuilderSettingsConfig.nodes,
-				original = null,
-				settings = {};
-
-			if ( nodeId && config[ nodeId ] ) {
-				original = config[ nodeId ];
-			} else if ( formJSON.length ) {
-				original = FLBuilder._jsonParse( formJSON.val().replace( /&#39;/g, "'" ) );
-			}
-
-			if ( original ) {
-				for ( key in original ) {
-					if ( key.match( /[a-z0-9-_]+$/ ) && $( '#fl-field-' + key ).length || all ) {
-						settings[ key ] = original[ key ];
-					}
-				}
-			}
-
-			return settings;
-		},
-
-		/**
-		 * Gets the settings that are saved to see if settings
-		 * have changed when saving or canceling.
-		 *
-		 * @since 2.1
-		 * @method getSettingsForChangedCheck
-		 * @param {Object} form
-		 * @return {Object}
-		 */
-		_getSettingsForChangedCheck: function( nodeId, form ) {
-			var settings = FLBuilder._getSettings( form );
-
-			// Make sure we're getting the original setting if even it
-			// was changed by inline editing before the form loaded.
-			if ( nodeId ) {
-				var node = $( '.fl-node-' + nodeId );
-
-				if ( node.hasClass( 'fl-module' ) ) {
-					var type = node.data( 'type' );
-					var config = FLBuilderSettingsConfig.editables[ type ];
-
-					if ( config && FLBuilderSettingsConfig.nodes[ nodeId ] ) {
-						for ( var key in config ) {
-							settings[ key ] = FLBuilderSettingsConfig.nodes[ nodeId ][ key ]
-						}
-					}
-				}
-			}
-
-			return settings;
-		},
-
+		
 		/**
 		 * Saves the settings for the current settings form, shows
 		 * the loader and hides the lightbox.
@@ -7461,500 +4411,109 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _saveSettings
-		 * @param {Boolean} render Whether the layout should render after saving.
-		 */
-		_saveSettings: function( render )
+		 */ 
+		_saveSettings: function()
 		{
-			var form      = $( '.fl-builder-settings-lightbox .fl-builder-settings', window.parent.document ),
-				newModule = form.data( 'new-module' ),
-				nodeId    = form.attr( 'data-node' ),
-				settings  = FLBuilder._getSettings( form ),
-				preview   = FLBuilder.preview;
-
-			if ( form.data( 'form-id' ) === 'dynamic_node_form' && settings.dynamic_node_settings === '' ) {
-				FLBuilder._lightbox.close();
-				return;
-			}
-
-			// Default to true for render.
-			if ( FLBuilder.isUndefined( render ) || ! FLBuilder.isBoolean( render ) ) {
-				render = true;
-			}
-
-			// Only proceed if the settings have changed.
-			if ( preview && ! preview._settingsHaveChanged() && FLBuilder.isUndefined( newModule ) ) {
-				preview.clear();
-				FLBuilder._lightbox.close();
-				return;
-			}
-
-			function finishSavingSettings() {
-
-				// Show the loader.
-				FLBuilder._showNodeLoading( nodeId );
-
-				// Update the settings config object.
-				FLBuilderSettingsConfig.nodes[ nodeId ] = settings;
-
-				// Dispatch to store
-				const actions = FL.Builder.data.getLayoutActions()
-				const callback = FLBuilder._saveSettingsComplete.bind( this, render )
-
-				actions.updateNodeSettings( nodeId, settings, callback )
-
-				// Trigger the hook.
-				FLBuilder.triggerHook( 'didSaveNodeSettings', {
-					nodeId   : nodeId,
-					settings : settings
-				} );
-
-				// Close the lightbox.
-				FLBuilder._lightbox.close();
-			}
-
-			if ( FLBuilderConfig.userCaps.unfiltered_html ) {
-				finishSavingSettings()
-			} else {
-				FLBuilderSettingsForms.showLightboxLoader()
-				FLBuilder.ajax( {
-					action          : 'verify_settings',
-					settings        : settings,
-					node_id         : nodeId,
-				}, function( response ) {
-					console.log(response)
-					if ( true === response ) {
-						finishSavingSettings()
-					} else {
-						console.log(response)
-						msg = '<p style="font-weight:bold;text-align:center;">' + FLBuilderStrings.noScriptWarn.heading + '</p>';
-						if ( FLBuilderConfig.userCaps.global_unfiltered_html ) {
-							msg += '<p>' + FLBuilderStrings.noScriptWarn.global + '</p>';
-						} else {
-							msg += '<p>' + FLBuilderStrings.noScriptWarn.message + '</p>';
-						}
-
-						msg += '<p><div class="fl-diff"></div></p>';
-						msg += '<p>' + FLBuilderStrings.noScriptWarn.footer + '</p>';
-						FLBuilderSettingsForms.hideLightboxLoader()
-						FLBuilder.alert( msg );
-						data = FLBuilder._jsonParse(response);
-						if ( '' !== data.diff  ) {
-							$('.fl-diff', window.parent.document).html( data.diff );
-							$('.fl-diff', window.parent.document).prepend( '<p>' + FLBuilderStrings.codeErrorDetected + '</p>');
-							$('.fl-diff .diff-deletedline', window.parent.document).each(function(){
-								if ( $(this).find('del').length < 1 ) {
-									$(this).css('background-color', 'rgb(255, 192, 203, 0.7)').css('padding', '10px').css('border', '1px solid pink');
-								} else {
-									$(this).find('del').css('background-color', 'rgb(255, 192, 203, 0.7)').css('border', '1px solid pink');
-								}
-							});
-							console.log( '============' );
-							console.log( 'key: ' + data.key );
-							console.log( 'value: ' + data.value );
-							console.log( 'parsed: ' + data.parsed );
-							console.log( '============' );
-						}
-
-					}
-				} );
-			}
+			var form     = $('.fl-builder-settings-lightbox .fl-builder-settings'),
+				nodeId   = form.attr('data-node'),
+				settings = FLBuilder._getSettings(form);
+		
+			// Show the loader.
+			FLBuilder.showAjaxLoader();
+			
+			// Make the AJAX call.
+			FLBuilder.ajax({
+				action          : 'fl_builder_save',
+				method          : 'save_settings',
+				node_id         : nodeId,
+				settings        : settings
+			}, FLBuilder._saveSettingsComplete);
+			
+			// Close the lightbox.
+			FLBuilder._lightbox.close();
 		},
-
+		
 		/**
-		 * Renders a new layout when the settings for the current
-		 * form have finished saving.
+		 * Renders a new layout when the settings for the current 
+		 * form have finished saving. 
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _saveSettingsComplete
-		 * @param {Boolean} render Whether the layout should render after saving.
 		 * @param {String} response The layout data from the server.
-		 */
-		_saveSettingsComplete: function( render, response )
+		 */ 
+		_saveSettingsComplete: function(response)
 		{
-
-			if ( ! response || 'undefined' === typeof response ) {
-				return;
-			}
-
-			var data 	 	= FLBuilder._jsonParse( response ),
-				type	 	= data.layout.nodeType,
-				moduleType	= data.layout.moduleType,
-				hook	 	= 'didSave' + type.charAt(0).toUpperCase() + type.slice(1) + 'SettingsComplete',
-				preview		= FLBuilder.preview,
-				callback 	= function() {
-					var clearPreview = preview && data.layout.partial && data.layout.nodeId === preview.nodeId && !FLBuilder._publishAndRemain;
-
-					if ( clearPreview ) {
-						preview.clear();
-						FLBuilder.preview = null;
-					}
-
-					FLBuilder._publishAndRemain = false;
-				};
-
-			if ( true === render ) {
-				FLBuilder._renderLayout( data.layout, callback );
-			} else {
-				callback();
-			}
-
-			// Update Redux with any settings changes from the server
-			const actions = FL.Builder.data.getLayoutActions()
-			actions.refreshNodeSettings( data.node_id, data.settings )
-
-			FLBuilder.triggerHook( 'didSaveNodeSettingsComplete', {
-				nodeId   	: data.node_id,
-				nodeType 	: type,
-				moduleType	: moduleType,
-				settings 	: data.settings
-			} );
-
-			FLBuilder.triggerHook( hook, {
-				nodeId   	: data.node_id,
-				nodeType 	: type,
-				moduleType	: moduleType,
-				settings 	: data.settings
-			} );
+			FLBuilder._renderLayout(response, function() {
+				if(FLBuilder.preview) {
+					FLBuilder.preview.clear();
+					FLBuilder.preview = null;
+				}
+			});
 		},
-
-		/**
-		 * Triggers a click on the settings save button so all save
-		 * logic runs for any form that is currently in the lightbox.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _triggerSettingsSave
-		 * @param {Boolean} disableClose
-		 * @param {Boolean} showAlert
-		 * @param {Boolean} destroy
-		 * @return {Boolean}
-		 */
-		_triggerSettingsSave: function( disableClose, showAlert, destroy )
-		{
-			var form	   = FLBuilder._lightbox._node.find( 'form.fl-builder-settings' ),
-				lightboxId = FLBuilder._lightbox._node.data( 'instance-id' ),
-				lightbox   = FLLightbox._instances[ lightboxId ],
-				nested     = $( '.fl-lightbox-wrap[data-parent]:visible', window.parent.document ),
-				changed    = false,
-				valid	   = true;
-
-			disableClose = _.isUndefined( disableClose ) ? false : disableClose;
-			showAlert 	 = _.isUndefined( showAlert ) ? false : showAlert;
-			destroy 	 = _.isUndefined( destroy ) ? ! disableClose : destroy;
-
-			// prevent clearing preview.
-			if (!destroy) {
-				FLBuilder._publishAndRemain = true;
-			}
-
-			if ( form.length ) {
-
-				// Save any nested settings forms.
-				if ( nested.length ) {
-
-					// Save the form.
-					nested.find( '.fl-builder-settings-save' ).trigger( 'click' );
-
-					// Don't proceed if not saved.
-					if ( nested.find( 'label.error' ).length || $( '.fl-builder-alert-lightbox:visible', window.parent.document ).length ) {
-						valid = false;
-					}
-				}
-
-				// Do a validation check of the main form to see if we should save.
-				if ( valid && ! form.validate({ignore: '.fl-ignore-validation, .fl-ds-field-control input, .fl-ds-field-control textarea, .fl-ds-field-control select'}).form() ) {
-					valid = false;
-				}
-
-				// Check to see if the main settings have changed.
-				changed = FLBuilderSettingsForms.settingsHaveChanged();
-
-				// Save the main settings form if it has changes.
-				if ( valid && changed ) {
-
-					// Disable lightbox close?
-					if ( disableClose ) {
-						lightbox.disableClose();
-					}
-
-					// Save the form.
-					form.find( '.fl-builder-settings-save' ).trigger( 'click' );
-
-					// Enable lightbox close if it was disabled.
-					if ( disableClose ) {
-						lightbox.enableClose();
-					}
-
-					// Don't proceed if not saved.
-					if ( form.find( 'label.error' ).length || $( '.fl-builder-alert-lightbox:visible', window.parent.document ).length ) {
-						valid = false;
-					}
-				}
-
-				// Destroy the settings form?
-				if ( destroy ) {
-					FLBuilder._destroySettingsForms();
-
-					// Destroy the preview if settings don't have changes.
-					if ( ! changed && FLBuilder.preview ) {
-						FLBuilder.preview.clear();
-						FLBuilder.preview = null;
-					}
-				} else {
-					// cache current settings
-					FLBuilderSettingsForms.cacheCurrentSettings();
-				}
-
-				// Close the main lightbox if it doesn't have changes and closing isn't disabled.
-				if ( ! changed && ! disableClose ) {
-					lightbox.close();
-				}
-			}
-
-			if ( ! valid ) {
-				FLBuilder._publishAndRemain = false; // Reset preview clearing
-				FLBuilder.triggerHook( 'didFailSettingsSave' );
-				FLBuilder._toggleSettingsTabErrors();
-				if ( showAlert && ! $( '.fl-builder-alert-lightbox:visible', window.parent.document ).length ) {
-					FLBuilder.alert( FLBuilderStrings.settingsHaveErrors );
-				}
-			} else {
-				FLBuilder.triggerHook( 'didTriggerSettingsSave' );
-			}
-
-			return valid;
-		},
-
-		/**
-		 * Refreshes preview references for a node's settings panel
-		 * in case they have been broken by work in the layout.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _refreshSettingsPreviewReference
-		 */
-		_refreshSettingsPreviewReference: function()
-		{
-			if ( FLBuilder.preview ) {
-				FLBuilder.preview._initElementsAndClasses();
-			}
-		},
-
-		/* Nested Settings Forms
-		----------------------------------------------------------*/
-
-		/**
-		 * Opens a nested settings lightbox.
-		 *
-		 * @since 1.10
-		 * @access private
-		 * @method _openNestedSettings
-		 * @return object The settings lightbox object.
-		 */
-		_openNestedSettings: function( settings )
-		{
-			if ( settings.className && -1 === settings.className.indexOf( 'fl-builder-settings-lightbox' ) ) {
-				settings.className += ' fl-builder-settings-lightbox';
-			}
-
-			settings = $.extend( {
-				className: 'fl-builder-lightbox  fl-builder-settings-lightbox',
-				destroyOnClose: true,
-				resizable: true
-			}, settings );
-
-			var parentBoxWrap  = $( '.fl-lightbox-wrap:visible', window.parent.document ),
-				parentBox      = parentBoxWrap.find( '.fl-lightbox' ),
-				nestedBoxObj   = new FLLightbox( settings ),
-				nestedBoxWrap  = nestedBoxObj._node,
-				nestedBox      = nestedBoxWrap.find( '.fl-lightbox' );
-
-			parentBoxWrap.hide();
-			nestedBoxWrap.attr( 'data-parent', parentBoxWrap.attr( 'data-instance-id' ) );
-			nestedBox.attr( 'style', parentBox.attr( 'style' ) );
-			nestedBoxObj.on( 'resized', FLBuilder._calculateSettingsTabsOverflow );
-			nestedBoxObj.open( '<div class="fl-builder-lightbox-loading"></div>' );
-
-			return nestedBoxObj;
-		},
-
-		/**
-		 * Opens the active nested settings lightbox.
-		 *
-		 * @since 1.10
-		 * @access private
-		 * @method _closeNestedSettings
-		 */
-		_closeNestedSettings: function()
-		{
-			var nestedBoxWrap = $( '.fl-builder-lightbox[data-parent]:visible', window.parent.document ),
-				nestedBox     = nestedBoxWrap.find( '.fl-lightbox' ),
-				nestedBoxId   = nestedBoxWrap.attr( 'data-instance-id' ),
-				nestedBoxObj  = FLLightbox._instances[ nestedBoxId ],
-				parentBoxId   = nestedBoxWrap.attr( 'data-parent' ),
-				parentBoxWrap = $( '[data-instance-id="' + parentBoxId + '"]', window.parent.document ),
-				parentBox     = parentBoxWrap.find( '.fl-lightbox' ),
-				parentBoxForm = parentBoxWrap.find('form'),
-				parentBoxObj  = FLLightbox._instances[ parentBoxId ];
-
-			if ( ! nestedBoxObj ) {
-				return
-			}
-
-			// Cancel any pending preview-save debounce in the nested form so it
-			// can't fire after close on a partially-unmounted DOM.
-			var nestedForm = nestedBoxWrap.find( '.fl-builder-settings' );
-			var pendingTimeout = nestedForm.data( 'timeout' );
-			if ( pendingTimeout ) {
-				clearTimeout( pendingTimeout );
-				nestedForm.removeData( 'timeout' );
-			}
-
-			nestedBoxObj.on( 'close', function() {
-				parentBox.attr( 'style', nestedBox.attr( 'style' ) );
-				parentBoxWrap.show();
-				parentBoxObj._resize();
-				parentBoxWrap.find( 'label.error' ).remove();
-				parentBoxForm.validate().hideErrors();
-				FLBuilder._toggleSettingsTabErrors();
-				FLBuilder._initMultipleFields();
-
-				// Pop form state
-				FL?.Builder?.settingsForms.state.pop()
-			} );
-
-			nestedBoxObj.close();
-		},
-
+		
 		/* Tooltips
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Shows a help tooltip in the settings lightbox.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _showHelpTooltip
-		 */
+		 */ 
 		_showHelpTooltip: function()
 		{
-			const $el = $( this );
-
-			const timeout = setTimeout( () => {
-				$el.siblings( '.fl-help-tooltip-text' ).fadeIn();
-				$el.removeData( 'hoverTimeout' );
-			}, 500 );
-
-			$el.data( 'hoverTimeout', timeout );
+			$(this).siblings('.fl-help-tooltip-text').fadeIn();
 		},
-
+		
 		/**
 		 * Hides a help tooltip in the settings lightbox.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _hideHelpTooltip
-		 */
+		 */ 
 		_hideHelpTooltip: function()
 		{
-			const $el = $( this );
-			const timeout = $el.data( 'hoverTimeout' );
-
-			if ( timeout ) {
-				clearTimeout( timeout );
-				$el.removeData( 'hoverTimeout' );
-			}
-
-			$el.siblings( '.fl-help-tooltip-text' ).fadeOut();
+			$(this).siblings('.fl-help-tooltip-text').fadeOut();
 		},
-
+		
 		/* Auto Suggest Fields
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes all auto suggest fields within a settings form.
 		 *
 		 * @since 1.2.3
 		 * @access private
 		 * @method _initAutoSuggestFields
-		 */
+		 */ 
 		_initAutoSuggestFields: function()
 		{
-			var fields = $('.fl-builder-settings:visible .fl-suggest-field', window.parent.document),
-				form   = fields.length ? fields.first().closest( '.fl-builder-settings' ) : $( '.fl-builder-settings:visible', window.parent.document ),
-				field  = null,
-				values = null,
-				name   = null,
-				data   = [];
-
-			FLBuilder._autoSuggestInitializing = true;
-
-			if ( form.length ) {
-				form.data( 'suggest-field-names', fields.map( function() {
-					return $( this ).attr( 'name' );
-				} ).get() );
-			}
-
-			fields.each( function() {
-				field = $( this );
-				if ( '' !== field.attr( 'data-value' ) ) {
-					FLBuilderSettingsForms.showFieldLoader( field );
-					data.push( {
-						name   : field.attr( 'name' ),
-						value  : field.attr( 'data-value' ),
-						action : field.attr( 'data-action' ),
-						data   : field.attr( 'data-action-data' ),
-					} );
-				}
-			} );
-
-			if ( data.length ) {
-				FLBuilder.ajax( {
-					action: 'get_autosuggest_values',
-					fields: data
-				}, function( response ) {
-					values = FLBuilder._jsonParse( response );
-					for ( name in values ) {
-						$( '.fl-suggest-field[name="' + name + '"]', window.parent.document )
-							.attr( 'data-value', values[ name ] );
-					}
-					fields.each( FLBuilder._initAutoSuggestField );
-					FLBuilder._clearAutoSuggestInitializing();
-				} );
-			} else {
-				fields.each( FLBuilder._initAutoSuggestField );
-				FLBuilder._clearAutoSuggestInitializing();
-			}
+			$('.fl-suggest-field').each(FLBuilder._initAutoSuggestField);
 		},
-
-		_clearAutoSuggestInitializing: function() {
-			setTimeout( function() {
-				FLBuilder._autoSuggestInitializing = false;
-			}, 0 );
-		},
-
+		
 		/**
 		 * Initializes a single auto suggest field.
 		 *
 		 * @since 1.2.3
 		 * @access private
 		 * @method _initAutoSuggestField
-		 */
+		 */ 
 		_initAutoSuggestField: function()
 		{
 			var field = $(this);
-
-			field.autoSuggest(FLBuilder._ajaxUrl({
+				
+			field.autoSuggest(FLBuilder._ajaxUrl({ 
 				'fl_action'         : 'fl_builder_autosuggest',
 				'fl_as_action'      : field.data('action'),
-				'fl_as_action_data' : field.data('action-data'),
-				'_wpnonce'			: FLBuilderConfig.ajaxNonce
-			}), $.extend({}, {
+				'fl_as_action_data' : field.data('action-data')
+			}), {
 				asHtmlID                    : field.attr('name'),
 				selectedItemProp            : 'name',
 				searchObjProps              : 'name',
-				minChars                    : 2,
+				minChars                    : 3,
 				keyDelay                    : 1000,
 				fadeOut                     : false,
 				usePlaceholder              : true,
@@ -7963,14 +4522,10 @@
 				preFill                     : field.data('value'),
 				queryParam                  : 'fl_as_query',
 				afterSelectionAdd           : FLBuilder._updateAutoSuggestField,
-				afterSelectionRemove        : FLBuilder._updateAutoSuggestField,
-				selectionLimit              : field.data('limit'),
-				canGenerateNewSelections    : false
-			}, field.data( 'args' )));
-
-			FLBuilderSettingsForms.hideFieldLoader( field );
+				afterSelectionRemove        : FLBuilder._updateAutoSuggestField
+			});
 		},
-
+		
 		/**
 		 * Updates the value of an auto suggest field.
 		 *
@@ -7980,288 +4535,56 @@
 		 * @param {Object} element The auto suggest field.
 		 * @param {Object} item The current selection.
 		 * @param {Array} selections An array of selected values.
-		 */
+		 */ 
 		_updateAutoSuggestField: function(element, item, selections)
 		{
-			var that = this;
-
 			$(this).siblings('.as-values').val(selections.join(',')).trigger('change');
-
-			if ( ! FLBuilder._autoSuggestInitializing ) {
-				FLBuilder._autoSuggestValueChanged = true;
-				if ( FLBuilder.preview ) {
-					FLBuilder.preview.delayPreview();
-				}
-			}
-
-			// sortable stuff.
-			$(this).parents( '.as-selections').sortable({
-				items : ':not(.as-original)',
-				'update': function( event, ui ) {
-					var selected = [];
-					set = that.parents( '.as-selections').find('li.as-selection-item');
-					$.each(set, function(i,n) {
-						selected.push($(n).attr('data-value'));
-					});
-					$(that).siblings('.as-values').val(selected.join(',')).trigger('change');
-					if ( ! FLBuilder._autoSuggestInitializing ) {
-						FLBuilder._autoSuggestValueChanged = true;
-						if ( FLBuilder.preview ) {
-							FLBuilder.preview.delayPreview();
-						}
-					}
-				}
-			})
 		},
-
-		/* Code Fields
-		----------------------------------------------------------*/
-
-		/**
-		 * SiteGround ForceSSL fix
-		 */
-		 _CodeFieldSSLCheck: function() {
-			 $('body').append('<div class="sg-test" style="display:none"><svg xmlns="http://www.w3.org/2000/svg"></svg></div>');
-
-			 if ( 'https://www.w3.org/2000/svg' === $('.sg-test').find('svg').attr('xmlns') ) {
-				 FLBuilder._codeDisabled = true;
-			 }
-			 $('.sg-test').remove()
-		 },
-
-		/**
-		 * Initializes all code fields in a settings form.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _initCodeFields
-		 */
-		_initCodeFields: function()
-		{
-			if ( ! FLBuilder._codeDisabled ) {
-				$( '.fl-builder-settings:visible', window.parent.document )
-					.find( '.fl-code-field' ).each( FLBuilder._initCodeField );
-			}
-		},
-
-		/**
-		 * Initializes a single code field in a settings form.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @method _initCodeField
-		 */
-		_initCodeField: function()
-		{
-			var field    = $( this ),
-				settings = field.closest( '.fl-builder-settings' ),
-				textarea = field.find( 'textarea' ),
-				editorId = textarea.attr( 'id' ),
-				mode     = textarea.data( 'editor' ),
-				wrap     = textarea.data( 'wrap' ),
-				editDiv  = $( '<div>', {
-					position:   'absolute',
-					height:     parseInt( textarea.attr( 'rows' ), 10 ) * 20
-				} ),
-				editor = null,
-				global_layout = ( settings.hasClass('fl-builder-global-settings') || settings.hasClass('fl-builder-layout-settings' ) ) ? true : false;
-
-			editDiv.insertBefore( textarea );
-			editDiv.attr('contentEditable', true );
-			editDiv.addClass('fl-ignore-validation');
-			textarea.css( 'display', 'none' );
-			ace.require( 'ace/ext/language_tools' );
-			editor = ace.edit( editDiv[0] );
-			editor.$blockScrolling = Infinity;
-			editor.getSession().setValue( textarea.val() );
-			editor.getSession().setMode( 'ace/mode/' + mode );
-
-			if ( wrap ) {
-				editor.getSession().setUseWrapMode( true );
-			}
-
-			editor.setOptions( FLBuilderConfig.AceEditorSettings );
-
-			editor.getSession().on( 'change', function( e ) {
-				textarea.val( editor.getSession().getValue() ).trigger( 'change' );
-
-				// Handle node code settings when shortcodes are enabled.
-				saveBtn  = settings.find( '.fl-builder-settings-save' );
-				val = editor.getSession().getValue();
-
-				if ( settings.find( '#fl-builder-settings-section-bb_js_code' ).length > 0 && 'fl-field-bb_js_code' === field.closest( '.fl-field' ).attr('ID') ) {
-
-					if ( null !== val.match( /<\/iframe>|<\/script>|<meta/gm ) ) {
-						saveBtn.addClass( 'fl-builder-settings-error' );
-						saveBtn.on( 'click', FLBuilder._showCodeFieldCriticalError );
-					} else {
-						saveBtn.removeClass( 'fl-builder-settings-error' );
-						saveBtn.off( 'click', FLBuilder._showCodeFieldCriticalError );
-					}
-				}
-			} );
-
-			/**
-			 * Watch the editor for annotation changes and let the
-			 * user know if there are any errors.
-			 */
-			editor.getSession().on( 'changeAnnotation', function() {
-				var annot = editor.getSession().getAnnotations();
-				var saveBtn = settings.find( '.fl-builder-settings-save' );
-				var errorBtn = settings.find( '.fl-builder-settings-error' );
-				var hasError = false;
-
-				// Strip annotations caused by shortcode syntax — scan forward
-				// from the annotation row to the end of the CSS block for a `[`.
-				var filtered = annot.filter( function( a ) {
-					var session = editor.getSession();
-					var len     = session.getLength();
-					for ( var r = a.row; r < Math.min( a.row + 20, len ); r++ ) {
-						var ln = session.getLine( r );
-						if ( ln && /\[/.test( ln ) ) {
-							return false;
-						}
-						if ( r > a.row && ln && ln.indexOf( '}' ) > -1 ) {
-							break;
-						}
-					}
-					return true;
-				} );
-				if ( filtered.length < annot.length ) {
-					editor.getSession().setAnnotations( filtered );
-					annot = filtered;
-				}
-
-				for ( var i = 0; i < annot.length; i++ ) {
-					if ( annot[ i ].text.indexOf( 'DOCTYPE' ) > -1 ) {
-						continue;
-					}
-					if ( annot[ i ].text.indexOf( 'Named entity expected' ) > -1 ) {
-						continue;
-					}
-					if ( annot[ i ].text.indexOf( '@supports' ) > -1 ) {
-						continue;
-					}
-
-					if ( 'error' === annot[ i ].type ) {
-						hasError = true;
-						break;
-					}
-					if ( annot[ i ].text.indexOf( 'Expected (<color>) but found' ) > -1 ) {
-						annot.splice(i, 1);
-						editor.getSession().setAnnotations(annot);
-					}
-				}
-
-				val = editor.getSession().getValue();
-
-				if( global_layout && hasError && null !== val.match( /<\/iframe>|<\/script>|<meta/gm ) ) {
-					saveBtn.addClass( 'fl-builder-settings-error' );
-					saveBtn.on( 'click', FLBuilder._showCodeFieldCriticalError );
-				}
-
-				if ( hasError && settings.find( '#fl-builder-settings-section-bb_js_code' ).length > 0 && 'fl-field-bb_js_code' === field.closest( '.fl-field' ).attr('ID') ) {
-					saveBtn.addClass( 'fl-builder-settings-error' );
-					saveBtn.on( 'click', FLBuilder._showCodeFieldCriticalError );
-				}
-				if ( hasError && ! saveBtn.hasClass( 'fl-builder-settings-error' ) && errorBtn.length && FLBuilderConfig.CheckCodeErrors ) {
-					saveBtn.addClass( 'fl-builder-settings-error' );
-					saveBtn.on( 'click', FLBuilder._showCodeFieldError );
-				}
-				if ( ! hasError ) {
-					errorBtn.removeClass( 'fl-builder-settings-error' );
-					errorBtn.off( 'click', FLBuilder._showCodeFieldError );
-					errorBtn.off( 'click', FLBuilder._showCodeFieldCriticalError );
-				}
-			});
-			textarea.closest( '.fl-field' ).data( 'editor', editor );
-		},
-
-		/**
-		 * Shows the code error alert when a code field
-		 * has an error.
-		 *
-		 * @since 2.1
-		 * @access private
-		 * @method _showCodeFieldError
-		 */
-		_showCodeFieldError: function( e ) {
-			e.stopImmediatePropagation();
-			FLBuilder.confirm( {
-			    message: FLBuilderStrings.codeError,
-			    cancel: function(){
-					var saveBtn = $( '.fl-builder-settings:visible .fl-builder-settings-save', window.parent.document );
-					saveBtn.removeClass( 'fl-builder-settings-error' );
-					saveBtn.off( 'click', FLBuilder._showCodeFieldError );
-					saveBtn.trigger( 'click' );
-				},
-			    strings: {
-			        ok: FLBuilderStrings.codeErrorFix,
-			        cancel: FLBuilderStrings.codeErrorIgnore
-			    }
-			} );
-		},
-
-		_showCodeFieldCriticalError: function( e ) {
-			e.stopImmediatePropagation();
-			FLBuilder.alert( FLBuilderStrings.codeerrorhtml );
-		},
-
+		
 		/* Multiple Fields
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes all multiple fields in a settings form.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _initMultipleFields
-		 */
+		 */ 
 		_initMultipleFields: function()
 		{
-			$('.fl-builder-settings:visible .fl-builder-field-multiples', window.parent.document).each(function(){
-				var multiples = $(this),
+			var multiples = $('.fl-builder-field-multiples'),
 				multiple  = null,
 				fields    = null,
 				i         = 0,
-				cursorAt  = FLBuilderConfig.isRtl ? { left: 10 } : { right: 10 },
-				limit     = multiples.attr( 'data-limit' ) || 0,
-				count     = multiples.find('tr').length || 0
-
-				if( parseInt(limit) > 0 && count -1 >= parseInt( limit ) ) {
-					multiples.find('.fl-builder-field-copy').hide()
-					multiples.find('.fl-builder-field-add').fadeOut()
-				} else {
-					multiples.find('.fl-builder-field-copy, .fl-builder-field-add').show()
+				cursorAt  = FLBuilderConfig.isRtl ? { left: 10 } : { right: 10 };
+				
+			for( ; i < multiples.length; i++) {
+			
+				multiple = multiples.eq(i);
+				fields = multiple.find('.fl-builder-field-multiple');
+				
+				if(fields.length === 1) {
+					fields.eq(0).find('.fl-builder-field-actions').addClass('fl-builder-field-actions-single');
 				}
-
-				for( ; i < multiples.length; i++) {
-
-					multiple = multiples.eq(i);
-					fields = multiple.find('.fl-builder-field-multiple');
-
-					if(fields.length === 1) {
-						fields.eq(0).find('.fl-builder-field-actions').addClass('fl-builder-field-actions-single');
-					}
-					else {
-						fields.find('.fl-builder-field-actions').removeClass('fl-builder-field-actions-single');
-					}
+				else {
+					fields.find('.fl-builder-field-actions').removeClass('fl-builder-field-actions-single');
 				}
-
-				$('.fl-builder-field-multiples', window.parent.document).sortable({
-					items: '.fl-builder-field-multiple',
-					cursor: 'move',
-					cursorAt: cursorAt,
-					distance: 5,
-					opacity: 0.5,
-					placeholder: 'fl-builder-field-dd-zone',
-					stop: FLBuilder._fieldDragStop,
-					tolerance: 'pointer',
-					axis: "y"
-				});
-			}); // end loop
+			}
+			
+			$('.fl-builder-field-multiples').sortable({
+				items: '.fl-builder-field-multiple',
+				cursor: 'move',
+				cursorAt: cursorAt,
+				distance: 5,
+				opacity: 0.5,
+				helper: FLBuilder._fieldDragHelper,
+				placeholder: 'fl-builder-field-dd-zone',
+				stop: FLBuilder._fieldDragStop,
+				tolerance: 'pointer'
+			});
 		},
-
+		
 		/**
 		 * Adds a new multiple field to the list when the add
 		 * button is clicked.
@@ -8269,102 +4592,44 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _addFieldClicked
-		 */
+		 */ 
 		_addFieldClicked: function()
 		{
 			var button      = $(this),
 				fieldName   = button.attr('data-field'),
 				fieldRow    = button.closest('tr').siblings('tr[data-field='+ fieldName +']').last(),
 				clone       = fieldRow.clone(),
-				form   		= clone.find( '.fl-form-field' ),
-				formType	= null,
-				defaultVal  = null,
 				index       = parseInt(fieldRow.find('label span.fl-builder-field-index').html(), 10) + 1;
-
+				
 			clone.find('th label span.fl-builder-field-index').html(index);
 			clone.find('.fl-form-field-preview-text').html('');
-			clone.find('.fl-form-field-before').remove();
-			clone.find('.fl-form-field-after').remove();
 			clone.find('input, textarea, select').val('');
-
-			// clear color
-			clone.find('.fl-color-picker-color').css('background-color', 'transparent');
-			clone.find('.fl-color-picker-color').addClass('fl-color-picker-empty');
-
-			// global color
-			if ( clone.find('.fl-global-color-field-uid') ) {
-				clone.find('.fl-global-color-field-uid').val( FLBuilder._uniqueColorID() );
-			}
-
-			// Remove react-based color picker dom
-			clone.find('.picker-mount').empty()
-
 			fieldRow.after(clone);
-			const table = clone.closest( '.fl-field' );
 			FLBuilder._initMultipleFields();
-			FLBuilder._renumberFields( table );
-
-			if ( form.length ) {
-				formType = form.find( '.fl-form-field-edit' ).data( 'type' );
-				form.find( 'input' ).val( JSON.stringify( FLBuilderSettingsConfig.defaults.forms[ formType ] ) );
-				form.find( 'input' ).trigger( 'change' )
-			}
-			else {
-				form = button.closest('form.fl-builder-settings');
-				formType = form.data( 'type' );
-
-				if ( formType && form.hasClass( 'fl-builder-module-settings' ) ) {
-					defaultVal = FLBuilderSettingsConfig.defaults.modules[ formType ][ fieldName ][0];
-					clone.find('input, textarea, select').val( defaultVal );
-				} else {
-					button.parents( '.fl-field' ).find('input').trigger('change');
-				}
-			}
-
-			FLBuilder._updateRepeaterFormState( table )
 		},
-
+		
 		/**
-		 * Copies a multiple field and adds it to the list when
+		 * Copies a multiple field and adds it to the list when 
 		 * the copy button is clicked.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _copyFieldClicked
-		 */
+		 */ 
 		_copyFieldClicked: function()
 		{
-			var row       = $(this).closest('tr'),
-				fieldName = row.data('field'),
-				parent    = row.parent(),
-				clone     = row.clone(),
-				index     = parseInt(row.find('label span.fl-builder-field-index').html(), 10) + 1;
-
+			var button      = $(this),
+				row         = button.closest('tr'),
+				clone       = row.clone(),
+				index       = parseInt(row.find('label span.fl-builder-field-index').html(), 10) + 1;
+				
 			clone.find('th label span.fl-builder-field-index').html(index);
-
-			// global color - remove input id for cloned field
-			if ( clone.find('.fl-global-color-field-uid') ) {
-				clone.find('.fl-global-color-field-uid').val( FLBuilder._uniqueColorID() );
-				clone_name = clone.find( '.fl-global-color-field-input.text').val() + ' (' + FLBuilderStrings.copy + ')';
-				clone.find( '.fl-global-color-field-input.text').attr( 'value', clone_name );
-				clone.find( '.fl-global-color-field-input.text').text( clone_name );
-			}
-
-			// Remove react-based color picker dom
-			clone.find('.picker-mount').empty()
-
 			row.after(clone);
-
 			FLBuilder._renumberFields(row.parent());
 			FLBuilder._initMultipleFields();
-			parent.find('input').trigger('change');
-			FLBuilder._updateRepeaterFormState( row.parent() );
-
-			if ( FLBuilder.preview ) {
-				FLBuilder.preview.delayPreview();
-			}
+			FLBuilder.preview.delayPreview();
 		},
-
+		
 		/**
 		 * Deletes a multiple field from the list when the
 		 * delete button is clicked.
@@ -8372,90 +4637,21 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _deleteFieldClicked
-		 */
+		 */ 
 		_deleteFieldClicked: function()
 		{
 			var row     = $(this).closest('tr'),
 				parent  = row.parent(),
-				global  = parent.closest('.fl-builder-settings').hasClass('fl-builder-global-styles'),
-				result  = confirm(global ? FLBuilderStrings.deleteGlobalColorsWarning : FLBuilderStrings.deleteFieldMessage);
-
+				result  = confirm(FLBuilderStrings.deleteFieldMessage);
+			
 			if(result) {
 				row.remove();
 				FLBuilder._renumberFields(parent);
 				FLBuilder._initMultipleFields();
-
-				parent.find('input').trigger('change');
-				FLBuilder._updateRepeaterFormState( parent );
-
-				if ( FLBuilder.preview ) {
-					FLBuilder.preview.delayPreview();
-				}
+				FLBuilder.preview.delayPreview();
 			}
 		},
-
-		/**
-		 * Get the settings object from multiple form inputs with the same key
-		 *
-		 * @since 2.9
-		 * @access private
-		 * @method _getRepeaterSetting
-		 * @param String name - base name of the setting key
-		 * @param HTMLElement form
-		 */
-		_getRepeaterSetting( name, form ) {
-			const formData = new FormData( form )
-			const obj = []
-			const items = Array.from( formData.entries() ).filter( ( [ key ] ) => key.startsWith( name + "[" ) )
-
-			items.map( ( [ key, value ], i ) => {
-
-				// Convert the name into a key path array
-				const path = key.split('][').map( string => string.replaceAll(']', '').replaceAll('[', '') )
-				const [ _, ...keyPath ] = path
-
-				if ( 0 === keyPath.length ) {
-					obj[i] = value
-				} else {
-					keyPath.reduce( ( acc = {}, key, i ) => {
-						acc[key] = undefined !== acc[key] ? acc[key] : {}
-
-						// Last key
-						if ( keyPath.length - 1 === i ) {
-							acc[key] = value
-						}
-
-						return acc[key]
-					}, obj )
-				}
-			} )
-
-			return obj
-		},
-
-		/**
-		 * @since 2.9
-		 * @access private
-		 * @method _updateRepeaterFormState
-		 * @param HTMLElement table - A table element with multiple fields
-		 */
-		_updateRepeaterFormState( table ) {
-			const { getSnapshot, setCurrentForm } = FL.Builder.settingsForms.state
-			const settingName = table.attr('id').replace( 'fl-field-', '' )
-			const forms = getSnapshot()
-			const currentForm = forms[forms.length - 1 ]
-			const settingValue = FLBuilder._getRepeaterSetting( settingName, table.closest('form').get(0) )
-
-			const newForm = {
-				...currentForm,
-				settings: {
-					...currentForm.settings,
-					[settingName]: settingValue
-				}
-			}
-			setCurrentForm( newForm )
-		},
-
+		
 		/**
 		 * Renumbers the labels for a list of multiple fields.
 		 *
@@ -8463,34 +4659,17 @@
 		 * @access private
 		 * @method _renumberFields
 		 * @param {Object} table A table element with multiple fields.
-		 */
-		_renumberFields: function( table )
+		 */ 
+		_renumberFields: function(table)
 		{
-			var rows = table.find( '.fl-builder-field-multiple' );
-
-			rows.each( function( i, row ) {
-				$( row ).find( 'th label span.fl-builder-field-index' ).html( i + 1 );
-				FLBuilder._renumberFieldAttr( row, 'name', i );
-				FLBuilder._renumberFieldAttr( row, 'id', i );
-				FLBuilder._renumberFieldAttr( row, 'for', i );
-			} );
+			var rows = table.find('.fl-builder-field-multiple'),
+				i    = 0;
+				
+			for( ; i < rows.length; i++) {
+				rows.eq(i).find('th label span.fl-builder-field-index').html(i + 1);
+			}
 		},
-
-		/**
-		 * @since 2.5
-		 * @access private
-		 * @method _renumberFieldAttr
-		 * @param {String} value
-		 */
-		_renumberFieldAttr: function( row, key, i )
-		{
-			$( row ).find( '[' + key + ']' ).each( function( k, ele ) {
-				var value = $( ele ).attr( key );
-				value = value.replace( /\[(\d+)\]/, '[' + ( i ) + ']' );
-				$( ele ).attr( key, value );
-			} );
-		},
-
+		
 		/**
 		 * Returns an element for multiple field drag operations.
 		 *
@@ -8498,12 +4677,12 @@
 		 * @access private
 		 * @method _fieldDragHelper
 		 * @return {Object} The helper element.
-		 */
+		 */ 
 		_fieldDragHelper: function()
 		{
 			return $('<div class="fl-builder-field-dd-helper"></div>');
 		},
-
+		
 		/**
 		 * Renumbers and triggers a preview when a multiple field
 		 * has finished dragging.
@@ -8513,51 +4692,29 @@
 		 * @method _fieldDragStop
 		 * @param {Object} e The event object.
 		 * @param {Object} ui An object with additional info for the drag.
-		 */
+		 */ 
 		_fieldDragStop: function(e, ui)
 		{
 			FLBuilder._renumberFields(ui.item.parent());
-
-			ui.item.find('input').trigger('change');
-			FLBuilder._updateRepeaterFormState( ui.item.parent() );
-
-			if ( FLBuilder.preview ) {
-				FLBuilder.preview.delayPreview();
-			}
+			
+			FLBuilder.preview.delayPreview();
 		},
-
+		
 		/* Select Fields
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes select fields for a settings form.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _initSelectFields
-		 */
+		 */ 
 		_initSelectFields: function()
 		{
-			var selects = $( '.fl-builder-settings:visible', window.parent.document )
-				.find( 'select:not(.fl-preview-ignore)' );
-
-			selects.on( 'change', FLBuilder._settingsSelectChanged );
-			selects.trigger( 'change' );
-			selects.on( 'change', FLBuilder._calculateSettingsTabsOverflow );
-
-			// Button groups use the same options and toggling behavior as selects.
-			var buttonGroups = $( '.fl-builder-settings:visible', window.parent.document )
-				.find( '.fl-button-group-field input[type=hidden]:not(.fl-preview-ignore)' );
-
-			buttonGroups.on( 'change', FLBuilder._settingsSelectChanged );
-			buttonGroups.trigger( 'change' );
-			buttonGroups.on( 'change', FLBuilder._calculateSettingsTabsOverflow );
-
-			// Remove hook first, just in case.
-			FLBuilder.removeHook('settings-form-init', FLBuilder._initSelectFieldSetFields );
-			FLBuilder.addHook('settings-form-init', FLBuilder._initSelectFieldSetFields );
+			$('.fl-builder-settings:visible').find('.fl-builder-settings-fields select').trigger('change');
 		},
-
+		
 		/**
 		 * Callback for when a settings form select has been changed.
 		 * If toggle data is present, other fields will be toggled
@@ -8566,84 +4723,52 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _settingsSelectChanged
-		 */
-		_settingsSelectChanged: function( e )
+		 */ 
+		_settingsSelectChanged: function()
 		{
 			var select  = $(this),
-				name    = select.attr('data-root-name'),
 				toggle  = select.attr('data-toggle'),
 				hide    = select.attr('data-hide'),
 				trigger = select.attr('data-trigger'),
-				set     = select.attr('data-set'),
 				val     = select.val(),
-				rawVal  = val,
 				i       = 0,
-				mode = FLBuilderResponsiveEditing._mode,
-				responsive = select.closest( '.fl-field-responsive-setting' ),
-				modeClass = 'fl-field-responsive-setting-' + mode,
-				allowToggle = false;
-
-			if ( '' === val && name ) {
-				const field = FLBuilderSettingsForms.getField( name )
-				const inheritedVal = field?.getInheritedValue( mode )
-				val = inheritedVal ? inheritedVal : val
-			}
-
-			if ( responsive.length ) {
-				if(
-					! select.parent().hasClass( modeClass ) &&
-					! select.parent().parent().hasClass( modeClass )
-				) {
-					return;
-				}
-			}
-
- 			// TOGGLE sections, fields or tabs.
-			if( typeof toggle !== 'undefined' ) {
-
-				toggle = FLBuilder._jsonParse(toggle);
-				allowToggle = true;
-
+				k       = 0;
+			
+			// TOGGLE sections, fields or tabs.
+			if(typeof toggle !== 'undefined') {
+			
+				toggle = JSON.parse(toggle);
+				
 				for(i in toggle) {
-					if ( allowToggle ){
-						FLBuilder._settingsSelectToggle(toggle[i].fields, 'hide', '#fl-field-');
-						FLBuilder._settingsSelectToggle(toggle[i].sections, 'hide', '#fl-builder-settings-section-');
-						FLBuilder._settingsSelectToggle(toggle[i].tabs, 'hide', 'a[href*=fl-builder-settings-tab-', ']');
-					}
+					FLBuilder._settingsSelectToggle(toggle[i].fields, 'hide', '#fl-field-');
+					FLBuilder._settingsSelectToggle(toggle[i].sections, 'hide', '#fl-builder-settings-section-');
+					FLBuilder._settingsSelectToggle(toggle[i].tabs, 'hide', 'a[href*=fl-builder-settings-tab-', ']');
 				}
-
+				
 				if(typeof toggle[val] !== 'undefined') {
-					if ( allowToggle ){
-						FLBuilder._settingsSelectToggle(toggle[val].fields, 'show', '#fl-field-');
-						FLBuilder._settingsSelectToggle(toggle[val].sections, 'show', '#fl-builder-settings-section-');
-						FLBuilder._settingsSelectToggle(toggle[val].tabs, 'show', 'a[href*=fl-builder-settings-tab-', ']');
-					}
+					FLBuilder._settingsSelectToggle(toggle[val].fields, 'show', '#fl-field-');
+					FLBuilder._settingsSelectToggle(toggle[val].sections, 'show', '#fl-builder-settings-section-');
+					FLBuilder._settingsSelectToggle(toggle[val].tabs, 'show', 'a[href*=fl-builder-settings-tab-', ']');
 				}
 			}
-
+			
 			// HIDE sections, fields or tabs.
-			if( typeof hide !== 'undefined' ) {
-
-				hide = FLBuilder._jsonParse(hide);
-
-				for(i in hide) {
-					FLBuilder._settingsSelectToggle(hide[i].fields, 'show', '#fl-field-');
-					FLBuilder._settingsSelectToggle(hide[i].sections, 'show', '#fl-builder-settings-section-');
-					FLBuilder._settingsSelectToggle(hide[i].tabs, 'show', 'a[href*=fl-builder-settings-tab-', ']');
-				}
-
+			if(typeof hide !== 'undefined') {
+			
+				hide = JSON.parse(hide);
+				
 				if(typeof hide[val] !== 'undefined') {
 					FLBuilder._settingsSelectToggle(hide[val].fields, 'hide', '#fl-field-');
 					FLBuilder._settingsSelectToggle(hide[val].sections, 'hide', '#fl-builder-settings-section-');
 					FLBuilder._settingsSelectToggle(hide[val].tabs, 'hide', 'a[href*=fl-builder-settings-tab-', ']');
 				}
 			}
-
+			
 			// TRIGGER select inputs.
-			if( typeof trigger !== 'undefined' ) {
-
-				trigger = FLBuilder._jsonParse(trigger);
-
+			if(typeof trigger !== 'undefined') {
+			
+				trigger = JSON.parse(trigger);
+				
 				if(typeof trigger[val] !== 'undefined') {
 					if(typeof trigger[val].fields !== 'undefined') {
 						for(i = 0; i < trigger[val].fields.length; i++) {
@@ -8653,7 +4778,7 @@
 				}
 			}
 		},
-
+		
 		/**
 		 * @since 1.0
 		 * @access private
@@ -8662,157 +4787,36 @@
 		 * @param {Function} func
 		 * @param {String} prefix
 		 * @param {String} suffix
-		 */
+		 */ 
 		_settingsSelectToggle: function(inputArray, func, prefix, suffix)
 		{
-			var i = 0;
-
-			suffix = 'undefined' == typeof suffix ? '' : suffix;
-
+			var i 		= 0,
+				suffix 	= 'undefined' == typeof suffix ? '' : suffix;
+			
 			if(typeof inputArray !== 'undefined') {
-
 				for( ; i < inputArray.length; i++) {
-
-					$('.fl-builder-settings:visible', window.parent.document).find(prefix + inputArray[i] + suffix)[func]();
-
-					// Resize code editor fields.
-					$( prefix + inputArray[i] + suffix ).parent().find( '.fl-field[data-type="code"]' ).each( function() {
-						if ( ! FLBuilder._codeDisabled && $( this ).data( 'editor' ) ) {
-							$( this ).data( 'editor' ).resize();
-						}
-					} );
+					$(prefix + inputArray[i] + suffix)[func]();
 				}
 			}
 		},
-
-		/**
-		 * Setup field 'set' configuration. Sets other fields when the value of a selector button group changes.
-		 * This is set up after the form is done rendering to avoid initial change event.
-		 *
-		 * @since 2.8
-		 * @access private
-		 * @method _initSelectFieldSetFields
-		 * @return void
-		 */
-		_initSelectFieldSetFields: function()
-		{
-			var selects = $( '.fl-builder-settings:visible', window.parent.document )
-			.find( 'select:not(.fl-preview-ignore)' );
-			var buttonGroups = $( '.fl-builder-settings:visible', window.parent.document )
-			.find( '.fl-button-group-field input[type=hidden]:not(.fl-preview-ignore)' );
-
-			selects.on( 'change', FLBuilder._settingsSelectSetFields );
-			buttonGroups.on( 'change', FLBuilder._settingsSelectSetFields );
-		},
-
-		_settingsSelectSetFields: function()
-		{
-			var select = $(this),
-				set    = select.attr('data-set'),
-				val    = select.val();
-
-			// SET other fields based on value
-			if ( undefined !== set ) {
-				set = FLBuilder._jsonParse(set)
-
-				if ( typeof set[val] !== 'undefined' ) {
-
-					// Handle setting fields
-					for( let name in set[val] ) {
-						const field = FLBuilderSettingsForms.getField( name )
-						const value = set[val][name]
-
-						if ( 'object' === typeof value ) {
-							FLBuilderSettingsForms.traverseCompoundFields( value, '', field )
-						} else {
-							field.setValue( value, FLBuilderResponsiveEditing._mode )
-						}
-					}
-				}
-			}
-		},
-
-		_toggleForm: function() {
-			const form = $( '.fl-builder-settings:visible', window.parent.document )
-			const fields = form.find('select:visible, .fl-button-group-field:visible input[type=hidden]:not(.fl-preview-ignore)')
-
-			fields.each( function() {
-				if ( this.hasAttribute('data-toggle') ) {
-					const toggle = FLBuilder._jsonParse( this.getAttribute('data-toggle') )
-					const hide = FLBuilder._jsonParse( this.getAttribute('data-hide') )
-					const name = this.getAttribute('data-root-name')
-					let val = this.value
-
-					if ( '' === val && name ) {
-						const field = FLBuilderSettingsForms.getField( name )
-						const inheritedVal = field?.getInheritedValue( FLBuilderResponsiveEditing._mode )
-						val = inheritedVal ? inheritedVal : val
-					}
-
-					// Hide everything
-					if ( toggle ) {
-						for( let i in toggle ) {
-							FLBuilder._settingsSelectToggle(toggle[i].fields, 'hide', '#fl-field-');
-							FLBuilder._settingsSelectToggle(toggle[i].sections, 'hide', '#fl-builder-settings-section-');
-							FLBuilder._settingsSelectToggle(toggle[i].tabs, 'hide', 'a[href*=fl-builder-settings-tab-', ']');
-						}
-
-						// Toggle things on
-						if( typeof toggle[val] !== 'undefined' ) {
-							FLBuilder._settingsSelectToggle(toggle[val].fields, 'show', '#fl-field-');
-							FLBuilder._settingsSelectToggle(toggle[val].sections, 'show', '#fl-builder-settings-section-');
-							FLBuilder._settingsSelectToggle(toggle[val].tabs, 'show', 'a[href*=fl-builder-settings-tab-', ']');
-						}
-					}
-
-					if ( hide ) {
-						for( let i in hide ) {
-							FLBuilder._settingsSelectToggle(hide[i].fields, 'show', '#fl-field-');
-							FLBuilder._settingsSelectToggle(hide[i].sections, 'show', '#fl-builder-settings-section-');
-							FLBuilder._settingsSelectToggle(hide[i].tabs, 'show', 'a[href*=fl-builder-settings-tab-', ']');
-						}
-
-						if( typeof hide[val] !== 'undefined' ) {
-							FLBuilder._settingsSelectToggle(hide[val].fields, 'hide', '#fl-field-');
-							FLBuilder._settingsSelectToggle(hide[val].sections, 'hide', '#fl-builder-settings-section-');
-							FLBuilder._settingsSelectToggle(hide[val].tabs, 'hide', 'a[href*=fl-builder-settings-tab-', ']');
-						}
-					}
-				}
-			} )
-
-		},
-
+		
 		/* Color Pickers
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes color picker fields for a settings form.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _initColorPickers
-		 */
+		 */ 
 		_initColorPickers: function()
 		{
-			if ( FLBuilder.colorPicker ) {
-				FLBuilder.colorPicker._init();
-				return;
-			}
 
+			var colorPresets 	   = FLBuilderConfig.colorPresets ? FLBuilderConfig.colorPresets : [];
 			FLBuilder.colorPicker  = new FLBuilderColorPicker({
-				mode: 'hsv',
 				elements: '.fl-color-picker .fl-color-picker-value',
-				presets: FLBuilderConfig.colorPresets ? FLBuilderConfig.colorPresets : [],
-				globals: function () {
-					var styles = FLBuilderConfig.styles;
-					var themeJSON = FLBuilderConfig.themeJSON;
-					return {
-							bb: styles ? styles.colors : [],
-							wp: themeJSON && themeJSON.color.palette.default ? themeJSON.color.palette.default : [],
-							theme: themeJSON && themeJSON.color.palette.theme ? themeJSON.color.palette.theme : []
-					}
-				},
+		    	presets: colorPresets,
 				labels: {
 					colorPresets 		: FLBuilderStrings.colorPresets,
 					colorPicker 		: FLBuilderStrings.colorPicker,
@@ -8823,153 +4827,52 @@
 					noPresets			: FLBuilderStrings.noPresets,
 					presetAdded			: FLBuilderStrings.presetAdded,
 				}
-			});
+		    });
 
-			$( FLBuilder.colorPicker ).on( 'presetRemoved presetAdded presetSorted', function( event, data ) {
-				FLBuilder.ajax({
-					action: 'save_color_presets',
-					presets: data.presets
+			$( FLBuilder.colorPicker ).on( 'presetRemoved presetAdded', function( event, data ){
+	    		FLBuilder.ajax({
+				    action: 'fl_builder_save',
+				    method: 'save_color_presets',
+				   presets: data.presets
 				});
-			});
+
+	    	});
 
 		},
-
-		/**
-		 * Hides the color picker UI.
-		 *
-		 * @since 2.9
-		 */
-		_hideColorPicker: function()
-		{
-			$( '.fl-color-picker-ui.fl-color-picker-active', window.parent.document )
-				.removeClass( 'fl-color-picker-active' );
-		},
-
-		/* Gradient Pickers
-		----------------------------------------------------------*/
-
-		/**
-		 * Initializes gradient picker fields for a settings form.
-		 *
-		 * @since 2.2
-		 * @access private
-		 * @method _initGradientPickers
-		 */
-		_initGradientPickers: function()
-		{
-			$( '.fl-builder-settings:visible .fl-gradient-picker', window.parent.document )
-				.each( FLBuilder._initGradientPicker );
-		},
-
-		/**
-		 * Initializes a single gradient picker field.
-		 *
-		 * @since 2.2
-		 * @access private
-		 * @method _initGradientPicker
-		 */
-		_initGradientPicker: function()
-		{
-			var picker = $( this ),
-				type = picker.find( '.fl-gradient-picker-type-select' ),
-				angle = picker.find( '.fl-gradient-picker-angle-wrap' ),
-				position = picker.find( '.fl-gradient-picker-position' );
-
-			type.on( 'change', function() {
-				if ( 'linear' === $( this ).val() ) {
-					angle.show();
-					position.hide();
-				} else {
-					angle.hide();
-					position.show();
-				}
-			} );
-		},
-
-		/**
-		 * Create unique color ID.
-		 *
-		 * @access private
-		 * @method _uniqueColorID
-		 */
-		_uniqueColorID: function() {
-			const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-			let uid = '';
-
-			for ( let i = 0; i < 9; i++ ) {
-				const randomIndex = Math.floor( Math.random() * characters.length );
-				uid += characters.charAt( randomIndex );
-			}
-
-			return uid;
-		},
-
+				
 		/* Single Photo Fields
 		----------------------------------------------------------*/
-
-		/**
-		 * Initializes photo fields for a settings form.
-		 *
-		 * @since 2.2
-		 * @access private
-		 * @method _initPhotoFields
-		 */
-		_initPhotoFields: function()
-		{
-			var selects = $( '.fl-builder-settings:visible', window.parent.document )
-				.find( '.fl-photo-field select' );
-
-			selects.on( 'change', FLBuilder._toggleSettingsOnIconChange );
-			selects.trigger( 'change' );
-		},
-
-		/**
-		 * Initializes the single photo selector.
-		 *
-		 * @since 1.8.6
-		 * @access private
-		 * @method _initSinglePhotoSelector
-		 */
-		_initSinglePhotoSelector: function()
-		{
-			if(FLBuilder._singlePhotoSelector === null) {
-				FLBuilder._singlePhotoSelector = wp.media({
-					title: FLBuilderStrings.selectPhoto,
-					button: { text: FLBuilderStrings.selectPhoto },
-					library : { type : FLBuilderConfig.uploadTypes.image },
-					multiple: false
-				});
-				FLBuilder._singlePhotoSelector.on( 'open', FLBuilder._wpmedia_reset_errors );
-				window.parent._wpPluploadSettings['defaults']['multipart_params']['fl_upload_type']= 'photo';
-			}
-		},
-
+		
 		/**
 		 * Shows the single photo selector.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _selectSinglePhoto
-		 */
+		 */ 
 		_selectSinglePhoto: function()
 		{
-			if ( ! FLBuilderConfig.userCaps.canUpload ) {
-				FLBuilder.alert( FLBuilderStrings.uploadBlocked );
-				return false;
+			if(FLBuilder._singlePhotoSelector === null) {
+				FLBuilder._singlePhotoSelector = wp.media({
+					title: FLBuilderStrings.selectPhoto,
+					button: { text: FLBuilderStrings.selectPhoto },
+					library : { type : 'image' },
+					multiple: false
+				});
 			}
-			FLBuilder._initSinglePhotoSelector();
+			
 			FLBuilder._singlePhotoSelector.once('open', $.proxy(FLBuilder._singlePhotoOpened, this));
 			FLBuilder._singlePhotoSelector.once('select', $.proxy(FLBuilder._singlePhotoSelected, this));
 			FLBuilder._singlePhotoSelector.open();
 		},
-
+		
 		/**
 		 * Callback for when the single photo selector is shown.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _singlePhotoOpened
-		 */
+		 */ 
 		_singlePhotoOpened: function()
 		{
 			var selection   = FLBuilder._singlePhotoSelector.state().get('selection'),
@@ -8977,13 +4880,13 @@
 				photoField  = wrap.find('input[type=hidden]'),
 				photo       = photoField.val(),
 				attachment  = null;
-
+				
 			if($(this).hasClass('fl-photo-replace')) {
 				selection.reset();
 				wrap.addClass('fl-photo-empty');
 				photoField.val('');
 			}
-			else if(photo !== '') {
+			else if(photo != '') {           
 				attachment = wp.media.attachment(photo);
 				attachment.fetch();
 				selection.add(attachment ? [attachment] : []);
@@ -8992,14 +4895,14 @@
 				selection.reset();
 			}
 		},
-
+		
 		/**
 		 * Callback for when a single photo is selected.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _singlePhotoSelected
-		 */
+		 */ 
 		_singlePhotoSelected: function()
 		{
 			var photo      = FLBuilder._singlePhotoSelector.state().get('selection').first().toJSON(),
@@ -9007,55 +4910,37 @@
 				photoField = wrap.find('input[type=hidden]'),
 				preview    = wrap.find('.fl-photo-preview img'),
 				srcSelect  = wrap.find('select');
-
-			if ( photo.url && photo.url.endsWith( '.svg' ) ) {
-				photo.sizes = {
-					full: {
-						url: photo.url,
-						filename: photo.url.split( '/' ).pop(),
-						height: '',
-						width: ''
-					}
-				}
-			}
-
+				
 			photoField.val(photo.id);
 			preview.attr('src', FLBuilder._getPhotoSrc(photo));
-			wrap.removeClass('fl-photo-empty').removeClass('fl-photo-no-attachment');
+			wrap.removeClass('fl-photo-empty');
 			wrap.find('label.error').remove();
 			srcSelect.show();
-			srcSelect.html(FLBuilder._getPhotoSizeOptions(photo,srcSelect.val()));
+			srcSelect.html(FLBuilder._getPhotoSizeOptions(photo));
 			srcSelect.trigger('change');
-			FLBuilderSettingsConfig.attachments[ photo.id ] = photo;
 		},
-
+		
 		/**
 		 * Clears a photo that has been selected in a single photo field.
 		 *
 		 * @since 1.6.4.3
 		 * @access private
 		 * @method _singlePhotoRemoved
-		 */
+		 */ 
 		_singlePhotoRemoved: function()
 		{
-			FLBuilder._initSinglePhotoSelector();
-
-			var state       = FLBuilder._singlePhotoSelector.state(),
-				selection   = 'undefined' != typeof state ? state.get('selection') : null,
+			var selection   = FLBuilder._singlePhotoSelector.state().get('selection'),
 				wrap        = $(this).closest('.fl-photo-field'),
 				photoField  = wrap.find('input[type=hidden]'),
 				srcSelect   = wrap.find('select');
-
-			if ( selection ) {
-				selection.reset();
-			}
-
+				
+			selection.reset();
 			wrap.addClass('fl-photo-empty');
 			photoField.val('');
-			srcSelect.html('<option value="" selected></option>');
+			srcSelect.html('');
 			srcSelect.trigger('change');
 		},
-
+		
 		/**
 		 * Returns the src URL for a photo.
 		 *
@@ -9064,7 +4949,7 @@
 		 * @method _getPhotoSrc
 		 * @param {Object} photo A photo data object.
 		 * @return {String} The src URL for a photo.
-		 */
+		 */ 
 		_getPhotoSrc: function(photo)
 		{
 			if(typeof photo.sizes === 'undefined') {
@@ -9077,7 +4962,7 @@
 				return photo.sizes.full.url;
 			}
 		},
-
+		
 		/**
 		 * Builds the options for a photo size select.
 		 *
@@ -9085,138 +4970,71 @@
 		 * @access private
 		 * @method _getPhotoSizeOptions
 		 * @param {Object} photo A photo data object.
-		 * @param {String} selectedSize The selected photo size if one is set.
 		 * @return {String} The HTML for the photo size options.
-		 */
-		_getPhotoSizeOptions: function( photo, selectedSize )
+		 */ 
+		_getPhotoSizeOptions: function(photo)
 		{
 			var html     = '',
 				size     = null,
 				selected = null,
-				check    = null,
-				doneselected = false,
 				title    = '',
-				titleSize = '',
 				titles = {
 					full      : FLBuilderStrings.fullSize,
 					large     : FLBuilderStrings.large,
 					medium    : FLBuilderStrings.medium,
 					thumbnail : FLBuilderStrings.thumbnail
 				};
-
-			if(typeof photo.sizes === 'undefined' || 0 === photo.sizes.length) {
+				
+			if(typeof photo.sizes === 'undefined') {
 				html += '<option value="' + photo.url + '">' + FLBuilderStrings.fullSize + '</option>';
 			}
 			else {
-
-				// Check the selected value without the protocol so we get a match if
-				// a site has switched to HTTPS since selecting this photo (#641).
-				if ( selectedSize ) {
-					selectedSize = selectedSize.split(/[\\/]/).pop();
-				}
-
-				/**
-				 * We need to make a check here to be sure that the selectedSize
-				 * is actually the image we selected, or the previous image
-				 * otherwise it will default to the 1st in the select (thumbnail)
-				 */
-				selectedverified = false;
-				for(sizecheck in photo.sizes) {
-					if ( photo.sizes[ sizecheck ].url.split(/[\\/]/).pop() === selectedSize ) {
-						selectedverified = true;
-						break;
-					}
-				}
-
-				if ( ! selectedverified ) {
-					selectedSize = false;
-				}
-
-
+				
 				for(size in photo.sizes) {
-
-					selected = '';
-
+					
 					if ( 'undefined' != typeof titles[ size ] ) {
-						title = titles[ size ];
+						title = titles[ size ] + ' - ';
 					}
 					else if ( 'undefined' != typeof FLBuilderConfig.customImageSizeTitles[ size ] ) {
-						title = FLBuilderConfig.customImageSizeTitles[ size ];
+						title = FLBuilderConfig.customImageSizeTitles[ size ] + ' - ';
 					}
 					else {
 						title = '';
 					}
-
-					if ( ! selectedSize ) {
-
-						if ( typeof FLBuilderConfig.photomodulesize !== 'undefined' && size === FLBuilderConfig.photomodulesize && ! doneselected ) {
-							selected = ' selected="selected"';
-							doneselected = true;
-						} else if( size == FLBuilderConfig.defaultImageSize && ! doneselected ){
-							selected = ' selected="selected"';
-							doneselected = true;
-						}
-
-					} else if( selectedSize === photo.sizes[ size ].url.split(/[\\/]/).pop() && ! doneselected ) {
-						selected = ' selected="selected"';
-						doneselected = true;
-					}
-
-					if ( photo.sizes[size].width && photo.sizes[size].height ) {
-						title = title ? title + ' - ' : title
-						titleSize = photo.sizes[size].width + ' x ' + photo.sizes[size].height
-					}
-
-					html += '<option data-size="' + size + '" value="' + photo.sizes[size].url + '"' + selected + '>' + title + titleSize + '</option>';
+					
+					selected = size == 'full' ? ' selected="selected"' : '';
+					html += '<option value="' + photo.sizes[size].url + '"' + selected + '>' + title + photo.sizes[size].width + ' x ' + photo.sizes[size].height + '</option>';
 				}
 			}
+			
 			return html;
 		},
-
+		
 		/* Multiple Photo Fields
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Shows the multiple photo selector.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _selectMultiplePhotos
-		 */
+		 */ 
 		_selectMultiplePhotos: function()
 		{
 			var wrap           = $(this).closest('.fl-multiple-photos-field'),
 				photosField    = wrap.find('input[type=hidden]'),
 				photosFieldVal = photosField.val(),
-				parsedVal      = photosFieldVal === '' ? '' : FLBuilder._jsonParse(photosFieldVal),
+				content        = photosFieldVal == '' ? '[gallery ids="-1"]' : '[gallery ids="'+ JSON.parse(photosFieldVal).join() +'"]',
+				shortcode      = wp.shortcode.next('gallery', content).shortcode,
 				defaultPostId  = wp.media.gallery.defaults.id,
-				content        = '[gallery ids="-1"]',
-				shortcode      = null,
-				attachments    = null,
-				selection      = null,
-				i              = null,
-				ids            = [];
-
-			if ( ! FLBuilderConfig.userCaps.canUpload ) {
-				FLBuilder.alert( FLBuilderStrings.uploadBlocked );
-				return false;
-			}
-
-			// Builder the gallery shortcode.
-			if ( 'object' == typeof parsedVal ) {
-				for ( i in parsedVal ) {
-					ids.push( parsedVal[ i ] );
-				}
-				content = '[gallery ids="'+ ids.join() +'"]';
-			}
-
-			shortcode = wp.shortcode.next('gallery', content).shortcode;
+				attachments    = null, 
+				selection      = null;
 
 			if(_.isUndefined(shortcode.get('id')) && !_.isUndefined(defaultPostId)) {
 				shortcode.set('id', defaultPostId);
 			}
 
-			// Get the selection object.
 			attachments = wp.media.gallery.attachments(shortcode);
 
 			selection = new wp.media.model.Selection(attachments.models, {
@@ -9229,11 +5047,6 @@
 			// Fetch the query's attachments, and then break ties from the
 			// query to allow for sorting.
 			selection.more().done(function() {
-
-				if ( ! selection.length ) {
-					FLBuilder._multiplePhotoSelector.setState( 'gallery-library' );
-				}
-
 				// Break ties with the query.
 				selection.props.set({ query: false });
 				selection.unmirror();
@@ -9244,7 +5057,7 @@
 			if(FLBuilder._multiplePhotoSelector) {
 				FLBuilder._multiplePhotoSelector.dispose();
 			}
-			window.parent._wpPluploadSettings['defaults']['multipart_params']['fl_upload_type']= 'photo';
+			
 			// Store the current gallery frame.
 			FLBuilder._multiplePhotoSelector = wp.media({
 				frame:     'post',
@@ -9254,11 +5067,11 @@
 				multiple:  true,
 				selection: selection
 			}).open();
-
+			
 			$(FLBuilder._multiplePhotoSelector.views.view.el).addClass('fl-multiple-photos-lightbox');
 			FLBuilder._multiplePhotoSelector.once('update', $.proxy(FLBuilder._multiplePhotosSelected, this));
 		},
-
+		
 		/**
 		 * Callback for when multiple photos have been selected.
 		 *
@@ -9266,7 +5079,7 @@
 		 * @access private
 		 * @method _multiplePhotosSelected
 		 * @param {Object} data The photo data object.
-		 */
+		 */ 
 		_multiplePhotosSelected: function(data)
 		{
 			var wrap        = $(this).closest('.fl-multiple-photos-field'),
@@ -9274,340 +5087,90 @@
 				count       = wrap.find('.fl-multiple-photos-count'),
 				photos      = [],
 				i           = 0;
-
+			
 			for( ; i < data.models.length; i++) {
 				photos.push(data.models[i].id);
 			}
-
+				
 			if(photos.length == 1) {
 				count.html('1 ' + FLBuilderStrings.photoSelected);
 			}
 			else {
 				count.html(photos.length + ' ' + FLBuilderStrings.photosSelected);
 			}
-
+		 
 			wrap.removeClass('fl-multiple-photos-empty');
 			wrap.find('label.error').remove();
 			photosField.val(JSON.stringify(photos)).trigger('change');
 		},
-
+		
 		/* Single Video Fields
 		----------------------------------------------------------*/
-
-		/**
-		 * Initializes the single video selector.
-		 *
-		 * @since 1.10.8
-		 * @access private
-		 * @method _initSingleVideoSelector
-		 */
-		_initSingleVideoSelector: function()
-		{
-			if(FLBuilder._singleVideoSelector === null) {
-				var defaultFileExtensions = window.parent._wpPluploadSettings.defaults.filters.mime_types[0].extensions;
-
-				window.parent._wpPluploadSettings['defaults']['multipart_params']['fl_upload_type'] = 'video';
-				window.parent._wpPluploadSettings.defaults.filters.mime_types[0].extensions         = FLBuilderConfig.uploadTypes.videoTypes;
-
-				FLBuilder._singleVideoSelector = wp.media({
-					title: FLBuilderStrings.selectVideo,
-					button: { text: FLBuilderStrings.selectVideo },
-					library: { type: [ 'video/mp4', 'video/webm' ] },
-					multiple: false
-				});
-
-				FLBuilder._singleVideoSelector.on( 'open', FLBuilder._wpmedia_reset_errors );
-
-				FLBuilder._singleVideoSelector.on( 'close', function () {
-					window.parent._wpPluploadSettings.defaults.filters.mime_types[0].extensions = defaultFileExtensions;
-				});
-			}
-		},
-
+		
 		/**
 		 * Shows the single video selector.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _selectSingleVideo
-		 */
+		 */ 
 		_selectSingleVideo: function()
 		{
-			if ( ! FLBuilderConfig.userCaps.canUpload ) {
-				FLBuilder.alert( FLBuilderStrings.uploadBlocked );
-				return false;
+			if(FLBuilder._singleVideoSelector === null) {
+			
+				FLBuilder._singleVideoSelector = wp.media({
+					title: FLBuilderStrings.selectVideo,
+					button: { text: FLBuilderStrings.selectVideo },
+					library : { type : 'video' },
+					multiple: false
+				}); 
 			}
-			FLBuilder._initSingleVideoSelector();
+			
 			FLBuilder._singleVideoSelector.once('select', $.proxy(FLBuilder._singleVideoSelected, this));
 			FLBuilder._singleVideoSelector.open();
 		},
-
+		
 		/**
 		 * Callback for when a single video is selected.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _singleVideoSelected
-		 */
+		 */ 
 		_singleVideoSelected: function()
 		{
 			var video      = FLBuilder._singleVideoSelector.state().get('selection').first().toJSON(),
 				wrap       = $(this).closest('.fl-video-field'),
-				image      = wrap.find('.fl-video-preview-img'),
+				image      = wrap.find('.fl-video-preview-img img'),
 				filename   = wrap.find('.fl-video-preview-filename'),
 				videoField = wrap.find('input[type=hidden]');
-
-			image.html('<span class="dashicons dashicons-media-video"></span>');
+			
+			image.attr('src', video.icon);
 			filename.html(video.filename);
 			wrap.removeClass('fl-video-empty');
 			wrap.find('label.error').remove();
 			videoField.val(video.id).trigger('change');
-			FLBuilderSettingsConfig.attachments[ video.id ] = video;
 		},
-
-		/**
-		 * Clears a video that has been selected in a single video field.
-		 *
-		 * @since 2.1
-		 * @access private
-		 * @method _singleVideoRemoved
-		 */
-		_singleVideoRemoved: function()
-		{
-			FLBuilder._initSingleVideoSelector();
-			var state       = FLBuilder._singleVideoSelector.state(),
-				selection   = 'undefined' != typeof state ? state.get('selection') : null,
-				wrap        = $(this).closest('.fl-video-field'),
-				image      	= wrap.find('.fl-video-preview-img img'),
-				filename   	= wrap.find('.fl-video-preview-filename'),
-				videoField  = wrap.find('input[type=hidden]');
-
-			if ( selection ) {
-				selection.reset();
-			}
-
-			image.attr('src', '');
-			filename.html('');
-			wrap.addClass('fl-video-empty');
-			videoField.val('').trigger('change');
-		},
-
-		/**
-		 * Resolves video attachment filenames for fields that have a
-		 * numeric ID but no attachment data in the config.
-		 *
-		 * @since 2.10
-		 * @access private
-		 * @method _resolveVideoFieldAttachments
-		 */
-		_resolveVideoFieldAttachments: function()
-		{
-			$( '.fl-video-field', window.parent.document ).each( function() {
-				var wrap     = $( this ),
-					input    = wrap.find( 'input[type=hidden]' ),
-					id       = input.val(),
-					filename = wrap.find( '.fl-video-preview-filename' );
-
-				if ( ! id || isNaN( id ) || FLBuilderSettingsConfig.attachments[ id ] ) {
-					return;
-				}
-
-				if ( filename.length && ( ! filename.html() || filename.html() == id ) ) {
-					var attachment = wp.media.attachment( id );
-					attachment.fetch().then( function() {
-						var name = attachment.get( 'filename' );
-						if ( name ) {
-							filename.html( name );
-							FLBuilderSettingsConfig.attachments[ id ] = {
-								id: id,
-								url: attachment.get( 'url' ),
-								filename: name
-							};
-						}
-					} );
-				}
-			} );
-		},
-
-		/* Multiple Audios Field
-		----------------------------------------------------------*/
-
-		/**
-		 * Shows the multiple audio selector.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @method _selectMultipleAudios
-		 */
-		_selectMultipleAudios: function()
-		{
-			var wrap           = $(this).closest('.fl-multiple-audios-field'),
-				audiosField    = wrap.find('input[type=hidden]'),
-				audiosFieldVal = audiosField.val(),
-				content        = audiosFieldVal == '' ? '[playlist ids="-1"]' : '[playlist ids="'+ FLBuilder._jsonParse(audiosFieldVal).join() +'"]',
-				shortcode      = wp.shortcode.next('playlist', content).shortcode,
-				defaultPostId  = wp.media.playlist.defaults.id,
-				attachments    = null,
-				selection      = null;
-
-			if(_.isUndefined(shortcode.get('id')) && !_.isUndefined(defaultPostId)) {
-				shortcode.set('id', defaultPostId);
-			}
-			if ( ! FLBuilderConfig.userCaps.canUpload ) {
-				FLBuilder.alert( FLBuilderStrings.uploadBlocked );
-				return false;
-			}
-
-			window.parent._wpPluploadSettings['defaults']['multipart_params']['fl_upload_type'] = 'audio';
-
-			attachments = wp.media.playlist.attachments(shortcode);
-
-			selection = new wp.media.model.Selection(attachments.models, {
-				props: attachments.props.toJSON(),
-				multiple: true
-			});
-
-			selection.playlist = attachments.playlist;
-
-			// Fetch the query's attachments, and then break ties from the
-			// query to allow for sorting.
-			selection.more().done(function() {
-				// Break ties with the query.
-				selection.props.set({ query: false });
-				selection.unmirror();
-				selection.props.unset('orderby');
-			});
-
-			// Destroy the previous frame.
-			if(FLBuilder._multipleAudiosSelector) {
-				FLBuilder._multipleAudiosSelector.dispose();
-			}
-
-			// Store the current frame.
-			FLBuilder._multipleAudiosSelector = wp.media({
-				frame:     'post',
-				state:     $(this).hasClass('fl-multiple-audios-edit') ? 'playlist-edit' : 'playlist-library',
-				title:     wp.media.view.l10n.editPlaylistTitle,
-				editing:   true,
-				multiple:  true,
-				selection: selection
-			}).open();
-
-			// Hide the default playlist settings since we have them added in the audio settings
-			FLBuilder._multipleAudiosSelector.content.get('view').sidebar.unset('playlist');
-			FLBuilder._multipleAudiosSelector.on( 'content:render:browse', function( browser ) {
-			    if ( !browser ) return;
-			    // Hide Playlist Settings in sidebar
-			    browser.sidebar.on('ready', function(){
-			        browser.sidebar.unset('playlist');
-			    });
-			});
-
-
-			FLBuilder._multipleAudiosSelector.once('update', $.proxy(FLBuilder._multipleAudiosSelected, this));
-
-		},
-
-		/**
-		 * Callback for when a single/multiple audio is selected.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @method _multipleAudiosSelected
-		 */
-		_multipleAudiosSelected: function(data)
-		{
-			var wrap       		= $(this).closest('.fl-multiple-audios-field'),
-				count      		= wrap.find('.fl-multiple-audios-count'),
-				audioField 		= wrap.find('input[type=hidden]'),
-				audios     		= [],
-				i          		= 0;
-
-			for( ; i < data.models.length; i++) {
-				audios.push(data.models[i].id);
-			}
-
-			if(audios.length == 1) {
-				count.html('1 ' + FLBuilderStrings.audioSelected);
-			}
-			else {
-				count.html(audios.length + ' ' + FLBuilderStrings.audiosSelected);
-			}
-
-			audioField.val(JSON.stringify(audios)).trigger('change');
-			wrap.removeClass('fl-multiple-audios-empty');
-			wrap.find('label.error').remove();
-
-		},
-
+		
 		/* Icon Fields
 		----------------------------------------------------------*/
-
-		/**
-		 * Initializes icon fields for a settings form.
-		 *
-		 * @since 2.2
-		 * @access private
-		 * @method _initIconFields
-		 */
-		_initIconFields: function()
-		{
-			var inputs = $( '.fl-builder-settings:visible', window.parent.document )
-				.find( '.fl-icon-field input' );
-
-			inputs.on( 'change', FLBuilder._toggleSettingsOnIconChange );
-			inputs.trigger( 'change' );
-		},
-
-		/**
-		 * Callback for when an icon field changes. If the field
-		 * isn't empty the specified elements (if any) will be shown.
-		 *
-		 * @since 2.2
-		 * @access private
-		 * @method _toggleSettingsOnIconChange
-		 */
-		_toggleSettingsOnIconChange: function()
-		{
-			var input  = $( this ),
-				val    = input.val(),
-				show   = input.attr( 'data-show' ),
-				i      = 0;
-
-			if ( typeof show === 'undefined' ) {
-				return;
-			}
-
-			show = FLBuilder._jsonParse( show );
-
-			FLBuilder._settingsSelectToggle( show.fields, 'hide', '#fl-field-' );
-			FLBuilder._settingsSelectToggle( show.sections, 'hide', '#fl-builder-settings-section-' );
-			FLBuilder._settingsSelectToggle( show.tabs, 'hide', 'a[href*=fl-builder-settings-tab-', ']' );
-
-			if ( val ) {
-				FLBuilder._settingsSelectToggle( show.fields, 'show', '#fl-field-' );
-				FLBuilder._settingsSelectToggle( show.sections, 'show', '#fl-builder-settings-section-' );
-				FLBuilder._settingsSelectToggle( show.tabs, 'show', 'a[href*=fl-builder-settings-tab-', ']' );
-				FLBuilder._calculateSettingsTabsOverflow();
-			}
-		},
-
+		
 		/**
 		 * Shows the icon selector.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _selectIcon
-		 */
+		 */ 
 		_selectIcon: function()
 		{
 			var self = this;
-
+			
 			FLIconSelector.open(function(icon){
 				FLBuilder._iconSelected.apply(self, [icon]);
 			});
 		},
-
+		
 		/**
 		 * Callback for when an icon is selected.
 		 *
@@ -9615,14 +5178,14 @@
 		 * @access private
 		 * @method _iconSelected
 		 * @param {String} icon The selected icon's CSS classname.
-		 */
+		 */ 
 		_iconSelected: function(icon)
 		{
 			var wrap       = $(this).closest('.fl-icon-field'),
 				iconField  = wrap.find('input[type=hidden]'),
 				iconTag    = wrap.find('i'),
 				oldIcon    = iconTag.attr('data-icon');
-
+				
 			iconField.val(icon).trigger('change');
 			iconTag.removeClass(oldIcon);
 			iconTag.addClass(icon);
@@ -9630,215 +5193,26 @@
 			wrap.removeClass('fl-icon-empty');
 			wrap.find('label.error').remove();
 		},
-
+		
 		/**
 		 * Callback for when a selected icon is removed.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _removeIcon
-		 */
+		 */ 
 		_removeIcon: function()
 		{
 			var wrap       = $(this).closest('.fl-icon-field'),
 				iconField  = wrap.find('input[type=hidden]'),
 				iconTag    = wrap.find('i');
-
+				
 			iconField.val('').trigger('change');
 			iconTag.removeClass();
 			iconTag.attr('data-icon', '');
 			wrap.addClass('fl-icon-empty');
 		},
-
-		/**
-		 * Initializes all icon "extra classes" chip inputs in a settings form
-		 * and sets up the shared outside-click handler that closes suggestions.
-		 *
-		 * @since 2.10
-		 * @access private
-		 * @method _initIconClassesFields
-		 */
-		_initIconClassesFields: function()
-		{
-			var $doc = $( window.parent.document );
-
-			$( '.fl-builder-settings:visible .fl-icon-classes-field', window.parent.document )
-				.each( FLBuilder._initIconClassesField );
-
-			// Single namespaced document listener — closes any open suggestions on outside click.
-			$doc.off( 'mousedown.fl-icon-classes' ).on( 'mousedown.fl-icon-classes', function( e ) {
-				var $target = $( e.target );
-				if ( ! $target.closest( '.fl-icon-classes-field' ).length ) {
-					$( '.fl-icon-classes-suggestions--open', window.parent.document )
-						.removeClass( 'fl-icon-classes-suggestions--open' )
-						.empty();
-				}
-			} );
-		},
-
-		/**
-		 * Initializes a single icon "extra classes" chip input — chips, typing,
-		 * suggestions dropdown, keyboard navigation.
-		 *
-		 * @since 2.10
-		 * @access private
-		 * @method _initIconClassesField
-		 */
-		_initIconClassesField: function()
-		{
-			var field         = $( this ),
-				input         = field.find( '.fl-icon-classes-input' ),
-				tagsContainer = field.find( '.fl-icon-classes-tags' ),
-				suggestionsEl = field.find( '.fl-icon-classes-suggestions' ),
-				hiddenInput   = field.find( '.fl-icon-classes-value' ),
-				suggestions   = field.data( 'suggestions' ) || [],
-				activeIndex   = -1;
-
-			function getClasses() {
-				var val = hiddenInput.val().trim();
-				return val.length > 0 ? val.split( /\s+/ ) : [];
-			}
-
-			function syncValue() {
-				var tags = [];
-				tagsContainer.find( '.fl-icon-classes-tag-text' ).each( function() {
-					tags.push( $( this ).text() );
-				} );
-				hiddenInput.val( tags.join( ' ' ) ).trigger( 'change' );
-			}
-
-			function addTag( className ) {
-				className = className.trim().toLowerCase();
-				if ( ! className || getClasses().indexOf( className ) !== -1 ) {
-					return;
-				}
-				var tag = $(
-					'<span class="fl-icon-classes-tag">' +
-						'<span class="fl-icon-classes-tag-text">' + $( '<span>' ).text( className ).html() + '</span>' +
-						'<button type="button" class="fl-icon-classes-tag-remove" aria-label="Remove">&times;</button>' +
-					'</span>'
-				);
-				input.before( tag );
-				input.val( '' );
-				syncValue();
-				closeSuggestions();
-			}
-
-			function removeTag( tagEl ) {
-				tagEl.remove();
-				syncValue();
-			}
-
-			function showSuggestions( filter ) {
-				var html            = '',
-					currentClasses  = getClasses(),
-					hasResults      = false;
-
-				for ( var g = 0; g < suggestions.length; g++ ) {
-					var group          = suggestions[ g ],
-						groupHtml      = '',
-						groupHasVisible = false;
-
-					for ( var i = 0; i < group.items.length; i++ ) {
-						var item          = group.items[ i ],
-							isAdded       = currentClasses.indexOf( item ) !== -1,
-							matchesFilter = ! filter || item.indexOf( filter.toLowerCase() ) !== -1;
-
-						if ( matchesFilter ) {
-							var addedClass = isAdded ? ' fl-icon-classes-suggestion-item--added' : '';
-							groupHtml += '<div class="fl-icon-classes-suggestion-item' + addedClass + '" data-value="' + item + '">' + item + '</div>';
-							groupHasVisible = true;
-						}
-					}
-
-					if ( groupHasVisible ) {
-						html += '<div class="fl-icon-classes-suggestion-group">' + group.group + '</div>';
-						html += groupHtml;
-						hasResults = true;
-					}
-				}
-
-				if ( hasResults ) {
-					suggestionsEl.html( html ).addClass( 'fl-icon-classes-suggestions--open' );
-					activeIndex = -1;
-				} else {
-					closeSuggestions();
-				}
-			}
-
-			function closeSuggestions() {
-				suggestionsEl.removeClass( 'fl-icon-classes-suggestions--open' ).empty();
-				activeIndex = -1;
-			}
-
-			function setActiveItem( index ) {
-				var items = suggestionsEl.find( '.fl-icon-classes-suggestion-item:not(.fl-icon-classes-suggestion-item--added)' );
-				items.removeClass( 'fl-icon-classes-suggestion-item--active' );
-				if ( index >= 0 && index < items.length ) {
-					activeIndex = index;
-					items.eq( index ).addClass( 'fl-icon-classes-suggestion-item--active' );
-				} else {
-					activeIndex = -1;
-				}
-			}
-
-			tagsContainer.on( 'click', function( e ) {
-				if ( $( e.target ).closest( '.fl-icon-classes-tag-remove' ).length === 0 ) {
-					input.focus();
-				}
-			} );
-
-			tagsContainer.on( 'click', '.fl-icon-classes-tag-remove', function() {
-				removeTag( $( this ).closest( '.fl-icon-classes-tag' ) );
-			} );
-
-			input.on( 'focus', function() {
-				showSuggestions( input.val() );
-			} );
-
-			input.on( 'input', function() {
-				showSuggestions( input.val() );
-			} );
-
-			input.on( 'keydown', function( e ) {
-				var items = suggestionsEl.find( '.fl-icon-classes-suggestion-item:not(.fl-icon-classes-suggestion-item--added)' );
-
-				if ( e.keyCode === 40 ) {
-					e.preventDefault();
-					setActiveItem( Math.min( activeIndex + 1, items.length - 1 ) );
-				} else if ( e.keyCode === 38 ) {
-					e.preventDefault();
-					setActiveItem( Math.max( activeIndex - 1, -1 ) );
-				} else if ( e.keyCode === 13 ) {
-					e.preventDefault();
-					if ( activeIndex >= 0 && items.eq( activeIndex ).length ) {
-						addTag( items.eq( activeIndex ).data( 'value' ) );
-					} else if ( input.val().trim() ) {
-						addTag( input.val() );
-					}
-				} else if ( e.keyCode === 32 ) {
-					var val = input.val().trim();
-					if ( val.length > 0 ) {
-						e.preventDefault();
-						addTag( val );
-					}
-				} else if ( e.keyCode === 8 && input.val() === '' ) {
-					var lastTag = tagsContainer.find( '.fl-icon-classes-tag' ).last();
-					if ( lastTag.length ) {
-						removeTag( lastTag );
-					}
-				} else if ( e.keyCode === 27 ) {
-					closeSuggestions();
-				}
-			} );
-
-			suggestionsEl.on( 'mousedown', '.fl-icon-classes-suggestion-item:not(.fl-icon-classes-suggestion-item--added)', function( e ) {
-				e.preventDefault();
-				addTag( $( this ).data( 'value' ) );
-				input.focus();
-			} );
-		},
-
+		
 		/* Settings Form Fields
 		----------------------------------------------------------*/
 
@@ -9849,90 +5223,108 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _formFieldClicked
-		 */
+		 */  
 		_formFieldClicked: function()
 		{
-			var link = $( this );
-			var type = link.attr( 'data-type' );
-			var input = link.siblings( 'input' );
-			var key = input.attr( 'name' ).replace( /\[(.*)\]/, '' );
-			var settings = input.val();
-			var multiple = link.closest( '.fl-builder-field-multiple' );
-			var index = ! multiple.length ? null : multiple.index( '.fl-builder-field-multiple' );
-			var defaults = FLBuilderSettingsConfig.defaults.forms[ type ];
+			var link                = $(this),
+				linkLightboxId      = link.closest('.fl-lightbox-wrap').attr('data-instance-id'),
+				linkLightbox        = FLLightbox._instances[linkLightboxId],
+				linkLightboxLeft    = linkLightbox._node.find('.fl-lightbox').css('left'),
+				linkLightboxTop     = linkLightbox._node.find('.fl-lightbox').css('top'),
+				form                = link.closest('.fl-builder-settings'),
+				type                = link.attr('data-type'),
+				settings            = link.siblings('input').val(),
+				helper              = FLBuilder._moduleHelpers[type],
+				lightbox            = new FLLightbox({
+										  className: 'fl-builder-lightbox fl-form-field-settings',
+										  destroyOnClose: true
+									  });
 
-			if ( FLBuilder.isBlockEditor() ) {
-				settings = JSON.parse( settings );
-				settings = JSON.stringify( { ...defaults, ...settings } );
-				FLBuilder.triggerHook( 'renderFormFieldSettings', [ type, settings, input, key, index ] );
-				return;
-			}
-
-			if ( '' === settings ) {
-				settings = JSON.stringify( defaults );
-				input.val( settings );
-			}
-
-			var lightbox = FLBuilder._openNestedSettings( {
-				className: 'fl-builder-lightbox fl-form-field-settings'
-			} );
-
-			var callback = function() {
-				FLBuilderResponsiveEditing._switchAllSettingsToCurrentMode();
-			}
-
-			FLBuilder._renderFormFieldSettings( type, settings, input, lightbox, callback );
+			link.closest('.fl-builder-lightbox').hide();
+			link.attr('id', 'fl-' + lightbox._id);
+			lightbox.open('<div class="fl-builder-lightbox-loading"></div>');
+			lightbox.draggable({ handle: '.fl-lightbox-header' });
+			$('body').undelegate('.fl-builder-settings-cancel', 'click', FLBuilder._settingsCancelClicked);
+			
+			lightbox._node.find('.fl-lightbox').css({
+				'left': linkLightboxLeft,
+				'top': Number(parseInt(linkLightboxTop) + 233) + 'px'
+			});
+			
+			FLBuilder.ajax({
+				action: 'fl_builder_render_settings_form',
+				type: type,
+				settings: settings.replace(/&#39;/g, "'")
+			}, 
+			function(response) 
+			{
+				lightbox.setContent(response); 
+				lightbox._node.find('form.fl-builder-settings').attr('data-type', type); 
+				lightbox._node.find('.fl-builder-settings-cancel').on('click', FLBuilder._closeFormFieldLightbox);
+				FLBuilder._initSettingsForms();
+				
+				if(typeof helper !== 'undefined') {
+					FLBuilder._initSettingsValidation(helper.rules);
+					helper.init();
+				}
+				
+				lightbox._node.find('.fl-lightbox').css({
+					'left': linkLightboxLeft,
+					'top': linkLightboxTop
+				});
+			});
 		},
-
+		
 		/**
-		 * Renders the settings for a nested form field.
+		 * Closes the settings lightbox for a nested form field when the
+		 * cancel or save button is clicked.
 		 *
-		 * @since 2.9
-		 * @return void
-		 */
-		_renderFormFieldSettings: function( type, settings, input, lightbox, callback )
+		 * @since 1.0
+		 * @access private
+		 * @method _closeFormFieldLightbox
+		 */ 
+		_closeFormFieldLightbox: function()
 		{
-			var form = $( '.fl-builder-settings:visible' );
-			var link = input.siblings( 'a' );
-			var helper = FLBuilder._moduleHelpers[ type ];
-
-			// Trigger refresh preview
-			FLBuilder.preview?.preview()
-
-			FLBuilderSettingsForms.render( {
-				id        		: type,
-				nodeId    		: form.attr( 'data-node' ),
-				nodeSettings	: FLBuilder._getSettings( form ),
-				settings  		: FLBuilder._jsonParse( settings.replace( /&#39;/g, "'" ) ),
-				lightbox		: lightbox,
-				rules 			: helper ? helper.rules : null,
-				helper			: {
-					init: function () {
-						var subform = $( '.fl-builder-settings:visible' );
-
-						link.attr( 'id', 'fl-' + subform.attr( 'data-instance-id' ) );
-						subform.attr( 'data-type', type );
-
-						if ( helper ) {
-							helper.init();
-						}
-
-						FLBuilder._initFormFieldSettingsPreview();
-						// Initialize custom attribute field types			
-						if ( type === 'custom_attributes' ) {
-							FLBuilder._initCustomAttributeFields( subform );
-							// Remove target and selector fields for row and column nodes
-							const instance = subform.closest( '.fl-lightbox-wrap' ).data( 'parent' );
-							const node = $( 'form[data-instance-id="' + instance + '"]' ).data( 'form-id' );
-							if ( [ 'row', 'col', 'box', 'loop' ].includes( node ) ) {
-								subform.find( '#fl-field-target, #fl-field-selector' ).remove();
-							}
-						}
-					}
-				},
-			}, callback );
+			var instanceId          = $(this).closest('.fl-lightbox-wrap').attr('data-instance-id'),
+				lightbox            = FLLightbox._instances[instanceId],
+				linkLightbox        = $('.fl-builder-settings-lightbox'),
+				linkLightboxForm    = linkLightbox.find('form'),
+				linkLightboxLeft    = lightbox._node.find('.fl-lightbox').css('left');
+				linkLightboxTop     = lightbox._node.find('.fl-lightbox').css('top');
+				boxHeight           = 0,
+				win                 = $(window),
+				winHeight           = win.height();
+			
+			lightbox._node.find('.fl-lightbox-content').html('<div class="fl-builder-lightbox-loading"></div>');
+			boxHeight = lightbox._node.find('.fl-lightbox').height();
+			
+			if(winHeight - 80 > boxHeight) {
+				lightbox._node.find('.fl-lightbox').css('top', ((winHeight - boxHeight)/2 - 40) + 'px');
+			}
+			else {
+				lightbox._node.find('.fl-lightbox').css('top', '0px');
+			}
+			
+			lightbox.on('close', function() 
+			{
+				linkLightbox.show();
+				linkLightbox.find('label.error').remove();
+				linkLightboxForm.validate().hideErrors();
+				FLBuilder._toggleSettingsTabErrors();
+				
+				linkLightbox.find('.fl-lightbox').css({
+					'left': linkLightboxLeft,
+					'top': linkLightboxTop
+				});
+			});
+			
+			setTimeout(function()
+			{
+				lightbox.close();
+				$('body').delegate('.fl-builder-settings-cancel', 'click', FLBuilder._settingsCancelClicked);
+			}, 500);
 		},
-
+		
 		/**
 		 * Saves the settings for a nested form field when the
 		 * save button is clicked.
@@ -9941,195 +5333,61 @@
 		 * @access private
 		 * @method _saveFormFieldClicked
 		 * @return {Boolean} Whether the save was successful or not.
-		 */
+		 */  
 		_saveFormFieldClicked: function()
 		{
-			var form = $( this ).closest( '.fl-builder-settings' );
-
-			// Cancel any pending preview-save debounce before closing the form.
-			// Otherwise it fires after close on a partially-unmounted DOM (React
-			// color/background fields are gone by then) and wipes connections.
-			var pendingTimeout = form.data( 'timeout' );
-			if ( pendingTimeout ) {
-				clearTimeout( pendingTimeout );
-				form.removeData( 'timeout' );
-			}
-
-			var saved = FLBuilder._saveFormFieldSettings( form );
-
-			if ( saved ) {
-				FLBuilder._closeNestedSettings();
-			} else {
-				FLBuilder._toggleSettingsTabErrors();
-			}
-		},
-
-		/**
-		 * Initialize settings preview for a form field.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _initFormFieldSettingsPreview
-		 */
-		_initFormFieldSettingsPreview: function()
-		{
-			var form = $( '.fl-builder-settings:visible' );
-			var fields = form.find( '.fl-field' );
-			var editors = form.find( 'textarea.wp-editor-area' );
-
-			form.on( 'input', 'input:not([type=hidden]), textarea', FLBuilder._previewFormFieldSettings );
-			form.on( 'change', 'input[type=hidden], select', FLBuilder._previewFormFieldSettings );
-
-			var shapename = fields.find('input[name=shape_name]');
-			var shapeorig = fields.find('input[name=shape_original]');
-
-			if ( shapename.length > 0 ) {
-				shapeorig.hide();
-				shapename.on( 'keyup', function() {
-					FLBuilder._shapesEdited = true;
-				});
-				if ( shapename.val().length > 0 && shapeorig.val().length < 1 ) {
-					shapeorig.val( shapename.val() );
-				}
-			}
-
-			if ( 'undefined' !== typeof window.parent.tinyMCE ) {
-				editors.each( function ( i, editor ) {
-					editor = window.parent.tinyMCE.get( $( editor ).attr( 'id' ) );
-					editor.on( 'change', FLBuilder._previewFormFieldSettings );
-					editor.on( 'keyup', FLBuilder._previewFormFieldSettings );
-				} );
-			}
-		},
-
-		/**
-		 * Previews the settings for a nested form field when
-		 * a setting is changed.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _previewFormFieldSettings
-		 */
-		_previewFormFieldSettings: function()
-		{
-			var ele = this.formElement ? this.formElement : this;
-			var form = $( ele ).closest( '.fl-builder-settings' );
-			var timeout = form.data( 'timeout' );
-
-			if ( timeout ) {
-				clearTimeout( timeout );
-			}
-
-			timeout = setTimeout( function () {
-				FLBuilder._saveFormFieldSettings( form );
-			}, 1000 );
-
-			form.data( 'timeout', timeout );
-		},
-
-		/**
-		 * Saves the settings for a nested form field.
-		 *
-		 * @since 2.5
-		 * @access private
-		 * @method _saveFormFieldSettings
-		 * @param {Object} form
-		 * @return {Boolean} Whether the save was successful or not.
-		 */
-		_saveFormFieldSettings: function( form )
-		{
-			// Guard against orphan saves on a detached form. A debounced preview
-			// save can fire after the nested lightbox closes; by then deferred
-			// React fields have unmounted and serializing would drop their
-			// connection inputs.
-			if ( ! form || ! form.length || ! form[0].isConnected ) {
-				return false;
-			}
-
-			var lightboxId    = form.attr( 'data-instance-id' ),
-				type          = form.attr( 'data-type' ),
-				settings      = FLBuilder._getSettings( form ),
-				oldSettings   = {},
-				helper        = FLBuilder._moduleHelpers[ type ],
-				link          = $( '.fl-builder-settings #fl-' + lightboxId, window.parent.document ),
-				preview       = link.parent().attr( 'data-preview-text' ),
-				preview_img   = link.parent().attr( 'data-preview-image' ),
-				previewOptions = [],
-				activePreview = '',
-				previewField  = null,
-				previewText   = '',
-				selectPreview = null,
-				tmp           = document.createElement( 'div' ),
+			var form          = $(this).closest('.fl-builder-settings'),
+				lightboxId    = $(this).closest('.fl-lightbox-wrap').attr('data-instance-id'),
+				type          = form.attr('data-type'),
+				settings      = FLBuilder._getSettings(form),
+				helper        = FLBuilder._moduleHelpers[type],
+				link          = $('.fl-builder-settings #fl-' + lightboxId),
+				preview       = link.parent().attr('data-preview-text'),
+				previewText   = settings[preview],
+				selectPreview = $( 'select[name="' + preview + '"]' ),
+				tmp           = document.createElement('div'),
 				valid         = true;
-
-			if ( preview ) {
-				previewOptions = preview.split(',');
-			}
-
-			// Handle 'preview_text' fields
-			for ( var i = 0; i < previewOptions.length; i++ ) {
-				if ( settings[ previewOptions[i] ] ) {
-					activePreview = previewOptions[i];
-					previewText = settings[ activePreview ];
-					previewField = form.find( '#fl-field-' + activePreview );
-					selectPreview = $( 'select[name="' + activePreview + '"]', window.parent.document )
-					break;
-				}
-			}
-
-			// Handle preview_img
-			if ( preview_img ) {
-				preview_img = settings[ preview_img ];
-			}
-
-			if ( selectPreview && selectPreview.length > 0 ) {
-				previewText = selectPreview.find( 'option[value="' + previewText + '"]' ).text();
-			}
-
-			if ( typeof helper !== 'undefined' ) {
+				
+			if ( selectPreview.length > 0 ) {
+				previewText = selectPreview.find( 'option[value="' + settings[ preview ] + '"]' ).text();
+			}  
+			if(typeof helper !== 'undefined') {
+				
 				form.find('label.error').remove();
 				form.validate().hideErrors();
 				valid = form.validate().form();
-				if ( valid ) {
+				
+				if(valid) {
 					valid = helper.submit();
 				}
 			}
-
-			if ( valid ) {
-				if ( typeof preview !== 'undefined' && typeof previewText !== 'undefined' ) {
-					if ( 'icon' === previewField?.data( 'type' ) ) {
-						previewText = '<i class="' + FLBuilderSettingsForms.escapeHTML( previewText ) + '"></i>';
+			if(valid) {
+			
+				if(typeof preview !== 'undefined') {
+				
+					if(previewText.indexOf('fa fa-') > -1) {
+						previewText = '<i class="' + previewText + '"></i>';
 					}
-					else if ( previewText.length > 35 ) {
+					else if(previewText.length > 35) {
 						tmp.innerHTML = previewText;
-						previewText = ( tmp.textContent || tmp.innerText || '' ).replace( /^(.{35}[^\s]*).*/, "$1" ) + '...';
-						previewText = FLBuilderSettingsForms.escapeHTML( previewText );
+						previewText = (tmp.textContent || tmp.innerText || '').replace(/^(.{35}[^\s]*).*/, "$1")  + '...';
 					}
-					if( 'filter_meta_label' == preview && ! previewText ) {
-						previewText = FLBuilderSettingsForms.escapeHTML( settings[ 'filter_meta_key' ] );
-					}
-					if ( preview_img ) {
-						previewText = '<img style="max-width: 60px" src="' + FLBuilderSettingsForms.escapeHTML( preview_img ) + '" />&nbsp;' + previewText;
-					}
-					link.siblings( '.fl-form-field-preview-text' ).html( previewText );
+				
+					link.siblings('.fl-form-field-preview-text').html(previewText);
 				}
-
-				if ( link.length > 0 && ! FLBuilder.isBlockEditor() ) {
-					oldSettings = link.siblings( 'input' ).val().replace( /&#39;/g, "'" );
-
-					if ( '' != oldSettings ) {
-						settings = $.extend( FLBuilder._jsonParse( oldSettings ), settings );
-					}
-
-					link.siblings( 'input' ).val( JSON.stringify( settings ) ).trigger( 'change' );
-				}
-
+				
+				link.siblings('input').val(JSON.stringify(settings)).trigger('change');
+				
+				FLBuilder._closeFormFieldLightbox.apply(this);
+				
 				return true;
 			}
-
-			return false;
+			else {
+				FLBuilder._toggleSettingsTabErrors();
+				return false;
+			}
 		},
-
+		
 		/* Layout Fields
 		----------------------------------------------------------*/
 
@@ -10139,49 +5397,46 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _layoutFieldClicked
-		 */
+		 */ 
 		_layoutFieldClicked: function()
 		{
 			var option = $(this);
-
+			
 			option.siblings().removeClass('fl-layout-field-option-selected');
 			option.addClass('fl-layout-field-option-selected');
 			option.siblings('input').val(option.attr('data-value'));
 		},
-
+		
 		/* Link Fields
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes all link fields in a settings form.
 		 *
 		 * @since 1.3.9
 		 * @access private
 		 * @method _initLinkFields
-		 */
+		 */ 
 		_initLinkFields: function()
 		{
-			$('.fl-builder-settings:visible .fl-link-field', window.parent.document)
-				.each(FLBuilder._initLinkField);
+			$('.fl-link-field').each(FLBuilder._initLinkField);
 		},
-
+		
 		/**
 		 * Initializes a single link field in a settings form.
 		 *
 		 * @since 1.3.9
 		 * @access private
 		 * @method _initLinkFields
-		 */
+		 */ 
 		_initLinkField: function()
 		{
 			var wrap        = $(this),
-				searchInput = wrap.find('.fl-link-field-search-input'),
-				checkboxes	= wrap.find( '.fl-link-field-options-wrap input[type=checkbox]' );
-
-			searchInput.autoSuggest(FLBuilder._ajaxUrl({
+				searchInput = wrap.find('.fl-link-field-search-input');
+				
+			searchInput.autoSuggest(FLBuilder._ajaxUrl({ 
 				'fl_action'         : 'fl_builder_autosuggest',
-				'fl_as_action'      : 'fl_as_links',
-				'_wpnonce'			: FLBuilderConfig.ajaxNonce
+				'fl_as_action'      : 'fl_as_links'
 			}), {
 				asHtmlID                    : searchInput.attr('name'),
 				selectedItemProp            : 'name',
@@ -10194,18 +5449,12 @@
 				showResultListWhenNoMatch   : true,
 				queryParam                  : 'fl_as_query',
 				selectionLimit              : 1,
-				afterSelectionAdd           : FLBuilder._updateLinkField,
-				formatList: function(data, elem){
-					var new_elem = elem.html(data.name + '<span class="type">[' + data.type + ']</span>');
-					return new_elem;
-				}
+				afterSelectionAdd           : FLBuilder._updateLinkField
 			});
-
-			checkboxes.on( 'click', FLBuilder._linkFieldCheckboxClicked );
 		},
-
+		
 		/**
-		 * Updates the value of a link field when a link has been
+		 * Updates the value of a link field when a link has been 
 		 * selected from the auto suggest menu.
 		 *
 		 * @since 1.3.9
@@ -10214,14 +5463,14 @@
 		 * @param {Object} element The auto suggest field.
 		 * @param {Object} item The current selection.
 		 * @param {Array} selections An array of selected values.
-		 */
+		 */ 
 		_updateLinkField: function(element, item, selections)
 		{
 			var wrap        = element.closest('.fl-link-field'),
 				search      = wrap.find('.fl-link-field-search'),
 				searchInput = wrap.find('.fl-link-field-search-input'),
 				field       = wrap.find('.fl-link-field-input');
-
+			
 			field.val(item.value).trigger('keyup');
 			searchInput.autoSuggest('remove', item.value);
 			search.hide();
@@ -10233,12 +5482,10 @@
 		 * @since 1.3.9
 		 * @access private
 		 * @method _linkFieldSelectClicked
-		 */
+		 */ 
 		_linkFieldSelectClicked: function()
 		{
-			var $el = $(this).closest('.fl-link-field').find('.fl-link-field-search');
-			$el.show();
-			$el.find('input').focus();
+			$(this).parent().find('.fl-link-field-search').show();
 		},
 
 		/**
@@ -10247,50 +5494,24 @@
 		 * @since 1.3.9
 		 * @access private
 		 * @method _linkFieldSelectCancelClicked
-		 */
+		 */ 
 		_linkFieldSelectCancelClicked: function()
 		{
-			var $button = $(this);
-			$button.parent().hide();
-			$button.closest('.fl-link-field').find('input.fl-link-field-input').focus();
-		},
-
-		/**
-		 * Handles when a link field checkbox option is clicked.
-		 *
-		 * @since 2.2
-		 * @access private
-		 * @method _linkFieldCheckboxClicked
-		 */
-		_linkFieldCheckboxClicked: function()
-		{
-			var checkbox = $( this ),
-				checked = checkbox.is( ':checked' ),
-				input = checkbox.siblings( 'input[type=hidden]' ),
-				value = '';
-
-			if ( checkbox.hasClass( 'fl-link-field-target-cb' ) ) {
-				value = checked ? '_blank' : '_self';
-			} else {
-				value = checked ? 'yes' : 'no';
-			}
-
-			input.val( value );
+			$(this).parent().hide();
 		},
 
 		/* Font Fields
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Initializes all font fields in a settings form.
 		 *
 		 * @since  1.6.3
 		 * @access private
 		 * @method _initFontFields
-		 */
+		 */ 
 		_initFontFields: function(){
-			$('.fl-builder-settings:visible .fl-font-field', window.parent.document)
-				.each( FLBuilder._initFontField );
+			$('.fl-font-field').each( FLBuilder._initFontField );
 		},
 
 		/**
@@ -10299,393 +5520,74 @@
 		 * @since  1.6.3
 		 * @access private
 		 * @method _initFontFields
-		 */
+		 */ 
 		_initFontField: function(){
-			var wrap   = $( this ),
-				section = wrap.closest( '.fl-compound-field-section' ),
-				value  = wrap.attr( 'data-value' ),
-				font   = wrap.find( '.fl-font-field-font' ),
-				weight = wrap.find( '.fl-font-field-weight' );
-
-			// Lazy render font fields in compound fields to prevent family options
-			// from being rendered multiple times and slowing down rendering.
-			if ( section.length && ! section.hasClass( 'fl-font-field-lazy-init' ) ) {
-				section.addClass( 'fl-font-field-lazy-init' )
-				section.one( 'click', () => FLBuilder._initFontField.apply( this ) );
-				if ( value.indexOf( 'family' ) > -1 ) {
-					value = FLBuilder._jsonParse( value );
-					font.append( '<option value="' + value.family + '" selected>' + value.family + '</option>' );
-					weight.append( '<option value="' + value.weight + '" selected>' + value.weight + '</option>' );
-				}
-				return;
-			} else {
-				FLBuilder._initFontFamilyOptions(font); // Render the full family options list.
-			}
-
-			if ( FLBuilderConfig.select2Enabled ) {
-				font.select2({width:'100%'})
-					.on('select2:open', function(e){
-						$('.select2-search__field').attr('placeholder', FLBuilderStrings.placeholderSelect2);
-					})
-			}
-
-			$('body', window.parent.document).on({
-					mouseenter: function () {
-						var highlighted_item = jQuery(this).text(),
-						group = jQuery(this).parent().parent().attr("aria-label"),
-						head = jQuery("head", window.parent.document),
-						url = 'https://fonts.googleapis.com/css?family=' + highlighted_item,
-						link_id = highlighted_item.toLowerCase().replaceAll( ' ', '-' ),
-						parent_id = $(this).parent().parent().parent().attr('id');
-						if ( ! parent_id ) {
-							return false;
-						}
-						if( parent_id.indexOf('typographyfont_family') < 0 ) {
-							return false;
-						}
-						if ( 'Google' === group ) {
-							linkElement = "<link id='" + link_id + "' rel='stylesheet' href='" + url + "' type='text/css' media='screen'>";
-							jQuery(this).css('font-family', '"' + highlighted_item + '"' );
-							if ( jQuery( '#' + link_id ).length > 0 ) {
-								return false;
-							}
-							head.append(linkElement);
-						} else if ( FLBuilderStrings.wpFonts === group ) {
-							// WP Font Library fonts have @font-face emitted server-side in
-							// builder mode, so no fetch is needed — just apply the preview.
-							jQuery(this).css('font-family', '"' + highlighted_item + '"' );
-						}
-					}
-				}, '.select2-results__option.select2-results__option--highlighted');
-
+			var wrap   = $(this),
+				font   = wrap.find( '.fl-font-field-font' );
+	
 			font.on( 'change', function(){
 				FLBuilder._getFontWeights( font );
 			} );
 
-			if ( value.indexOf( 'family' ) > -1 ) {
-
-				var value = FLBuilder._jsonParse( value );
-				var valid = false;
-
-				fonts = FLBuilderFontFamilies;
-
-				Object.keys(fonts.system).forEach(function(name){
-					if ( name === value.family ) {
-						valid = true
-					}
-				});
-
-				Object.keys(fonts.google).forEach(function(name){
-					if ( name === value.family ) {
-						valid = true
-					}
-				});
-
-				if ( fonts.wp ) {
-					Object.keys(fonts.wp).forEach(function(name){
-						if ( name === value.family ) {
-							valid = true
-						}
-					});
-				}
-
-				if ( ! valid && 'Default' !== value.family ) {
-					value = {
-						'family' : 'Default',
-						'weight' : '400'
-					};
-				}
-
-				font.val( value.family );
-
-				if ( 'Default' === value.family ) {
-					// Don't trigger change event when set to Default
-					// to prevent overwriting theme font.
-					FLBuilder._getFontWeights( font );
-				} else {
-					font.trigger( 'change' );
-				}
-
-				if ( weight.find( 'option[value=' + value.weight + ']' ).length ) {
-					weight.val( value.weight );
-				}
-			}
-		},
-
-		/**
-		 * Initializes the font family options for a font field.
-		 *
-		 * @since  2.9
-		 */
-		_initFontFamilyOptions: function(fontSelect) {
-			if (!FLBuilder._fontFamilyCache) {
-				const fonts = FLBuilderFontFamilies;
-				const recent = FLBuilderConfig.recentFonts || {};
-
-				const createOption = (value, label) => {
-					const opt = document.createElement('option');
-					opt.value = value;
-					opt.textContent = label;
-					return opt;
-				};
-
-				const fragment = document.createDocumentFragment();
-
-				fragment.appendChild(createOption('Default', 'Default'));
-
-				const recentKeys = Object.keys(recent).filter(f => f !== 'Default');
-				if (recentKeys.length) {
-					const group = document.createElement('optgroup');
-					group.label = 'Recently Used';
-					group.className = 'recent-fonts';
-					recentKeys.forEach(name => group.appendChild(createOption(name, name)));
-					fragment.appendChild(group);
-				}
-
-				if (fonts.wp && Object.keys(fonts.wp).length) {
-					const wpGroup = document.createElement('optgroup');
-					wpGroup.label = FLBuilderStrings.wpFonts || 'WordPress Fonts';
-					wpGroup.className = 'wp-fonts';
-					Object.keys(fonts.wp).forEach(name => {
-						wpGroup.appendChild(createOption(name, name));
-					});
-					fragment.appendChild(wpGroup);
-				}
-
-				const systemGroup = document.createElement('optgroup');
-				systemGroup.label = 'System';
-				Object.keys(fonts.system).forEach(name => {
-					systemGroup.appendChild(createOption(name, name));
-				});
-				fragment.appendChild(systemGroup);
-
-				const googleGroup = document.createElement('optgroup');
-				googleGroup.label = 'Google';
-				Object.keys(fonts.google).forEach(name => {
-					googleGroup.appendChild(createOption(name, name));
-				});
-				fragment.appendChild(googleGroup);
-
-				FLBuilder._fontFamilyCache = fragment;
-			}
-
-			fontSelect.empty();
-			fontSelect.append(FLBuilder._fontFamilyCache.cloneNode(true)); // Clone cached
 		},
 
 		/**
 		 * Renders the correct weights list for a respective font.
 		 *
 		 * @since  1.6.3
-		 * @access  private
+		 * @acces  private
 		 * @method _getFontWeights
 		 * @param  {Object} currentFont The font field element.
 		 */
 		_getFontWeights: function( currentFont ){
-			var selectWeight = currentFont.closest( '.fl-font-field' ).find( '.fl-font-field-weight' ),
+			var selectWeight = currentFont.next( '.fl-font-field-weight' ),
 				font         = currentFont.val(),
-				weight 	 	 = selectWeight.val(),
-				weightMap    = FLBuilderConfig.FontWeights,
-				weights      = {},
-				recentList   = currentFont.closest( '.fl-font-field' ).find( '.recent-fonts option' )
+				weightMap    = {
+					'default' : 'Default',
+					'100': 'Thin 100',
+					'200': 'Extra-Light 200',
+					'300': 'Light 300',
+					'400': 'Normal 400',
+					'500': 'Medium 500',
+					'600': 'Semi-Bold 600',
+					'700': 'Bold 700',
+					'800': 'Extra-Bold 800',
+					'900': 'Ultra-Bold 900'
+				},
+				weights      = {};
 
-			selectWeight.html( '' );
+				selectWeight.html('');
 
-			if( recentList.length > 0 ) {
-				var exists = $(recentList)
-					.filter(function (i, o) { return o.value === font; })
-					.length > 0;
-
-				if ( false === exists && 'Default' !== font ) {
-						currentFont.closest( '.fl-font-field' ).find( '.recent-fonts' ).append( $('<option>', {
-							value: font,
-							text: font
-						}));
+				if ( 'undefined' != typeof FLBuilderFontFamilies.system[ font ] ) {
+					weights = FLBuilderFontFamilies.system[ font ].weights;
 				}
-			}
-
-
-			if ( 'undefined' != typeof FLBuilderFontFamilies.wp && 'undefined' != typeof FLBuilderFontFamilies.wp[ font ] ) {
-				weights = FLBuilderFontFamilies.wp[ font ].weights;
-			} else if ( 'undefined' != typeof FLBuilderFontFamilies.system[ font ] ) {
-				weights = FLBuilderFontFamilies.system[ font ].weights;
-			} else if ( 'undefined' != typeof FLBuilderFontFamilies.google[ font ] ) {
-				weights = FLBuilderFontFamilies.google[ font ];
-			} else {
-				weights = FLBuilderFontFamilies.default[ font ];
-			}
+				else if ( 'undefined' != typeof FLBuilderFontFamilies.google[ font ] ) {
+					weights = FLBuilderFontFamilies.google[ font ];
+				} else {
+					weights = FLBuilderFontFamilies.default[ font ];
+				}
 
 			$.each( weights, function( key, value ){
-				var selected = weight === value ? ' selected' : '';
-				selectWeight.append( '<option value="' + value + '"' + selected + '>' + weightMap[ value ] + '</option>' );
+				selectWeight.append( '<option value="' + value + '">' + weightMap[ value ] + '</option>' );
 			} );
-		},
 
+		},
+		
 		/* Editor Fields
 		----------------------------------------------------------*/
-
+		
 		/**
-		 * InitializeS TinyMCE when the builder is first loaded.
+		 * Used to init pre WP 3.9 editors from field.php.
 		 *
-		 * @since  2.0
-		 * @access private
-		 * @method _initEditorFields
-		 */
-		_initTinyMCE: function()
+		 * @since 1.0
+		 * @method initEditorField
+		 */  
+		initEditorField: function(id)
 		{
-			if ( typeof tinymce === 'object' && typeof tinymce.ui.FloatPanel !== 'undefined' ) {
-				tinymce.ui.FloatPanel.zIndex = 100100; // Fix zIndex issue in wp 4.8.1
-			}
-
-			$( '.fl-builder-hidden-editor', window.parent.document ).each( function() {
-				FLBuilder._initEditorField.call( this, window.parent );
-			} );
-
-			if ( 'undefined' !== typeof FLBuilder.UIIFrame && FLBuilder.UIIFrame.isEnabled() ) {
-				$( '.fl-builder-hidden-editor' ).each( function() {
-					FLBuilder._initEditorField.call( this, window );
-				} );
-			}
-
-			if ( 'undefined' !== typeof window.parent.acf ) {
-				window.parent.acf.add_filter( 'wysiwyg_tinymce_settings', function( mceInit, id ) {
-					return $.extend( {}, tinyMCEPreInit.mceInit.flbuildereditor, mceInit );
-				} )
-			}
-		},
-
-		/**
-		 * Initialize all TinyMCE editor fields.
-		 *
-		 * @since  1.10
-		 * @access private
-		 * @method _initEditorFields
-		 */
-		_initEditorFields: function()
-		{
-			$( '.fl-builder-settings:visible .fl-editor-field', window.parent.document )
-				.each( function() {
-					FLBuilder._initEditorField.call( this, window.parent );
-				} );
-		},
-
-		/**
-		 * Initialize a single TinyMCE editor field.
-		 *
-		 * @since 2.0
-		 * @method _initEditorField
-		 * @param {Object} The window object to init on.
-		 */
-		_initEditorField: function( win )
-		{
-			var field	 = $( this ),
-				textarea = field.find( 'textarea' ),
-				name 	 = field.attr( 'data-name' ),
-				editorId = 'flrich' + new Date().getTime() + '_' + name,
-				html 	 = FLBuilderConfig.wp_editor,
-				config	 = win.tinyMCEPreInit,
-				buttons  = Number( field.attr( 'data-buttons' ) ),
-				rows  	 = field.attr( 'data-rows' ),
-				init     = null,
-				wrap     = null;
-
-			html   = html.replace( /flbuildereditor/g , editorId );
-			config = JSONfn.parse( JSONfn.stringify( config ).replace( /flbuildereditor/g , editorId ) );
-
-			textarea.after( html ).remove();
-			$( 'textarea#' + editorId, win.document ).val( textarea.val() )
-
-			if ( undefined !== typeof win.tinymce && undefined !== config.mceInit[ editorId ] ) {
-
-				init = config.mceInit[ editorId ];
-
-				init.setup = function (editor) {
-					editor.on('SaveContent', function (e) {
-						e.content = e.content.replace(/<a href="(\.\.\/){1,2}/g, '<a href="' + FLBuilderConfig.homeUrl + '/' );
-						e.content = e.content.replace(/src="(\.\.\/){1,2}/g, 'src="' + FLBuilderConfig.homeUrl + '/' );
-					});
-				}
-
-				wrap = $( '#wp-' + editorId + '-wrap', win.document );
-				wrap.find( 'textarea' ).attr( 'rows', rows );
-				wrap.find( 'textarea' ).attr( 'contentEditable', true );
-
-				if ( ! buttons ) {
-					wrap.find( '.wp-media-buttons' ).remove();
-				}
-
-				if ( ( wrap.hasClass( 'tmce-active' ) || ! config.qtInit.hasOwnProperty( editorId ) ) && ! init.wp_skip_init ) {
-					win.tinymce.init( init );
-				}
-			}
-
-			if ( undefined !== typeof win.quicktags ) {
-				win.quicktags( config.qtInit[ editorId ] );
-			}
-
-			win.wpActiveEditor = editorId;
-		},
-
-		/**
-		 * Reinitialize all TinyMCE editor fields.
-		 *
-		 * @since  2.0
-		 * @access private
-		 * @method _reinitEditorFields
-		 */
-		_reinitEditorFields: function()
-		{
-			if ( ! $( 'form.fl-builder-settings:visible', window.parent.document ).length ) {
-				return;
-			}
-
-			// Do this on a timeout so TinyMCE doesn't hold up other operations.
-			setTimeout( function() {
-
-				var i, id;
-
-				if ( 'undefined' === typeof window.parent.tinymce ) {
-					return;
-				}
-
-				for ( i = window.parent.tinymce.editors.length - 1; i > -1 ; i-- ) {
-					if ( ! window.parent.tinymce.editors[ i ].inline ) {
-						id = window.parent.tinymce.editors[ i ].id;
-						window.parent.tinyMCE.execCommand( 'mceRemoveEditor', true, id );
-						window.parent.tinyMCE.execCommand( 'mceAddEditor', true, id );
-					}
-				}
-
-				if ( FLBuilder.preview ) {
-					var fields = $( '.fl-field[data-type="editor"]', window.parent.document );
-					FLBuilder.preview._initDefaultFieldPreviews( fields );
-				}
-
-			}, 1 );
-		},
-
-		/**
-		 * Destroy all TinyMCE editors.
-		 *
-		 * @since 1.10.8
-		 * @method _destroyEditorFields
-		 */
-		_destroyEditorFields: function()
-		{
-			var i, id;
-
-			if ( 'undefined' === typeof window.parent.tinymce ) {
-				return;
-			}
-
-			for ( i = window.parent.tinymce.editors.length - 1; i > -1 ; i-- ) {
-				if ( ! window.parent.tinymce.editors[ i ].inline ) {
-					window.parent.tinyMCE.execCommand( 'mceRemoveEditor', true, window.parent.tinymce.editors[ i ].id );
-				}
-			}
-
-			$( '.wplink-autocomplete', window.parent.document ).remove();
-			$( '.ui-helper-hidden-accessible', window.parent.document ).remove();
+			var newEditor = tinyMCEPreInit.mceInit['flhiddeneditor'];
+			
+			newEditor['elements'] = id;
+			tinyMCEPreInit.mceInit[id] = newEditor;
 		},
 
 		/**
@@ -10694,190 +5596,69 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _updateEditorFields
-		 */
+		 */  
 		_updateEditorFields: function()
 		{
-			var wpEditors = $('.fl-builder-settings:visible textarea.wp-editor-area', window.parent.document);
-
+			var wpEditors = $('.fl-builder-settings textarea.wp-editor-area');
+			
 			wpEditors.each(FLBuilder._updateEditorField);
 		},
 
 		/**
-		 * Updates a single editor field within a settings form.
-		 * Creates a hidden textarea with the editor content so
+		 * Updates a single editor field within a settings form. 
+		 * Creates a hidden textarea with the editor content so 
 		 * this field can be saved.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _updateEditorField
-		 */
+		 */  
 		_updateEditorField: function()
 		{
 			var textarea  = $( this ),
-				field     = textarea.closest( '.fl-editor-field' ),
-				form      = textarea.closest( '.fl-builder-settings' ),
 				wrap      = textarea.closest( '.wp-editor-wrap' ),
 				id        = textarea.attr( 'id' ),
-				setting   = field.attr( 'data-name' ),
-				editor    = typeof window.parent.tinymce == 'undefined' ? false : window.parent.tinymce.get( id ),
-				hidden    = textarea.siblings( 'textarea[name="' + setting + '"]' ),
-				wpautop   = field.data( 'wpautop' );
-
+				setting   = textarea.closest( '.fl-editor-field' ).attr( 'id' ),
+				editor    = typeof tinyMCE == 'undefined' ? false : tinyMCE.get( id ),
+				hidden    = textarea.siblings( 'textarea[name="' + setting + '"]' );
+			
 			// Add a hidden textarea if we don't have one.
 			if ( 0 === hidden.length ) {
-				hidden = $( '<textarea name="' + setting + '"></textarea>', window.parent.document ).hide();
+				hidden = $( '<textarea name="' + setting + '"></textarea>' ).hide();
 				textarea.after( hidden );
 			}
-
-			// Save editor content.
-			if ( wpautop ) {
-
-				if ( editor && wrap.hasClass( 'tmce-active' ) ) {
-					hidden.val( editor.getContent() );
-				}
-				else if ( 'undefined' != typeof window.parent.switchEditors ) {
-					hidden.val( window.parent.switchEditors.wpautop( textarea.val() ) );
-				}
-				else {
-					hidden.val( textarea.val() );
-				}
+			
+			// Update the hidden textarea content.
+			if ( editor && wrap.hasClass( 'tmce-active' ) ) {
+				hidden.val( editor.getContent() );
+			}
+			else if ( 'undefined' != typeof switchEditors ) {
+				hidden.val( switchEditors.wpautop( textarea.val() ) );
 			}
 			else {
-
-				if ( editor && wrap.hasClass( 'tmce-active' ) ) {
-					editor.save();
-				}
-
 				hidden.val( textarea.val() );
 			}
 		},
-
-		/* Loop Settings Fields
+		
+		/* Loop Builder Fields
 		----------------------------------------------------------*/
 
 		/**
-		 * Initializes all post type fields in a settings form.
-		 *
-		 * @since  2.6
-		 * @access private
-		 * @method _initPostTypeFields
-		 */
-		_initPostTypeFields: function(){
-			$('.fl-builder-settings:visible .fl-field[data-type="post-type"]').each( FLBuilder._initPostTypeField );
-		},
-
-		/**
-		 * @since 2.6
-		 */
-		_initPostTypeField: function() {
-			var wrap   = $( this ),
-			postType = wrap.find('select');
-			if ( FLBuilderConfig.select2Enabled ) {
-				postType.select2({width:'50%'});
-			}
-		},
-
-		/**
-		 * Callback for the data source of loop settings changes.
-		 *
-		 * @since 1.10
-		 * @access private
-		 * @method _loopDataSourceChange
-		 */
-		_loopDataSourceChange: function()
-		{
-			var val = $( this ).val();
-
-			$('.fl-loop-data-source', window.parent.document).hide();
-			$('.fl-loop-data-source[data-source="' + val + '"]', window.parent.document).show();
-		},
-
-		/**
-		 * Callback for when the post types of a custom query changes.
-		 *
-		 * @since 2.6.2
-		 * @access private
-		 * @method _customQueryPostTypesChange
-		 */
-		_customQueryPostTypesChange: function()
-		{
-			var postTypes = $(this).val();
-			$('.fl-custom-query-filter').hide();
-			for ( val of postTypes ) {
-				$('.fl-custom-query-' + val + '-filter').show();
-			}
-		},
-
-		/**
-		 * Callback for when the post type of a custom query changes.
+		 * Callback for when the post type of a loop builder changes.
 		 *
 		 * @since 1.2.3
 		 * @access private
-		 * @method _customQueryPostTypeChange
-		 */
-		_customQueryPostTypeChange: function()
+		 * @method _loopBuilderPostTypeChange
+		 */ 
+		_loopBuilderPostTypeChange: function()
 		{
 			var val = $(this).val();
-
-			$('.fl-custom-query-filter', window.parent.document).hide();
-			$('.fl-custom-query-' + val + '-filter', window.parent.document).show();
+			
+			$('.fl-loop-builder-filter').hide();
+			$('.fl-loop-builder-' + val + '-filter').show();
 		},
 
-		/* Ordering Fields
-		----------------------------------------------------------*/
-
-		/**
-		 * Initializes all ordering fields in a settings form.
-		 *
-		 * @since  1.10
-		 * @access private
-		 * @method _initOrderingFields
-		 */
-		_initOrderingFields: function()
-		{
-			$( '.fl-builder-settings:visible .fl-ordering-field-options', window.parent.document )
-				.each( FLBuilder._initOrderingField );
-		},
-
-		/**
-		 * Initializes a single ordering field in a settings form.
-		 *
-		 * @since  1.10
-		 * @access private
-		 * @method _initOrderingField
-		 */
-		_initOrderingField: function()
-		{
-			$( this ).sortable( {
-				items: '.fl-ordering-field-option',
-				containment: 'parent',
-				tolerance: 'pointer',
-				stop: FLBuilder._updateOrderingField
-			} );
-		},
-
-		/**
-		 * Updates an ordering field when dragging stops.
-		 *
-		 * @since  1.10
-		 * @access private
-		 * @method _updateOrderingField
-		 * @param {Object} e The event object.
-		 */
-		_updateOrderingField: function( e )
-		{
-			var options = $( e.target ),
-				input   = options.siblings( 'input[type=hidden]' ),
-				value   = [];
-
-			options.find( '.fl-ordering-field-option' ).each( function() {
-				value.push( $( this ).attr( 'data-key' ) );
-			} );
-
-			input.val( JSON.stringify( value ) ).trigger( 'change' );
-		},
-
-		/* Text Fields - Add Predefined Value Selector
+		/* Text Fields - Add Value Selector
 		----------------------------------------------------------*/
 
 		/**
@@ -10889,480 +5670,28 @@
 		 */
 		_textFieldAddValueSelectChange: function()
 		{
+
 			var dropdown     = $( this ),
-			    textField    = $( 'input[name="' + dropdown.data( 'target' ) + '"]', window.parent.document ),
+			    textField    = $( 'input[name="' + dropdown.data( 'target' ) + '"]' ),
 			    currentValue = textField.val(),
-			    addingValue  = dropdown.val(),
-			    newValue     = '';
+			    addingValue  = dropdown.val();
 
 			// Adding selected value to target text field only once
-			if ( -1 == currentValue.indexOf( addingValue ) ) {
 
-				newValue = ( currentValue.trim() + ' ' + addingValue.trim() ).trim();
+				if ( -1 == currentValue.indexOf( addingValue ) ) {
 
-				textField
-					.val( newValue )
-					.trigger( 'change' )
-					.trigger( 'keyup' );
-			}
+					textField
+						.attr( 'value', ( currentValue.trim() + ' ' + addingValue.trim() ) );
+
+				}
 
 			// Resetting the selector
-			dropdown.val( '' );
+
+				dropdown
+					.val( '' );
+
 		},
-
-		/* Number Fields
-		----------------------------------------------------------*/
-
-		/**
-		 * @since  2.0
-		 * @access private
-		 * @method _onNumberFieldFocus
-		 */
-		_onNumberFieldFocus: function(e) {
-			var $input = $(e.currentTarget);
-			$input.addClass('mousetrap');
-
-			Mousetrap.bind('up', function() {
-				$input.attr('step', 1);
-			});
-			Mousetrap.bind('down', function() {
-				$input.attr('step', 1);
-			});
-			Mousetrap.bind('shift+up', function() {
-				$input.attr('step', 10);
-			});
-			Mousetrap.bind('shift+down', function() {
-				$input.attr('step', 10);
-			});
-		},
-
-		/**
-		 * @since  2.0
-		 * @access private
-		 * @method _onNumberFieldBlur
-		 */
-		_onNumberFieldBlur: function(e) {
-			var $input = $(e.currentTarget);
-			$input.attr('step', 'any').removeClass('mousetrap');
-		},
-
-		/* Timezone Fields
-		----------------------------------------------------------*/
-
-		/**
-		 * @since  2.0
-		 * @access private
-		 * @method _initTimezoneFields
-		 */
-		_initTimezoneFields: function() {
-			$( '.fl-builder-settings:visible .fl-field[data-type=timezone]', window.parent.document )
-				.each( FLBuilder._initTimezoneField );
-		},
-
-		/**
-		 * @since  2.0
-		 * @access private
-		 * @method _initTimezoneField
-		 */
-		_initTimezoneField: function() {
-			var select = $( this ).find( 'select' ),
-				value  = select.attr( 'data-value' );
-
-			select.find( 'option[value="' + value + '"]' ).prop('selected', true);
-		},
-
-		/* Dimension Fields
-		----------------------------------------------------------*/
-
-		/**
-		 * Initializes all dimension fields in a form.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _initDimensionFields
-		 */
-		_initDimensionFields: function() {
-			var form = $( '.fl-builder-settings:visible', window.parent.document );
-
-			form.find( '.fl-field[data-type=dimension]' ).each( FLBuilder._initDimensionField );
-			form.find( '.fl-dimension-field-link' ).on( 'click', FLBuilder._dimensionFieldLinkClicked );
-			FLBuilder.addHook( 'responsive-editing-switched', this._initResponsiveDimensionFieldLinking );
-
-			form.find( '.fl-compound-field-setting' ).has( '.fl-dimension-field-link' ).each( FLBuilder._initDimensionFieldLinking );
-		},
-
-		/**
-		 * Initializes a single dimension field.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _initDimensionField
-		 */
-		_initDimensionField: function() {
-			var field = $( this ),
-				label = field.find( '.fl-field-label label' ),
-				wrap = field.find( '.fl-field-control-wrapper' ),
-				icon = '<i class="fl-dimension-field-link fl-tip dashicons dashicons-admin-links" title="' + FLBuilderStrings.linkValues + '"></i>';
-
-			label.append( icon );
-			wrap.prepend( icon );
-
-			FLBuilder._initTipTips();
-			FLBuilder._initDimensionFieldLinking.apply( this );
-		},
-
-		/**
-		 * Initializes input linking for a dimension field by
-		 * linking inputs if they all have the same value.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _initDimensionFieldLinking
-		 */
-		_initDimensionFieldLinking: function() {
-			var field = $( this ),
-				icon = field.find( '.fl-dimension-field-link' ),
-				inputs = FLBuilder._getDimensionFieldLinkingInputs( field ),
-				equal = FLBuilder._dimensionFieldInputsAreEqual( inputs );
-
-			if ( equal ) {
-				icon.removeClass( 'dashicons-admin-links' );
-				icon.addClass( 'dashicons-editor-unlink' );
-				inputs.off( 'input', FLBuilder._dimensionFieldLinkedValueChange );
-				inputs.on( 'input', FLBuilder._dimensionFieldLinkedValueChange );
-			} else {
-				icon.addClass( 'dashicons-admin-links' );
-				icon.removeClass( 'dashicons-editor-unlink' );
-			}
-		},
-
-		/**
-		 * Initializes input linking for responsive dimension fields
-		 * when the responsive mode is switched.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _initDimensionFieldLinking
-		 */
-		_initResponsiveDimensionFieldLinking: function() {
-			var form = $( '.fl-builder-settings:visible', window.parent.document );
-			form.find( '.fl-field[data-type=dimension]' ).each( FLBuilder._initDimensionFieldLinking );
-		},
-
-		/**
-		 * Handles logic for when dimension fields are linked
-		 * or unlinked from each other.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _dimensionFieldLinkClicked
-		 */
-		_dimensionFieldLinkClicked: function() {
-			var target = $( this ),
-				compound = target.closest( '.fl-compound-field-setting' ),
-				field = compound.length ? compound : target.closest( '.fl-field' ),
-				icon = field.find( '.fl-dimension-field-link' ),
-				linked = icon.hasClass( 'dashicons-editor-unlink' ),
-				inputs = FLBuilder._getDimensionFieldLinkingInputs( field );
-
-			icon.toggleClass( 'dashicons-admin-links' );
-			icon.toggleClass( 'dashicons-editor-unlink' );
-
-			if ( linked ) {
-				inputs.off( 'input', FLBuilder._dimensionFieldLinkedValueChange );
-			} else {
-				inputs.val( inputs.eq( 0 ).val() ).trigger( 'input' );
-				inputs.on( 'input', FLBuilder._dimensionFieldLinkedValueChange );
-			}
-		},
-
-		/**
-		 * Updates dimension inputs when a linked input changes.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _dimensionFieldLinkedValueChange
-		 */
-		_dimensionFieldLinkedValueChange: function() {
-			var input = $( this ),
-				name = input.attr( 'name' ),
-				wrap = input.closest( '.fl-dimension-field-units' ),
-				inputs = wrap.find( 'input:not([name="' + name + '"])' );
-
-			inputs.off( 'input', FLBuilder._dimensionFieldLinkedValueChange );
-			inputs.val( input.val() ).trigger( 'input' );
-			inputs.on( 'input', FLBuilder._dimensionFieldLinkedValueChange );
-		},
-
-		/**
-		 * Returns the inputs for dimension field linking. If this field
-		 * is responsive, then only returns inputs for the current mode.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _getDimensionFieldLinkingInputs
-		 * @param {Object} field
-		 * @return {Object}
-		 */
-		_getDimensionFieldLinkingInputs: function( field ) {
-			var responsive = field.find( '.fl-field-responsive-setting' ).length ? true : false,
-				mode = FLBuilderResponsiveEditing._mode,
-				inputs = null;
-
-			if ( responsive ) {
-				inputs = field.find( '.fl-field-responsive-setting-' + mode + ' input' );
-			} else {
-				inputs = field.find( '.fl-dimension-field-unit input' );
-			}
-
-			return inputs;
-		},
-
-		/**
-		 * Checks to see if all inputs for a dimension field have
-		 * the same value or not.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _dimensionFieldInputsAreEqual
-		 * @param {Object} inputs
-		 * @return {Boolean}
-		 */
-		_dimensionFieldInputsAreEqual: function( inputs ) {
-			var first = inputs.eq( 0 ).val();
-
-			if ( '' === first ) {
-				return false;
-			}
-
-			for ( var i = 1; i < 4; i++ ) {
-				if ( inputs.eq( i ).val() !== first ) {
-					return false;
-				}
-			}
-
-			return true;
-		},
-
-		/* Field Popup Sliders
-		----------------------------------------------------------*/
-
-		/**
-		 * Initializes unit and dimension field popup slider controls.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _initFieldPopupSliders
-		 */
-		_initFieldPopupSliders: function() {
-			var form = $( '.fl-builder-settings:visible', window.parent.document ),
-				sliders = form.find( '.fl-field-popup-slider' );
-
-			sliders.each( FLBuilder._initFieldPopupSlider );
-		},
-
-		/**
-		 * Initializes a single popup slider control.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _initFieldPopupSlider
-		 */
-		_initFieldPopupSlider: function() {
-			var body = $( 'body', window.parent.document ),
-				wrapper = $( this ),
-				slider = wrapper.find( '.fl-field-popup-slider-input' ),
-				arrow = wrapper.find( '.fl-field-popup-slider-arrow' ),
-				name = wrapper.data( 'input' ),
-				input = $( 'input[name="' + name + '"]', window.parent.document );
-
-			input.on( 'click', function() {
-
-				if ( ! slider.hasClass( 'fl-field-popup-slider-init' ) ) {
-					slider.slider( {
-						value: input.val(),
-						slide: function( e, ui ) {
-							input.val( ui.value ).trigger( 'input' );
-						},
-					} );
-
-					input.on( 'input', function() {
-						slider.slider( 'value', $( this ).val() );
-					} );
-
-					slider.addClass( 'fl-field-popup-slider-init' );
-					slider.find( '.ui-slider-handle' ).removeAttr( 'tabindex' );
-				}
-
-				FLBuilder._setFieldPopupSliderMinMax( slider );
-				FLBuilder._hideFieldPopupSliders();
-				body.on( 'mousedown', FLBuilder._hideFieldPopupSliders );
-				input.addClass( 'fl-field-popup-slider-focus' );
-				wrapper.show();
-
-				var tab = $( '.fl-builder-settings:visible .fl-builder-settings-tab.fl-active', window.parent.document ),
-					tabOffset = tab.offset(),
-					inputOffset = input.offset(),
-					inputWidth = input.width(),
-					wrapperOffset = wrapper.offset();
-
-				if ( wrapperOffset.top + wrapper.outerHeight() > tabOffset.top + tab.outerHeight() ) {
-					wrapper.addClass( 'fl-field-popup-slider-top' );
-				}
-
-				arrow.css( 'left', ( 2 + inputOffset.left - wrapperOffset.left + inputWidth / 2 ) + 'px' );
-			} );
-
-			input.on( 'focus', function() {
-				FLBuilder._hideFieldPopupSliders();
-			} );
-		},
-
-		/**
-		 * Hides all single slider controls.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @param {Object} e
-		 * @method _hideFieldPopupSliders
-		 */
-		_hideFieldPopupSliders: function( e ) {
-			var target = e ? $( e.target ) : null,
-				body = $( 'body', window.parent.document ),
-				sliders = $( '.fl-field-popup-slider:visible', window.parent.document ),
-				inputs = $( '.fl-field-popup-slider-focus', window.parent.document );
-
-			if ( target ) {
-				if ( target.closest( '.fl-field-popup-slider' ).length ) {
-					return;
-				} else if ( target.closest( '.fl-field-popup-slider-focus' ).length ) {
-					return;
-				}
-			}
-
-			body.off( 'mousedown', FLBuilder._hideFieldPopupSliders );
-			inputs.removeClass( 'fl-field-popup-slider-focus' );
-			sliders.hide();
-		},
-
-		/**
-		 * Sets the min/max/step config for a popup slider.
-		 *
-		 * @since  2.2
-		 * @access private
-		 * @method _setFieldPopupSliderMinMax
-		 * @param {Object} slider
-		 */
-		_setFieldPopupSliderMinMax: function( slider ) {
-			var wrapper = slider.parent(),
-				parent = wrapper.parent().parent(),
-				select = parent.find( 'select.fl-field-unit-select' ),
-				unit = select.val(),
-				data = JSON.parse( wrapper.attr( 'data-slider' ) ),
-				min = 0,
-				max = 100,
-				step = 1;
-
-			if ( '' === unit || 'em' === unit || 'rem' === unit ) {
-				max = 10;
-				step = .1;
-			}
-
-			if ( 'object' === typeof data ) {
-				min = data.min ? parseFloat( data.min ) : min;
-				max = data.max ? parseFloat( data.max ) : max;
-				step = data.step ? parseFloat( data.step ) : step;
-
-				if ( select.length && data[ unit ] ) {
-					min = data[ unit ].min ? parseFloat( data[ unit ].min ) : min;
-					max = data[ unit ].max ? parseFloat( data[ unit ].max ) : max;
-					step = data[ unit ].step ? parseFloat( data[ unit ].step ) : step;
-				}
-			}
-
-			slider.slider( {
-				min: min,
-				max: max,
-				step: step,
-			} );
-		},
-
-
-		/* Preset Fields
-		---------------------------------------------------- */
-		_initPresetFields: function() {
-			var form = $( '.fl-builder-settings:visible', window.parent.document ),
-				fields = form.find( '.fl-preset-select-controls' );
-
-			fields.each( FLBuilder._initPresetField );
-		},
-
-		_initPresetField: function() {
-			var field = $( this ),
-				select = field.find('select'),
-				presetType = field.data('presets'),
-				prefix = field.data('prefix');
-
-			select.on( 'change', FLBuilder._setFormPreset.bind( this, presetType, prefix ) );
-		},
-
-		_setFormPreset: function( type, prefix, e ) {
-			var value = $( e.currentTarget ).val();
-				presetLists = FLBuilderConfig.presets,
-				presets = presetLists[type],
-				form = $( '.fl-builder-settings:visible', window.parent.document );
-
-			if ( 'undefined' !== presets && 'undefined' !== presets[value] ) {
-				var settings = presets[value].settings;
-
-				for( var name in settings ) {
-					var value = settings[name],
-						input;
-					if ( 'undefined' !== typeof prefix && '' !== prefix ) {
-						// Prefix setting name
-						input = form.find('[name="' + prefix + name + '"]');
-					} else {
-						input = form.find('[name="' + name + '"]');
-					}
-					input.val(value).trigger('change').trigger('input');
-				}
-			}
-		},
-
-
-		/* Custom Attributes Fields
-		----------------------------------------------------------*/
-
-		/**
-		 * Initializes all custom attributes fields in a settings form.
-		 *
-		 * @since 2.11
-		 * @method _initCustomAttributeFields
-		 * @access private
-		 * @param {Object} form The settings subform jQuery object.
-		 */
-		_initCustomAttributeFields: function( form ) {
-			this._validateCustomAttributeField( form.find( 'input[name="key"]' ), '^[a-z]{1}[a-z0-9_.:\\-]*' );
-			this._validateCustomAttributeField( form.find( 'input[name="selector"]' ), '[a-zA-Z0-9_\\-\\*\\s\\.>]+' );
-		},
-
-		/**
-		 * Validates the custom attribute field by checking for invalid characters.
-		 *
-		 * @since 2.11
-		 * @method _validateCustomAttributeField
-		 * @access private
-		 * @param {Object} field The key field jQuery object.
-		 * @param {String} pattern The pattern to use for sanitization.
-		 */
-		_validateCustomAttributeField: function( field, pattern ) {
-			field.attr('pattern', pattern );
-			field.on( 'input', function( event ) {
-				event.target.reportValidity();
-			} );
-		},
-
-
+		
 		/* AJAX
 		----------------------------------------------------------*/
 
@@ -11373,136 +5702,79 @@
 		 * @method ajax
 		 * @param {Object} data The data for the AJAX request.
 		 * @param {Function} callback A function to call when the request completes.
-		 */
+		 */   
 		ajax: function(data, callback)
 		{
-			var prop;
-
-			// Queue this request if one is already in progress.
-			if ( FLBuilder._ajaxRequest ) {
-				FLBuilder._ajaxQueue.push( {
-					data: data,
-					callback: callback,
-				} );
+			var key;
+			
+			// Show the loader and save the data for
+			// later if a silent update is running.
+			if(FLBuilder._silentUpdate) {
+				FLBuilder.showAjaxLoader();
+				FLBuilder._silentUpdateCallbackData = [data, callback];
 				return;
 			}
-
-			FLBuilder.triggerHook('didBeginAJAX', data );
-
-			// Undefined props don't get sent to the server, so make them null.
-			for ( prop in data ) {
-				if ( 'undefined' == typeof data[ prop ] ) {
-					data[ prop ] = null;
-				}
+			
+			// This request is silent, set the flag to true
+			// so we know incase another ajax request is made
+			// before this one finishes.
+			else if(data.silent === true) {
+				FLBuilder._silentUpdate = true;
 			}
-
-			// Add the ajax nonce to the data.
-			data._wpnonce = FLBuilderConfig.ajaxNonce;
-
-			// Send the post id to the server.
-			data.post_id = FLBuilderConfig.postId;
-
+			
+			// Send the post id to the server. 
+			data.post_id = $('#fl-post-id').val();
+			
 			// Tell the server that the builder is active.
 			data.fl_builder = 1;
-
-			data.safemode = FLBuilderConfig.safemode
-
+			
 			// Append the builder namespace to the action.
 			data.fl_action = data.action;
-
-			// JSON-encode settings objects to a single POST var to avoid max_input_vars limits.
-			// On ModSec sites, also base64-encode the JSON string to avoid false positives.
-			var _settingsKeys = [ 'settings', 'node_settings', 'node_preview', 'global_settings', 'data' ];
-			_settingsKeys.forEach( function( key ) {
-				if ( data[ key ] && 'object' === typeof data[ key ] ) {
-					data[ key ] = JSON.stringify( data[ key ] );
-					if ( FLBuilderConfig.modSecFix ) {
-						data[ key ] = FLBuilder._ajaxModSecFix( data[ key ] );
-					}
-				}
-			} );
-
+			
 			// Store the data in a single variable to avoid conflicts.
 			data = { fl_builder_data: data };
-
+			
 			// Do the ajax call.
-			FLBuilder._ajaxRequest = $.post(FLBuilder._ajaxUrl(), data, function(response) {
-				try {
-					debugdata = $.parseJSON(response) || false;
-				} catch(e) {
-					debugdata = response;
-				}
+			return $.post(FLBuilder._ajaxUrl(), data, function(response) {
 
-				if ( debugdata && 'undefined' !== typeof debugdata.mem_usage ) {
-					console.log( 'AJAX: ' + debugdata.mem_usage );
-				}
+				FLBuilder._ajaxComplete();
+			
 				if(typeof callback !== 'undefined') {
 					callback.call(this, response);
 				}
-
-				FLBuilder.triggerHook('didCompleteAJAX', data );
-
-			})
-			.always( FLBuilder._ajaxComplete )
-			.fail( function( xhr, status, error ){
-				msg = false;
-				switch(xhr.status) {
-					case 403:
-					case 409:
-					case 418: // Dreamhost trying to be funny
-						msg  = 'Something you entered has triggered a ' + xhr.status + ' error.<br /><br />This is nearly always due to mod_security settings from your hosting provider.'
-						if ( ! window.crash_vars.white_label ) {
-							msg += '<br /><br />See this <a target="_blank" style="color: #428bca;font-size:inherit" href="https://docs.wpbeaverbuilder.com/beaver-builder/troubleshooting/common-issues/403-forbidden-or-blocked-error">Knowledge Base</a> article for more info.</br />'
-						}
-					break;
-				}
-				if ( msg ) {
-					console.log(xhr)
-					console.log(error)
-					FLBuilder.alert(msg)
-				}
-			})
-
-
-			return FLBuilder._ajaxRequest;
-		},
-
-		_inputVarsCheck: function( o ) {
-
-			let maxInput = FLBuilderConfig.MaxInputVars || 0;
-			let debug    = FLBuilderConfig.debug || false;
-			let data     = JSON.stringify(o).match(/[^\\]":/g) || {};
-			let count    = data.length;
-
-			if ( 'undefined' != typeof count ) {
-				if ( debug ) {
-					console.log('Debug: Input Vars ' + count + '/' + maxInput );
-				}
-				if ( count > maxInput ) {
-					FLBuilder.alert( '<h1 style="font-size:2em;text-align:center">Critical Issue</h1><br />The number of settings being saved (' + count + ') exceeds the PHP Max Input Vars setting (' + maxInput + ').<br />Please contact your host to have this value increased, the default is 1000.' );
-					console.log( 'Vars Count: ' + count );
-					console.log( 'Max Input: ' + maxInput );
-					return 'error';
-				}
-			}
-			return o;
+			});
 		},
 
 		/**
-		 * Callback for when an AJAX request is complete.
+		 * Callback for when an AJAX request is complete. Runs a
+		 * queued AJAX request if a silent update was in progress 
+		 * when the last request was made.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _ajaxComplete
-		 */
+		 */   
 		_ajaxComplete: function()
 		{
-			FLBuilder._ajaxRequest = null;
-			FLBuilder.hideAjaxLoader();
-
-			if ( FLBuilder._ajaxQueue.length ) {
-				var item = FLBuilder._ajaxQueue.shift();
-				FLBuilder.ajax( item.data, item.callback );
+			var data, callback;
+			
+			// Set the silent update flag to false
+			// so other ajax requests can run.
+			FLBuilder._silentUpdate = false;
+			
+			// Do an ajax request that was stopped 
+			// by a silent ajax request.
+			if(FLBuilder._silentUpdateCallbackData !== null) {
+				FLBuilder.showAjaxLoader();
+				data = FLBuilder._silentUpdateCallbackData[0];
+				callback = FLBuilder._silentUpdateCallbackData[1];
+				FLBuilder._silentUpdateCallbackData = null;
+				FLBuilder.ajax(data, callback);
+			}
+			
+			// We're done, hide the loader incase it's showing.
+			else {
+				FLBuilder.hideAjaxLoader();
 			}
 		},
 
@@ -11513,21 +5785,21 @@
 		 * @access private
 		 * @method _ajaxUrl
 		 * @param {Object} params An object with key/value pairs for the AJAX query string.
-		 * @return {String} The AJAX URL.
-		 */
+		 * @return {String} The AJAX URL. 
+		 */   
 		_ajaxUrl: function(params)
 		{
-			var config  = FLBuilderConfig,
-				url     = config.shortlink,
+			var url     = window.location.href.split( '#' ).shift(),
 				param   = null;
-
+			
 			if(typeof params !== 'undefined') {
-
+			
 				for(param in params) {
 					url += url.indexOf('?') > -1 ? '&' : '?';
 					url += param + '=' + params[param];
 				}
 			}
+		
 			return url;
 		},
 
@@ -11536,11 +5808,11 @@
 		 *
 		 * @since 1.0
 		 * @method showAjaxLoader
-		 */
+		 */   
 		showAjaxLoader: function()
 		{
-			if( 0 === $( '.fl-builder-lightbox-loading', window.parent.document ).length ) {
-				$( '.fl-builder-loading', window.parent.document ).show();
+			if( 0 === $( '.fl-builder-lightbox-loading' ).length ) {
+				$( '.fl-builder-loading' ).show();
 			}
 		},
 
@@ -11549,216 +5821,42 @@
 		 *
 		 * @since 1.0
 		 * @method hideAjaxLoader
-		 */
+		 */   
 		hideAjaxLoader: function()
 		{
-			$( '.fl-builder-loading', window.parent.document ).hide();
+			$( '.fl-builder-loading' ).hide();
 		},
-
-		/**
-		 * Fades a node when it is being loaded.
-		 *
-		 * @since 1.10
-		 * @access private
-		 * @param {String} nodeId
-		 * @method _showNodeLoading
-		 */
-		_showNodeLoading: function( nodeId )
-		{
-			var node = $( '.fl-node-' + nodeId );
-
-			node.addClass( 'fl-builder-node-loading' );
-
-			FLBuilder.triggerHook( 'didStartNodeLoading', node );
-		},
-
-		/**
-		 * Brings a node back to 100% opacity when it's done loading.
-		 *
-		 * @since 2.0
-		 * @access private
-		 * @param {String} nodeId
-		 * @method _hideNodeLoading
-		 */
-		_hideNodeLoading: function( nodeId )
-		{
-			var node = $( '.fl-node-' + nodeId );
-
-			node.removeClass( 'fl-builder-node-loading' );
-		},
-
-		/**
-		 * Inserts a placeholder in place of where a node will be
-		 * that is currently loading.
-		 *
-		 * @since 1.10
-		 * @access private
-		 * @param {Object} parent
-		 * @param {Number} position
-		 * @method _showNodeLoadingPlaceholder
-		 */
-		_showNodeLoadingPlaceholder: function( parent, position )
-		{
-			var placeholder = $( '<div class="fl-builder-node-loading-placeholder"></div>' );
-
-			// Make sure we only have one placeholder at a time.
-			$( '.fl-builder-node-loading-placeholder' ).remove();
-
-			// Get sibling rows.
-			if ( parent.hasClass( 'fl-builder-content' ) ) {
-				siblings = parent.find( ' > .fl-row, > .fl-module' );
-			}
-			// Get sibling column groups.
-			else if ( parent.hasClass( 'fl-row-content' ) ) {
-				siblings = parent.find( ' > .fl-col-group, > .fl-module' );
-			}
-			// Get sibling columns.
-			else if ( parent.hasClass( 'fl-col-group' ) ) {
-				parent.addClass( 'fl-col-group-has-child-loading' );
-				siblings = parent.find( ' > .fl-col' );
-			}
-			// Get sibling modules.
-			else {
-				siblings = parent.find( ' > .fl-col-group, > .fl-module' );
-			}
-
-			// Add the placeholder.
-			if ( 0 === siblings.length || siblings.length == position) {
-				parent.append( placeholder );
-			}
-			else {
-				siblings.eq( position ).before( placeholder );
-			}
-		},
-
-		/**
-		 * Removes the node loading placeholder for a node.
-		 *
-		 * @since 1.10
-		 * @access private
-		 * @param {Object} node
-		 * @method _removeNodeLoadingPlaceholder
-		 */
-		_removeNodeLoadingPlaceholder: function( node )
-		{
-			var prev = node.prev( '.fl-builder-node-loading-placeholder' ),
-				next = node.next( '.fl-builder-node-loading-placeholder' );
-
-			if ( prev.length ) {
-				prev.remove();
-			} else {
-				next.remove();
-			}
-		},
-
-		/**
-		 * Base64 encode settings to prevent ModSecurity false
-		 * positives if our fix is enabled.
-		 *
-		 * @since 1.8.4
-		 * @access private
-		 * @method _ajaxModSecFix
-		 */
-		_ajaxModSecFix: function( settings )
-		{
-			var prop;
-
-			if ( FLBuilderConfig.modSecFix && 'undefined' != typeof btoa ) {
-
-				if ( 'string' == typeof settings ) {
-					settings = FLBuilder._btoa( settings );
-				}
-				else {
-
-					for ( prop in settings ) {
-						type = typeof settings[ prop ]
-
-						if ( 'string' == type || 'number' == type ) {
-							settings[ prop ] = FLBuilder._btoa( settings[ prop ] );
-						}
-						else if ( 'boolean' == type ) {
-							settings[ prop ] = FLBuilder._btoa( settings[ prop ] ? '1' : '' );
-						}
-						else if( 'object' == type ) {
-							settings[ prop ] = FLBuilder._ajaxModSecFix( settings[ prop ] );
-						}
-					}
-				}
-			}
-
-			return settings;
-		},
-
-		/**
-		 * Helper function for _ajaxModSecFix
-		 * btoa() does not handle utf8/16 characters
-		 * See: https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings
-		 *
-		 * @since 1.10.7
-		 * @access private
-		 * @method _btoa
-		 */
-		_btoa: function(str) {
-			return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-				return String.fromCharCode('0x' + p1);
-			}));
-		},
-
-		/**
-		 * @since 1.10.8
-		 * @access private
-		 * @method _wpmedia_reset_errors
-		 */
-		_wpmedia_reset_errors: function() {
-			$( '.upload-error', window.parent.document ).remove()
-			$( '.media-uploader-status', window.parent.document ).removeClass( 'errors' ).hide()
-		},
-
+		
 		/* Lightboxes
 		----------------------------------------------------------*/
-
-		/**
-		 * Initializes the lightboxes for the builder interface.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @method _initLightboxes
-		 */
-		_initLightboxes: function()
-		{
-			/* Main builder lightbox */
-			FLBuilder._lightbox = new FLLightbox({
-				className: 'fl-builder-lightbox fl-builder-settings-lightbox',
-				resizable: true
-			});
-
-			FLBuilder._lightbox.on('resized', FLBuilder._calculateSettingsTabsOverflow);
-			FLBuilder._lightbox.on('close', FLBuilder._lightboxClosed);
-			FLBuilder._lightbox.on('beforeCloseLightbox', FLBuilder._destroyEditorFields);
-
-			/* Actions lightbox */
-			FLBuilder._actionsLightbox = new FLLightbox({
-				className: 'fl-builder-actions-lightbox'
-			});
-		},
-
+		
 		/**
 		 * Shows the settings lightbox.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _showLightbox
-		 */
-		_showLightbox: function( content )
+		 * @param {Boolean} draggable Whether the lightbox should be draggable or not.
+		 */  
+		_showLightbox: function(draggable)
 		{
-			if ( ! content ) {
-				content = '<div class="fl-builder-lightbox-loading"></div>';
+			draggable = typeof draggable === 'undefined' ? true : draggable;
+			
+			FLBuilder._lightbox.open('<div class="fl-builder-lightbox-loading"></div>');
+			
+			if(draggable) {
+				FLBuilder._lightbox.draggable({
+					handle: '.fl-lightbox-header'
+				});
 			}
-
-			FLBuilder._lightbox.open( content );
+			else {
+				FLBuilder._lightbox.draggable(false);
+			}
+			
+			FLBuilder._removeAllOverlays();
 			FLBuilder._initLightboxScrollbars();
 		},
-
+		
 		/**
 		 * Set the content for the settings lightbox.
 		 *
@@ -11766,26 +5864,25 @@
 		 * @access private
 		 * @method _setLightboxContent
 		 * @param {String} content The HTML content for the lightbox.
-		 */
+		 */  
 		_setLightboxContent: function(content)
 		{
 			FLBuilder._lightbox.setContent(content);
 		},
-
+		
 		/**
 		 * Initializes the scrollbars for the settings lightbox.
 		 *
 		 * @since 1.0
 		 * @access private
 		 * @method _initLightboxScrollbars
-		 */
+		 */  
 		_initLightboxScrollbars: function()
 		{
 			FLBuilder._initScrollbars();
-			clearTimeout( FLBuilder._lightboxScrollbarTimeout );
 			FLBuilder._lightboxScrollbarTimeout = setTimeout(FLBuilder._initLightboxScrollbars, 500);
 		},
-
+		
 		/**
 		 * Callback to clean things up when the settings lightbox
 		 * is closed.
@@ -11793,16 +5890,13 @@
 		 * @since 1.0
 		 * @access private
 		 * @method _lightboxClosed
-		 */
+		 */  
 		_lightboxClosed: function()
 		{
-			FL.Builder.data.getOutlinePanelActions().setActiveNode( false );
-			FLBuilder.triggerHook( 'settings-lightbox-closed' );
 			FLBuilder._lightbox.empty();
-			clearTimeout( FLBuilder._lightboxScrollbarTimeout );
-			FLBuilder._lightboxScrollbarTimeout = null;
+			clearTimeout(FLBuilder._lightboxScrollbarTimeout);
 		},
-
+		
 		/**
 		 * Shows the actions lightbox.
 		 *
@@ -11815,21 +5909,12 @@
 		{
 			var template = wp.template( 'fl-actions-lightbox' );
 
-			// Allow extensions to modify the settings object.
-			FLBuilder.triggerHook( 'actions-lightbox-settings', settings );
-
-			// Open the lightbox.
 			FLBuilder._actionsLightbox.open( template( settings ) );
 		},
-
+		
 		/* Alert Lightboxes
 		----------------------------------------------------------*/
-
-		_checkEnv: function() {
-			if ( 'svg' === FLBuilderConfig.fontAwesome ) {
-				FLBuilder.alert( FLBuilderStrings.fontAwesome)
-			}
-		},
+		
 		/**
 		 * Shows the alert lightbox with a message.
 		 *
@@ -11840,59 +5925,14 @@
 		alert: function(message)
 		{
 			var alert = new FLLightbox({
-					className: 'fl-builder-alert-lightbox',
+					className: 'fl-builder-lightbox fl-builder-alert-lightbox',
 					destroyOnClose: true
 				}),
 				template = wp.template( 'fl-alert-lightbox' );
-
+			
 			alert.open( template( { message : message } ) );
 		},
-
-		crashMessage: function(debug)
-		{
-			FLLightbox.closeAll();
-			var alert = new FLLightbox({
-					className: 'fl-builder-alert-lightbox fl-builder-crash-lightbox',
-					destroyOnClose: true
-				}),
-				template  = wp.template( 'fl-crash-lightbox' ),
-				product   = window.crash_vars.product,
-				labeled   = window.crash_vars.white_label,
-				label_txt = window.crash_vars.labeled_txt,
-				info      = '';
-
-
-
-				message  = product + ' ' + window.crash_vars.strings.intro;
-
-				info    += "<h3 style='font-size:26px;line-height:26px;'>" + window.crash_vars.strings.try + "</h3>";
-				info    += "<p>" + window.crash_vars.strings.troubleshoot + "</p>";
-				info    += "<h3 style='font-size:22px;line-height:22px;padding-top:20px;border-top:1px solid black;'>" + window.crash_vars.strings.hand + "</h3>";
-				info    += "<h3 style='font-size:18px;line-height:18px;'>" + window.crash_vars.strings.step_one + "</h3>";
-				info    += "<p>" + window.crash_vars.strings.if_contact + "</p>";
-				info     +="<div><div style='width:49%;float:left;'>"
-				info     +="<p>MacOS Users:<br />Chrome: View > Developer > JavaScript Console<br />Firefox: Tools > Web Developer > Browser Console<br />Safari: Develop > Show JavaScript console</p>"
-				info     +="</div>"
-
-				info     +="<div style='width:49%;float:right;'>"
-				info     +="<p>Windows Users:<br />Chrome: Settings > More Tools > Developer > Console<br />Firefox: Menu/Settings > Web Developer > Web Console<br />Edge: Settings and More > More Tools > Console</p>"
-				info     +="</div></div>"
-
-				info    += "<h3 style='font-size:18px;line-height:18px;display:inline-block'>" + window.crash_vars.strings.step_two + "</h3>";
-
-				info     +="<p style='display:inline-block;'>" + window.crash_vars.strings.contact + "</p>"
-
-				if ( FLBuilderConfig.MaxInputVars <= 3000 ) {
-					info += '<br /><br />The PHP config value max_input_vars is only set to ' + FLBuilderConfig.MaxInputVars + '. If you are using 3rd party addons this could very likely be the cause of this error. [<a class="link" href="https://docs.wpbeaverbuilder.com/beaver-builder/troubleshooting/common-issues/exceeds-php-max-input-vars">doc link</a>].'
-				}
-
-				debug    = false
-				if ( labeled ) {
-					info = label_txt
-				}
-				alert.open( template( { message : message, info: info, debug: debug } ) );
-		},
-
+		
 		/**
 		 * Closes the alert lightbox when a child element is clicked.
 		 *
@@ -11904,41 +5944,10 @@
 		{
 			FLLightbox.closeParent(this);
 		},
-
-		/**
-		 * Shows the confirm lightbox with a message.
-		 *
-		 * @since 1.10
-		 * @method confirm
-		 * @param {Object} o The config object that overrides the defaults.
-		 */
-		confirm: function( o )
-		{
-			var defaults = {
-					cssClass: '',
-					message : '',
-					ok      : function(){},
-					cancel  : function(){},
-					strings : {
-						'ok'     : FLBuilderStrings.ok,
-						'cancel' : FLBuilderStrings.cancel
-					}
-				},
-				config = $.extend( {}, defaults, ( 'undefined' == typeof o ? {} : o ) )
-				lightbox = new FLLightbox({
-					className: 'fl-builder-confirm-lightbox fl-builder-alert-lightbox' + config.cssClass,
-					destroyOnClose: true
-				}),
-				template = wp.template( 'fl-confirm-lightbox' );
-
-			lightbox.open( template( config ) );
-			lightbox._node.find( '.fl-builder-confirm-ok' ).on( 'click', config.ok );
-			lightbox._node.find( '.fl-builder-confirm-cancel' ).on( 'click', config.cancel );
-		},
-
+		
 		/* Console Logging
 		----------------------------------------------------------*/
-
+		
 		/**
 		 * Logs a message in the console if the console is available.
 		 *
@@ -11951,10 +5960,10 @@
 			if ( 'undefined' == typeof window.console || 'undefined' == typeof window.console.log ) {
 				return;
 			}
-
+			
 			console.log( message );
 		},
-
+		
 		/**
 		 * Logs an error in the console if the console is available.
 		 *
@@ -11962,10 +5971,10 @@
 		 * @method logError
 		 * @param {String} error The error to log.
 		 */
-		logError: function( error, data )
+		logError: function( error )
 		{
 			var message = null;
-
+			
 			if ( 'undefined' == typeof error ) {
 				return;
 			}
@@ -11975,27 +5984,15 @@
 			else if ( 'undefined' != typeof error.message ) {
 				message = error.message;
 			}
-
+			
 			if ( message ) {
 				FLBuilder.log( '************************************************************************' );
 				FLBuilder.log( FLBuilderStrings.errorMessage );
 				FLBuilder.log( message );
-				if ( 'undefined' != typeof data && data ) {
-						FLBuilder.log( "Debug Info" );
-						console.log( data );
-				}
-				// Show debug data in console.
-				$.each( window.crash_vars.vars, function(i,t) {
-					console.log(i + ': ' + t)
-				})
 				FLBuilder.log( '************************************************************************' );
-				if ( 'undefined' != typeof data && data ) {
-					message = data + "\n" + message
-				}
-				FLBuilder.crashMessage(message)
 			}
 		},
-
+		
 		/**
 		 * Logs a global error in the console if the console is available.
 		 *
@@ -12012,176 +6009,13 @@
 			FLBuilder.log( '************************************************************************' );
 			FLBuilder.log( FLBuilderStrings.errorMessage );
 			FLBuilder.log( FLBuilderStrings.globalErrorMessage.replace( '{message}', message ).replace( '{line}', line ).replace( '{file}', file ) );
-
+			
 			if ( 'undefined' != typeof error && 'undefined' != typeof error.stack ) {
 				FLBuilder.log( error.stack );
+				FLBuilder.log( '************************************************************************' );
 			}
-			FLBuilder.log( '************************************************************************' );
-		},
-
-		/**
-		 * Parse JSON with try/catch and print useful debug info on error.
-		 * @since 2.2.2
-		 * @param {string} data JSON data
-		 */
-		_jsonParse: function( data ) {
-
-			if ( typeof data !== 'string' ) {
-				data = JSON.stringify(data)
-			}
-			try {
-					data = JSON.parse( data );
-					} catch (e) {
-						if ( data.indexOf('</b> on line ') > 0 || data.indexOf( ' in <b>') > 0 ) {
-							type  = 'Unknown';
-							regex = new RegExp( '<b>(Notice|Warning|Fatal error)<\/b>:(.*) in <b>', 'm');
-							error = regex.exec(data);
-
-							if ( ! FLBuilder.isUndefined( error[1] ) ) {
-								type = error[1]
-							}
-
-							if ( ! FLBuilder.isUndefined( error[2] ) ) {
-								error = error[2]
-							} else {
-								error = 'Unknown PHP error';
-							}
-							// handle fatal first
-							if ( data.indexOf('Fatal error') > 0 ) {
-								regex = new RegExp('<b>Fatal error<\\\/b>:\\s+Allowed\\smemory\\ssize of\\s([0-9]+)', 'gm');
-								m = regex.exec(data);
-								if ( ! FLBuilder.isUndefined( m[1] ) ) {
-									ram = m[1] / 1024 / 1024;
-									msg = '<p style="font-weight:bold;text-align:center;"><strong>PHP ' + type + ' detected in AJAX response</strong></p>';
-									msg += '<p>' + window.crash_vars.strings.fatal.content.replace('[MEM]', ram ) + '</p>';
-									msg += '<p>' + window.crash_vars.strings.fatal.footer + '</p>';
-									FLLightbox.closeAll();
-									FLBuilder.alert(msg);
-									return false;
-								} else {
-									msg = '<p style="font-weight:bold;text-align:center;"><strong>PHP ' + type + ' detected in AJAX response</strong></p>';
-									msg += '<p>' + error + '</p>';
-									msg += '<p>' + window.crash_vars.strings.fatal.footer + '</p>';
-									FLLightbox.closeAll();
-									FLBuilder.alert(msg);
-									return false;
-								}
-							} else {
-								msg = '<p style="font-weight:bold;text-align:center;"><strong>PHP ' + type + ' detected in AJAX response</strong></p>';
-								msg += '<p>' + error + '</p>';
-								msg += '<p>' + window.crash_vars.strings.fatal.footer + '</p>';
-								FLLightbox.closeAll();
-								FLBuilder.alert(msg);
-								return false;
-							}
-						}
-						FLBuilder.logError( e, FLBuilder._parseError( data ) );
-					}
-					return data;
-		},
-
-		/**
-		 * Parse data for php error on 1st line.
-		 * @since 2.2.2
-		 * @param {string} data the JSON containing error(s)
-		 */
-		_parseError: function( data ) {
-			if( data.indexOf('</head>') ) {
-				return 'AJAX returned HTML page instead of data. (Possible 404 or max_input_vars)';
-			}
-			php = data.match(/^<.*/gm) || false;
-			if ( php && php.length > 0 ) {
-				var txt = '';
-				$.each( php, function(i,t) {
-					txt += t
-				})
-				return $(txt).text();
-			}
-			return false;
-		},
-
-		/**
-		 * Get sandbox data.
-		 * @since 2.6
-		 * @param {string} data the JSON containing error(s)
-		 */
-		getSandbox: function (key) {
-			if (key in this._sandbox) {
-				return this._sandbox[key];
-			}
-			return false;
-		},
-
-		/**
-		 * Set sandbox data.
-		 * @since 2.6
-		 * @param {string} key
-		 * @param {any} data
-		 * @return {void}
-		 */
-		setSandbox: function (key, data) {
-			this._sandbox[key] = data;
-		},
-
-		/**
-		 * Delete sandbox data.
-		 * @since 2.6
-		 * @param {string} key
-		 * @param {any} data
-		 * @return {void}
-		 */
-		deleteSandbox: function (key) {
-			delete this._sandbox[key];
-		},
+		}
 	};
-
-	/**
-	 * Setup Proxy to redirect properties
-	 */
-	FLBuilder = new Proxy( FLBuilder, {
-
-		deprecated: {
-
-			// Conditional Utils
-			isBlockEditor: FL.Builder.utils.isBlockEditor,
-			isBoolean: FL.Builder.utils.isBoolean,
-			isUndefined: FL.Builder.utils.isUndefined,
-
-			// Hooks
-			addHook: FL.Builder.utils.hooks.add,
-			removeHook: FL.Builder.utils.hooks.remove,
-			triggerHook: FL.Builder.utils.hooks.trigger,
-
-			// Color Scheme
-			_initColorScheme: FL.Builder.utils.colorScheme.init,
-			_isSystemColorSchemeDark: FL.Builder.utils.colorScheme.isSystemDark,
-			_getComputedColorScheme: FL.Builder.utils.colorScheme.getComputedColorScheme,
-			_systemColorSchemeChanged: FL.Builder.utils.colorScheme.systemColorSchemeChanged,
-			_setColorSchemeBodyClasses: FL.Builder.utils.colorScheme.setBodyClasses,
-
-			// Settings Form Events
-			_focusFirstSettingsControl: FL.Builder.settingsForms.focusFirstSettingsControl,
-
-			/**
-			 * I've chosen not to proxy these methods because they don't seem to be called directly in BB
-			 * If you run into an error just restore the proxy and export the function from its new file.
-			 * Keeping them here for now for the sake of notes.
-			 */
-			//_initCompoundFields: FL.Builder.settingsForms.compoundFields.init,
-			//_initCompoundField: FL.Builder.settingsForms.compoundFields.initField,
-			//_initButtonGroupFields: FL.Builder.settingsForms.buttonGroups.init,
-			//_initButtonGroupField: FL.Builder.settingsForms.buttonGroups.initField,
-			//_initSettingsSections: FL.Builder.settingsForms.sections.init,
-			//_initSection: FL.Builder.settingsForms.sections.initSection,
-		},
-
-		get( target, prop, receiver ) {
-			if ( prop in this.deprecated ) {
-				return this.deprecated[prop]
-			}
-			return Reflect.get( ...arguments )
-		},
-	} )
 
 	/* Start the party!!! */
 	$(function(){

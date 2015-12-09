@@ -55,7 +55,6 @@ interface OAuthServiceProvider {
  * @version $id$
  */
 class OAuthApplication implements AWeberOAuthAdapter {
-    public $app   = null;
     public $debug = false;
 
     public $userAgent = 'AWeber OAuth Consumer Application 1.0 - https://labs.aweber.com/';
@@ -240,9 +239,9 @@ class OAuthApplication implements AWeberOAuthAdapter {
     /**
      * _addParametersToUrl
      *
-     * Adds the parameters in associative array $data to the
+     * Adds the parameters in associative array $data to the 
      * given URL
-     * @param String $url       URL
+     * @param String $url       URL 
      * @param array $data       Parameters to be added as a query string to
      *      the URL provided
      * @access protected
@@ -432,7 +431,7 @@ class OAuthApplication implements AWeberOAuthAdapter {
      * makeRequest
      *
      * Public facing function to make a request
-     *
+     * 
      * @param mixed $method
      * @param mixed $url  - Reserved characters in query params MUST be escaped
      * @param mixed $data - Reserved characters in values MUST NOT be escaped
@@ -442,7 +441,7 @@ class OAuthApplication implements AWeberOAuthAdapter {
     public function makeRequest($method, $url, $data=array()) {
 
         if ($this->debug) echo "\n** {$method}: $url\n";
-
+        
         switch (strtoupper($method)) {
             case 'POST':
                 $oauth = $this->prepareRequest($method, $url, $data);
@@ -575,7 +574,7 @@ class OAuthApplication implements AWeberOAuthAdapter {
         $this->curl->setopt($handle, CURLOPT_HEADER, true);
         $this->curl->setopt($handle, CURLOPT_HTTPHEADER, $headers);
         $this->curl->setopt($handle, CURLOPT_USERAGENT, $this->userAgent);
-        $handle = fl_set_curl_safe_opts( $handle );
+        $this->curl->setopt($handle, CURLOPT_SSL_VERIFYPEER, FALSE);
         $this->curl->setopt($handle, CURLOPT_VERBOSE, FALSE);
         $this->curl->setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
         $this->curl->setopt($handle, CURLOPT_TIMEOUT, 90);

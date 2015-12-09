@@ -1,12 +1,3 @@
-<?php
-
-$attrs = [
-	'class' => [
-		'fl-html', // Necessary for live preview
-	],
-];
-
-?>
-<div <?php $module->render_attributes( $attrs ); ?>>
+<div class="fl-html">
 	<?php echo $settings->html; ?>
 </div>
