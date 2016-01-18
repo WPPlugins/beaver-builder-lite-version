@@ -1,3 +1,59 @@
+<h4>1.6.4.7 - 1/10/2016</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Minor enhancements to the Number Counter module. Added new number position setting (above, inside, below) for number bars. Thanks Kathy Darling for the contribution!</li>
+	<li>Row background color settings are now always available for adding a fallback for other background types such as videos and slideshows. Thanks Justin Proffitt for the contribution!</li>
+	<li>Added limit property to suggest fields for limiting the number of selections that can be made.</li>
+	<li>Added the fl_builder_register_settings_form filter to the register_module method.</li>
+	<li>Added core WordPress image classes to the Photo module. This allows WordPress to handle srcsets instead of us, fixing a number of issues and adding support for the WP Retina plugin.</li>
+	<li>Added Czech translation.</li>
+	<li>Added Farsi translation.</li>
+	<li>Added Thai translation.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a bug with scripts in shortcodes and widgets being rendered more than once when a CDN is used. Primarily fixes issues with the Gravity Forms widget, but should help others as well.</li>
+	<li>Fixed a bug with users that can only submit for review being able to publish posts from within the builder.</li>
+	<li>Fixed a bug breaking responsive display settings for equal height columns.</li>
+	<li>Fixed a bug caused by the WP 4.4.1 update that makes it so all templates show in the template selector, saved rows, and saved modules sections.</li>
+	<li>Fixed a bug with values selected in auto suggest fields not retaining their order.</li>
+	<li>Fixed a bug with multiple email addresses in the Contact Form module.</li>
+	<li>Fixed a bug with videos in the Content Slider module continuing to play when the slider advances to the next slide.</li>
+	<li>Fixed a bug with edge cases where git configurations convert line endings and break the serialized data in the templates.dat file.</li>
+</ul>
+
+<h4>1.6.4.6 - 12/22/2015</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Added Hungarian translation.</li>
+	<li>The Contact Form module now supports a comma separated list of email addresses.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a bug causing the row and column link color setting to not work.</li>
+	<li>Fixed a bug with srcsets in the Photo module and custom image sizes.</li>
+	<li>Fixed a bug making it impossible to edit modules that don't have a height.</li>
+	<li>Fixed a bug with IE11 and row alignment.</li>
+</ul>
+
+<h4>1.6.4.5 - 12/15/2015</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>WordPress 4.4's responsive image code is now applied to all images that contain an attachment ID.</li>
+	<li>Added support for the Autoptimize caching plugin.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a bug in the Photo module with srcsets and custom image sizes.</li>
+	<li>Fixed a bug with using shortcodes in link fields.</li>
+	<li>Fixed a bug with smooth scrolling and the Tabs module.</li>
+	<li>Fixed a bug with equal heights in the Posts module.</li>
+	<li>Fixed a bug with icon positioning in the Callout module.</li>
+	<li>Fixed a bug with Menu module text being searched in searches.</li>
+	<li>Fixed a bug with full height rows and content alignment in IE11.</li>
+	<li>Fixed a bug causing the text in textareas to be white.</li>
+</ul>
+
 <h4>1.6.4.4 - 12/08/2015</h4>
 <p><strong>Enhancements</strong></p>
 <ul>

@@ -146,7 +146,7 @@ final class FLBuilderAutoSuggest {
 		
 		if(!empty($ids)) {
 		
-			$posts = $wpdb->get_results("SELECT ID, post_title FROM {$wpdb->posts} WHERE ID IN ({$ids})");
+			$posts = $wpdb->get_results("SELECT ID, post_title FROM {$wpdb->posts} WHERE ID IN ({$ids}) ORDER BY FIELD(ID, {$ids})");
 			
 			foreach($posts as $post) {
 				$data[] = array('name' => esc_attr( $post->post_title ), 'value' => $post->ID);

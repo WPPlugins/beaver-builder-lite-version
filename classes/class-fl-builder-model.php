@@ -1914,7 +1914,7 @@ final class FLBuilderModel {
 			self::$modules[$instance->slug] = $instance;
 
 			// Add the form to the instance.
-			self::$modules[$instance->slug]->form = $form;
+			self::$modules[$instance->slug]->form = apply_filters( 'fl_builder_register_settings_form', $form, $instance->slug );
 			self::$modules[$instance->slug]->form['advanced'] = self::$settings_forms['module_advanced'];
 		}
 	}
@@ -3029,7 +3029,12 @@ final class FLBuilderModel {
 		
 		// Publish the post?
 		if ( $publish ) {
-			$post_status = strstr($post_status, 'draft') ? 'publish' : $post_status;
+			if ( current_user_can( 'publish_posts' ) ) {
+				$post_status = strstr($post_status, 'draft') ? 'publish' : $post_status;
+			}
+			else {
+				$post_status = 'pending';
+			}	
 		}
 		
 		// Update the post with stripped down content.
@@ -3215,7 +3220,13 @@ final class FLBuilderModel {
 			'orderby' 					=> 'menu_order title',
 			'order' 					=> 'ASC',
 			'posts_per_page' 			=> '-1',
-			'fl-builder-template-type'	=> $type
+			'tax_query' => array(
+				array(
+					'taxonomy' => 'fl-builder-template-type',
+					'field' => 'slug',
+					'terms' => $type
+				)
+			)
 		) );
 		
 		$templates = array();
@@ -3490,7 +3501,13 @@ final class FLBuilderModel {
 			'orderby' 					=> 'title',
 			'order' 					=> 'ASC',
 			'posts_per_page' 			=> '-1',
-			'fl-builder-template-type'	=> $type
+			'tax_query' => array(
+				array(
+					'taxonomy' => 'fl-builder-template-type',
+					'field' => 'slug',
+					'terms' => $type
+				)
+			)
 		) );
 		
 		$templates = array();

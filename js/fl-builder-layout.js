@@ -463,6 +463,7 @@
 								responsiveLabel.trigger( 'click' );	
 							}
 							else {
+								FLBuilderLayout._scrollToElement( label );
 								label.trigger( 'click' );
 							}
 							
@@ -528,11 +529,29 @@
 		 * @access private
 		 * @method _scrollToElementOnLinkClick
 		 * @param {Object} e An event object.
+		 * @param {Function} callback A function to call when the scroll is complete.
 		 */ 
 		_scrollToElementOnLinkClick: function( e, callback )
 		{
+			var element = $( '#' + $( this ).attr( 'href' ).split( '#' ).pop() );
+				
+			FLBuilderLayout._scrollToElement( element, callback );
+				
+			e.preventDefault();
+		},
+		
+		/**
+		 * Scrolls to an element.
+		 *
+		 * @since 1.6.4.5
+		 * @access private
+		 * @method _scrollToElement
+		 * @param {Object} element The element to scroll to.
+		 * @param {Function} callback A function to call when the scroll is complete.
+		 */ 
+		_scrollToElement: function( element, callback )
+		{
 			var config  = FLBuilderLayoutConfig.anchorLinkAnimations,
-				element = $( '#' + $( this ).attr( 'href' ).split( '#' ).pop() ),
 				dest    = 0,
 				win     = $( window ),
 				doc     = $( document );
@@ -547,8 +566,6 @@
 				}
 	
 				$( 'html, body' ).animate( { scrollTop: dest }, config.duration, config.easing, callback );
-				
-				e.preventDefault();
 			}
 		},
 		
@@ -611,6 +628,7 @@
 					FLBuilderLayout._scrollToElementOnLinkClick.call( this, e, callback );
 				}
 				else {
+					FLBuilderLayout._scrollToElement( label );
 					label.trigger( 'click' );
 				}
 				

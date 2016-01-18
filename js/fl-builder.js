@@ -2026,15 +2026,22 @@
 		{
 			var cleaned = $( '<div id="fl-cleaned-content">' + html + '</div>' ),
 				src     = '',
-				script  = null;
-			
+				script  = null,
+				loc 	= window.location,
+				origin  = loc.protocol + '//' + loc.hostname + ( loc.port ? ':' + loc.port: '' );
+				
 			cleaned.find( 'script' ).each( function() {
 				
-				src     = $( this ).attr( 'src' );
-				script  = $( 'script[src="' + src + '"]' );
+				src = $( this ).attr( 'src' );
 				
-				if ( script.length > 0 ) {
-					$( this ).remove();
+				if ( 'undefined' != typeof src ) {
+				
+					src     = src.replace( origin, '' );
+					script  = $( 'script[src*="' + src + '"]' );
+					
+					if ( script.length > 0 ) {
+						$( this ).remove();
+					}
 				}
 			});
 			
@@ -2440,6 +2447,7 @@
 		{
 			$('.fl-row').removeClass('fl-block-overlay-active');
 			$('.fl-row-overlay').remove();
+			$('.fl-module').removeClass('fl-module-adjust-height');
 		},
 		
 		/**
@@ -2491,10 +2499,19 @@
 				template = wp.template( 'fl-row-overlay' );
 
 			if ( ! row.hasClass( 'fl-block-overlay-active' ) ) {
+				
+				// Append the overlay.
 				FLBuilder._appendOverlay( row, template( { 
 					global : row.hasClass( 'fl-node-global' ), 
 					node   : row.attr('data-node')
 				} ) );
+				
+				// Adjust the height of modules if needed.
+				row.find( '.fl-module' ).each( function(){
+					if ( $( this ).outerHeight( true ) < 20 ) {
+						$( this ).addClass( 'fl-module-adjust-height' );
+					}
+				} );
 			}
 		},
 		
@@ -3383,11 +3400,6 @@
 			}
 			// Show the overlay.
 			else if ( ! module.hasClass( 'fl-block-overlay-active' ) ) {
-
-				// Adjust the height if needed.
-				if ( module.outerHeight( true ) < 20 ) {
-					module.addClass( 'fl-module-adjust-height' );
-				}
 				
 				// Append the template.
 				FLBuilder._appendOverlay( module, template( { 
@@ -3438,7 +3450,6 @@
 		{
 			var modules = $('.fl-module');
 			
-			modules.removeClass('fl-module-adjust-height');
 			modules.removeClass('fl-block-overlay-active');
 			modules.find('.fl-module-overlay').remove();
 			$('body').removeClass('fl-block-overlay-muted');
@@ -4522,7 +4533,8 @@
 				preFill                     : field.data('value'),
 				queryParam                  : 'fl_as_query',
 				afterSelectionAdd           : FLBuilder._updateAutoSuggestField,
-				afterSelectionRemove        : FLBuilder._updateAutoSuggestField
+				afterSelectionRemove        : FLBuilder._updateAutoSuggestField,
+				selectionLimit				: field.data('limit')
 			});
 		},
 		

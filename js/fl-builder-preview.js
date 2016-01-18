@@ -639,21 +639,27 @@
 			
 			// Photo
 			else if(val == 'photo') {
+				this.elements.bgColor.trigger('change');
 				this.elements.bgImageSrc.trigger('change');
 			}
 			
 			// Video
-			else if(val == 'video' && this.elements.bgVideo.val() != '') {
-				this.preview();
+			else if(val == 'video') {
+				this.elements.bgColor.trigger('change');
+				if (this.elements.bgVideo.val() != '') {
+					this.preview();
+				}
 			}
 			
 			// Slideshow
 			else if(val == 'slideshow') {
+				this.elements.bgColor.trigger('change');
 				this._bgSlideshowChange();
 			}
 			
 			// Parallax
 			else if(val == 'parallax') {
+				this.elements.bgColor.trigger('change');
 				this.elements.bgParallaxImageSrc.trigger('change');
 			}
 		},

@@ -96,6 +96,9 @@ final class FLBuilder {
 			
 			// Tell W3TC not to minify while the builder is active.
 			define( 'DONOTMINIFY', true );
+			
+			// Tell Autoptimize not to minify while the builder is active.
+			add_filter( 'autoptimize_filter_noptimize', '__return_true' );
 
 			// Remove 3rd party editor buttons.
 			remove_all_actions('media_buttons', 999999);
@@ -858,6 +861,11 @@ final class FLBuilder {
 			$pattern = get_shortcode_regex();
 			$content = preg_replace_callback( "/$pattern/s", 'FLBuilder::double_escape_shortcodes', $content );
 			$content = do_shortcode( $content );
+			
+			// Add srcset attrs to images with the class wp-image-<ID>.
+			if ( function_exists( 'wp_make_content_images_responsive' ) ) {
+				$content = wp_make_content_images_responsive( $content );
+			}
 			
 			// Clear the post rendering ID.
 			self::$post_rendering = null;

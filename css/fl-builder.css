@@ -172,7 +172,7 @@ ul.fl-builder-submenu {
 	display: block;
 }
 ul.fl-builder-submenu li a {
-	color: #fff;
+	color: #fff !important;
 	display: block;
     line-height: 13px;
     font-size: 13px;
