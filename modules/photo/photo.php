@@ -22,9 +22,10 @@ class FLPhotoModule extends FLBuilderModule {
 	public function __construct()
 	{
 		parent::__construct(array(
-			'name'          => __('Photo', 'fl-builder'),
-			'description'   => __('Upload a photo or display one from the media library.', 'fl-builder'),
-			'category'      => __('Basic Modules', 'fl-builder')
+			'name'          	=> __('Photo', 'fl-builder'),
+			'description'   	=> __('Upload a photo or display one from the media library.', 'fl-builder'),
+			'category'      	=> __('Basic Modules', 'fl-builder'),
+			'partial_refresh'	=> true
 		));
 	}
 
@@ -494,7 +495,7 @@ FLBuilder::register_module('FLPhotoModule', array(
 				)
 			),
 			'link'          => array(
-				'title'         => 'Link',
+				'title'         => __('Link', 'fl-builder'),
 				'fields'        => array(
 					'link_type'     => array(
 						'type'          => 'select',

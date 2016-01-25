@@ -12,7 +12,7 @@ final class FLBuilderAutoSuggest {
 	 * the data will be echoed as a JSON response.
 	 *
 	 * @since 1.2.3
-	 * @return void
+	 * @return array
 	 */	 
 	static public function init()
 	{
@@ -38,8 +38,7 @@ final class FLBuilderAutoSuggest {
 			}
 		
 			if(isset($data)) {
-				echo json_encode($data);
-				die();
+				return $data;
 			}
 		}
 	}

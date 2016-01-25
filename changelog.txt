@@ -1,3 +1,76 @@
+<h4>1.7.1 - 01/24/2016</h4>
+<p><strong>Security</strong></p>
+<ul>
+	<li>Fixed a security issue that could allow a logged in user that doesn't have permission to edit a page to make calls to the builder's editing functions by spoofing an AJAX request. While this issue mainly affects sites that allow anyone to register, it is still recommended that everyone update immediately.</li>
+	<li>Now using nonces in AJAX requests for additional security.</li>
+</ul>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>The Number Counter module now uses thousands separators.</li>
+	<li>Updated multiple translations.</li>
+	<li>The parent node id is now passed when nested forms are rendered so the parent settings can be accessed by the nested form's controls.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed multiple translation issues.</li>
+	<li>Fixed a bug causing an error on the post list admin screen.</li>
+	<li>Fixed a bug with the read more link not showing in the Posts module when the content is hidden.</li>
+	<li>Fixed a bug with the default value in font fields.</li>
+	<li>Fixed a bug with button style settings showing when no background color is selected.</li>
+	<li>Fixed a bug with nested form preview text on PHP 7.</li>
+</ul>
+
+<h4>1.7 - 01/18/2016</h4>
+<p>This update adds a number of new features. Be sure to check out <a href="https://www.wpbeaverbuilder.com/beaver-builder-1-7-now-with-partial-refresh-per-page-code-settings-and-our-first-shortcode/">the blog post</a> for detailed info on what was added.</p>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Added partial refresh for all rows, columns, and modules. Developers will need to read the custom module docs for info on making their modules compatible with partial refresh.</li>
+	<li>Added the Layout Settings panel with per-page CSS and JavaScript settings.</li>
+	<li>Added CSS and JavaScript settings to the Global Settings panel.</li>
+	<li>Added the Audio module.</li>
+	<li>Added the Countdown module.</li>
+	<li>Added new style settings to the Pricing Table module for achieving a variety of different looks.</li>
+	<li>Added the fl_builder_insert_layout shortcode for inserting builder saved templates, rows, modules anywhere in your posts.</li>
+	<li>Added the FLBuilder::render_query method for rendering layouts anywhere within a theme's PHP files.</li>
+	<li>Refactored frontend AJAX actions and rendering to support partial refresh. Developers tapping into those actions may need to update their code.</li>
+	<li>Optimized loading of the builder UI by concatenating and minifying all core CSS and JavaScript files.</li>
+	<li>Builder caching is now disabled when WP_DEBUG is set to true.</li>
+	<li>The editing capability setting now supports multiple comma seperated values.</li>
+	<li>Updated Google fonts.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a bug with the Subscribe Form module.</li>
+	<li>Fixed CSS specificity issues with the new builder shortcode.</li>
+	<li>Fixed a CSS bug with custom column widths on small devices.</li>
+</ul>
+
+<h4>1.7-beta.2 - 1/10/2016</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Builder caching is now disabled when WP_DEBUG is set to true.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a bug with the Subscribe Form module.</li>
+	<li>Fixed CSS specificity issues with the new builder shortcode.</li>
+</ul>
+
+<h4>1.7-beta.1 - 12/16/2015</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Added partial refresh for all rows, columns, and modules. Developers will need to read the custom module docs for info on making their modules compatible with partial refresh.</li>
+	<li>Added the Layout Settings panel with per-page CSS and JavaScript settings.</li>
+	<li>Added CSS and JavaScript settings to the Global Settings panel.</li>
+	<li>Added the Audio module.</li>
+	<li>Added the Countdown module.</li>
+	<li>Added new style settings to the Pricing Table module for achieving a variety of different looks.</li>
+	<li>Added the fl_builder_insert_layout shortcode for inserting builder saved templates, rows, modules anywhere in your posts.</li>
+	<li>Added the FLBuilder::render_query method for rendering layouts anywhere within a theme's PHP files.</li>
+	<li>Refactored frontend AJAX actions and rendering to support partial refresh. Developers tapping into those actions may need to update their code.</li>
+	<li>Optimized loading of the builder UI by concatenating and minifying all core CSS and JavaScript files.</li>
+</ul>
+
 <h4>1.6.4.7 - 1/10/2016</h4>
 <p><strong>Enhancements</strong></p>
 <ul>
