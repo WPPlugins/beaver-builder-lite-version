@@ -497,7 +497,7 @@ final class FLBuilderModel {
 			mkdir( $dir_info['path'] );
 		}
 
-		return $dir_info;
+		return apply_filters( 'fl_builder_get_upload_dir', $dir_info );
 	}
 
 	/**
@@ -529,7 +529,7 @@ final class FLBuilderModel {
 			mkdir( $dir_info['path'] );
 		}
 
-		return $dir_info;
+		return apply_filters( 'fl_builder_get_cache_dir', $dir_info );
 	}
 
 	/**
@@ -2975,7 +2975,7 @@ final class FLBuilderModel {
 		$old_settings 	= self::get_layout_settings( $status, $post_id );
 		$new_settings 	= (object)array_merge( (array)$old_settings, (array)$settings );
 
-		update_metadata( 'post', $post_id, $key, $new_settings );
+		update_metadata( 'post', $post_id, $key, self::slash_settings( $new_settings ) );
 
 		return $new_settings;
 	}
@@ -3083,6 +3083,9 @@ final class FLBuilderModel {
 		$post_id		= self::get_post_id();
 		$data			= self::get_layout_data('draft', $post_id);
 		$settings 		= self::get_layout_settings('draft', $post_id);
+		
+		// Fire the before action.
+		do_action( 'fl_builder_before_save_layout', $post_id, $publish, $data, $settings );
 
 		// Delete the old published layout.
 		self::delete_layout_data('published', $post_id);
@@ -3104,10 +3107,14 @@ final class FLBuilderModel {
 		
 		// Publish the post?
 		if ( $publish ) {
+			
+			$is_draft    = strstr($post_status, 'draft');
+			$is_pending  = strstr($post_status, 'pending');
+			
 			if ( current_user_can( 'publish_posts' ) ) {
-				$post_status = strstr($post_status, 'draft') ? 'publish' : $post_status;
+				$post_status = $is_draft || $is_pending ? 'publish' : $post_status;
 			}
-			else {
+			else if( $is_draft ) {
 				$post_status = 'pending';
 			}	
 		}
@@ -3118,6 +3125,9 @@ final class FLBuilderModel {
 			'post_status'	=> $post_status,
 			'post_content'	=> $editor_content
 		));
+		
+		// Fire the after action.
+		do_action( 'fl_builder_after_save_layout', $post_id, $publish, $data, $settings );
 	}
 
 	/**

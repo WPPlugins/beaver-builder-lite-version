@@ -45,6 +45,7 @@ final class FLBuilderAJAX {
 	static public function add_action( $action, $method, $args = array() )
 	{
 		self::$actions[ $action ] = array(
+			'action' => $action,
 			'method' => $method,
 			'args'	 => $args
 		);
@@ -128,14 +129,14 @@ final class FLBuilderAJAX {
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
+		
+		// Verify the AJAX nonce.
+		if ( ! self::verify_nonce() ) {
+			return;	
+		}
 
 		// Get the $_POST data.
 		$post_data = FLBuilderModel::get_post_data();
-		
-		// Verify the AJAX nonce.
-		if ( ! isset( $post_data['_wpnonce'] ) || ! wp_verify_nonce( $post_data['_wpnonce'], 'fl_ajax_update' ) ) {
-			return;	
-		}
 		
 		// Get the post ID.
 		$post_id = FLBuilderModel::get_post_id();
@@ -167,24 +168,57 @@ final class FLBuilderAJAX {
 		}
 		
 		// Get the action data.
-		$action = self::$actions[ $action ];
-		$args   = array();
+		$action 	= self::$actions[ $action ];
+		$args   	= array();
+		$keys_args  = array();
 		
 		// Build the args array.
 		foreach ( $action['args'] as $arg ) {
-			$args[] = isset( $post_data[ $arg ] ) ? $post_data[ $arg ] : null;
+			$args[] = $keys_args[ $arg ] = isset( $post_data[ $arg ] ) ? $post_data[ $arg ] : null;
 		}
 
 		// Tell WordPress this is an AJAX request.
 		define( 'DOING_AJAX', true );
+		
+		// Allow developers to hook before the action runs.
+		do_action( 'fl_ajax_before_' . $action['action'], $keys_args );
 
-		// Call the method.
-		$result = call_user_func_array( $action['method'], $args );
+		// Call the action and allow developers to filter the result.
+		$result = apply_filters( 'fl_ajax_' . $action['action'], call_user_func_array( $action['method'], $args ), $keys_args );
+		
+		// Allow developers to hook after the action runs.
+		do_action( 'fl_ajax_after_' . $action['action'], $keys_args );
 		
 		// JSON encode the result.
 		echo json_encode( $result );
 		
 		// Complete the request.
 		die();
+	}
+
+	/**
+	 * Checks to make sure the AJAX nonce is valid.
+	 *
+	 * @since 1.7.2
+	 * @access private
+	 * @return bool
+	 */
+	static private function verify_nonce()
+	{
+		$post_data 	= FLBuilderModel::get_post_data();
+		$nonce 		= false;
+		
+		if ( isset( $post_data['_wpnonce'] ) ) {
+			$nonce = $post_data['_wpnonce'];
+		}
+		else if ( isset( $_REQUEST['_wpnonce'] ) ) {
+			$nonce = $_REQUEST['_wpnonce'];
+		}
+		
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'fl_ajax_update' ) ) {
+			return false;	
+		}
+		
+		return true;
 	}
 }
