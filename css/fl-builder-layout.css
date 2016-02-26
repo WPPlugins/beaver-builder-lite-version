@@ -191,6 +191,7 @@
 	height: 1px;
 }
 .fl-builder-ie-11 .fl-row-full-height .fl-row-content {
+	flex: 0 0 auto;
 	margin: 0;
 }
 

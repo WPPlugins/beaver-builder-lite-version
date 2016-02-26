@@ -639,7 +639,7 @@ span.fl-builder-block-no-node-templates:hover {
 }
 .fl-block-overlay-active .fl-row-content {
 	position: relative;
-	z-index: 100007;
+	z-index: 100007 !important;
 }
 
 /* Column Overlays */

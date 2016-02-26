@@ -2000,9 +2000,13 @@ final class FLBuilder {
 		}
 
 		// Default page heading
-		if($post && !$global_settings->show_default_heading && ($post->post_type == 'page' || $post->post_type == 'fl-builder-template')) {
-			$css .= '.page ' . $global_settings->default_heading_selector . ' { display:none; }';
-			$css .= '.single-fl-builder-template ' . $global_settings->default_heading_selector . ' { display:none; }';
+		if($post && !$global_settings->show_default_heading && !empty($global_settings->default_heading_selector)) {
+			if ( $post->post_type == 'page' ) {
+				$css .= '.page ' . $global_settings->default_heading_selector . ' { display:none; }';
+			}
+			else if ( $post->post_type == 'fl-builder-template' ) {
+				$css .= '.single-fl-builder-template ' . $global_settings->default_heading_selector . ' { display:none; }';	
+			}
 		}
 		
 		// Custom Global CSS

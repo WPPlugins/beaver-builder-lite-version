@@ -1,3 +1,12 @@
+<h4>1.7.5 - 02/24/2016</h4>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a CSS bug with row background color overlays preventing module access in 1.7.4.</li>
+	<li>Fixed a bug where setting a blank default page heading selector in the global settings would hide the entire page.</li>
+	<li>Fixed an IE11 bug with full height rows that have fixed width content.</li>
+	<li>Fixed a bug with the read more link not showing in the Posts Carousel module when the content is hidden.</li>
+</ul>
+
 <h4>1.7.4 - 02/22/2016</h4>
 <p><strong>Enhancements</strong></p>
 <ul>
