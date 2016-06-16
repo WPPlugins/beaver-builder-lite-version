@@ -129,7 +129,11 @@ final class FLBuilderFonts {
 			$css .= 'font-family: '. $font['family'] .';';
 		}	
 
-		$css .= 'font-weight: '. $font['weight'] .';';
+		if ( 'regular' == $font['weight'] ) {
+			$css .= 'font-weight: normal;';
+		} else {
+			$css .= 'font-weight: '. $font['weight'] .';';
+		}
 
 		echo $css;
 	}

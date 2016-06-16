@@ -15,8 +15,30 @@ final class FLBuilderMultisite {
 	 */
 	static public function init()
 	{
-		add_action('wpmu_new_blog', 'FLBuilderMultisite::install_for_new_blog', 10, 6);
-		add_filter('wpmu_drop_tables', 'FLBuilderMultisite::uninstall_on_delete_blog');
+		add_action('wpmu_new_blog',             __CLASS__ . '::install_for_new_blog', 10, 6);
+		add_filter('wpmu_drop_tables',          __CLASS__ . '::uninstall_on_delete_blog');
+		add_filter('fl_builder_activate',       __CLASS__ . '::activate');
+		add_filter('fl_builder_uninstall',      __CLASS__ . '::uninstall');
+	}
+
+	/**
+	 * Short circuit activation in favor of multisite activation.
+	 *
+	 * @since 1.8
+	 * @return void
+	 */
+	static public function activate( $activate )
+	{
+		if ( is_network_admin() ) {
+			FLBuilderMultisite::install();
+		}
+		else {
+			FLBuilderAdmin::install();
+		}
+		
+		FLBuilderAdmin::trigger_activate_notice();
+		
+		return false;
 	}
 
 	/**
@@ -65,12 +87,13 @@ final class FLBuilderMultisite {
 	}
 
 	/**
-	 * Runs the uninstall method for each site on the network.
+	 * Short circuit the default uninstall and run
+	 * the uninstall for each site on the network.
 	 *
 	 * @since 1.0
 	 * @return void
 	 */
-	static public function uninstall() 
+	static public function uninstall( $uninstall ) 
 	{
 		global $blog_id;
 		global $wpdb;
@@ -84,6 +107,8 @@ final class FLBuilderMultisite {
 		}
 		
 		switch_to_blog($original_blog_id);
+		
+		return false;
 	}
 
 	/**
@@ -118,3 +143,5 @@ final class FLBuilderMultisite {
 		return $wpdb->get_row( "SELECT blog_id FROM $wpdb->blogs WHERE blog_id = '$like'" );
 	}
 }
+
+FLBuilderMultisite::init();
