@@ -75,7 +75,112 @@
 				wmContent.trigger( 'refreshWookmark' );
 			}
 		},
-		
+
+		/**
+		 * Public method for refreshing Masonry within an element
+		 *
+		 * @since 1.8.1
+		 * @method refreshGridLayout
+		 */
+		refreshGridLayout: function( element )
+		{
+			var $element 		= 'undefined' == typeof element ? $( 'body' ) : $( element ),
+				msnryContent	= $element.find('.masonry');
+
+			if ( msnryContent.length )	{
+				msnryContent.masonry('layout');
+			}
+		},
+
+		/**
+		 * Public method for reloading BxSlider within an element
+		 *
+		 * @since 1.8.1
+		 * @method reloadSlider
+		 */
+		reloadSlider: function( element )
+		{
+			var $element 	= 'undefined' == typeof element ? $( 'body' ) : $( element ),
+				bxContent	= $element.find('.bx-viewport > div'),
+				bxObject   	= null;
+				
+			if ( bxContent.length ) {
+				bxObject = bxContent.data( 'bxSlider');
+
+				if ( bxObject ) {
+					bxObject.reloadSlider();
+				}				
+			}
+		},
+
+		/**
+		 * Public method for resizing WP audio player
+		 *
+		 * @since 1.8.2
+		 * @method resizeAudio
+		 */
+		resizeAudio: function( element )
+		{
+			var $element 	 	= 'undefined' == typeof element ? $( 'body' ) : $( element ),
+				audioPlayers 	= $element.find('.wp-audio-shortcode.mejs-audio'),
+				player 		 	= null,
+				mejsPlayer 	 	= null,
+				rail 			= null,
+				railWidth 		= 400;
+				
+			if ( audioPlayers.length && typeof mejs !== 'undefined' ) {
+            	audioPlayers.each(function(){
+	            	player 		= $(this);
+	            	mejsPlayer 	= mejs.players[player.attr('id')];
+	            	rail 		= player.find('.mejs-controls .mejs-time-rail');
+	            	var innerMejs = player.find('.mejs-inner'),
+	            		total 	  = player.find('.mejs-controls .mejs-time-total');
+	            	
+	            	if ( typeof mejsPlayer !== 'undefined' ) {
+	            		railWidth = Math.ceil(player.width() * 0.8);
+
+	            		if ( innerMejs.length ) {
+
+		            		rail.css('width', railWidth +'px!important');
+		            		//total.width(rail.width() - 10);
+		            		
+		            		mejsPlayer.options.autosizeProgress = true;
+
+		            		// webkit has trouble doing this without a delay
+							setTimeout(function () {
+								mejsPlayer.setControlsSize();
+							}, 50);
+
+			            	player.find('.mejs-inner').css({
+			            		visibility: 'visible',
+			            		height: 'inherit'
+			            	});
+		            	} 
+		           	}
+	            });
+	        }
+		},
+
+		/**
+		 * Public method for preloading WP audio player when it's inside the hidden element
+		 *
+		 * @since 1.8.2
+		 * @method preloadAudio
+		 */
+		preloadAudio: function(element)
+		{
+			var $element 	 = 'undefined' == typeof element ? $( 'body' ) : $( element ),
+				contentWrap  = $element.closest('.fl-accordion-item'),
+				audioPlayers = $element.find('.wp-audio-shortcode.mejs-audio');
+			
+			if ( ! contentWrap.hasClass('fl-accordion-item-active') && audioPlayers.find('.mejs-inner').length ) {
+				audioPlayers.find('.mejs-inner').css({
+					visibility : 'hidden',
+					height: 0
+				});	
+			}			
+		},
+
 		/**
 		 * Unbinds builder layout events.
 		 *
@@ -132,13 +237,10 @@
 		{
 			var body = $( 'body' );
 			
-			// Don't add to archive pages.
-			if ( body.hasClass( 'archive' ) ) {
-				return;
-			}
-			
 			// Add the builder body class.
-			body.addClass('fl-builder');
+			if ( ! body.hasClass( 'archive' ) && $( '.fl-builder-content-primary' ).length > 0 ) {
+				body.addClass('fl-builder');
+			}
 			
 			// Add the builder touch body class.
 			if(FLBuilderLayout._isTouch()) {
@@ -463,7 +565,7 @@
 		 */ 
 		_doModuleAnimation: function()
 		{
-			var module = $(this),
+			var module = $(this.element),
 				delay  = parseFloat(module.data('animation-delay'));
 			
 			if(!isNaN(delay) && delay > 0) {

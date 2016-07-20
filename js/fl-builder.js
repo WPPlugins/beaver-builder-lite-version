@@ -3372,7 +3372,7 @@
 			var handle 		= $( ui.helper ),
 				direction 	= '',
 				group		= handle.closest( '.fl-col-group' ),
-				cols 		= group.find( '.fl-col' ),
+				cols 		= group.find( '> .fl-col' ),
 				col 		= handle.closest( '.fl-col' ),
 				sibling 	= null,
 				availWidth  = 100,
@@ -5635,6 +5635,10 @@
 				boxHeight           = 0,
 				win                 = $(window),
 				winHeight           = win.height();
+				
+			if ( 'undefined' != typeof tinymce && 'undefined' != typeof tinymce.EditorManager.activeEditor ) {
+				tinymce.EditorManager.activeEditor.remove();
+			}
 			
 			lightbox._node.find('.fl-lightbox-content').html('<div class="fl-builder-lightbox-loading"></div>');
 			boxHeight = lightbox._node.find('.fl-lightbox').height();

@@ -141,7 +141,7 @@
 		close: function()
 		{
 			// Temporary fix for link editor not closing since WP 4.5
-			if ( typeof tinymce !== 'undefined' ) {
+			if ( 'undefined' != typeof tinymce && 'undefined' != typeof tinymce.EditorManager.activeEditor ) {
 				tinymce.EditorManager.activeEditor.hide();
 			}
 			

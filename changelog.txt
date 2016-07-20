@@ -1,3 +1,48 @@
+<h4>1.8.3 - 07/15/2016</h4>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a bug with asset cache not being cleared for content rendered via shortcode or the render_query method.</li>
+</ul>
+
+<h4>1.8.2 - 07/12/2016</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Beaver Builder theme cache is now cleared when the builder cache is cleared via Settings > Page Builder > Cache.</li>
+	<li>Added support for clearing the builder cache using WP-CLI (wp beaver clearcache).</li>
+	<li>Added support for white labeling the theme name in the At a Glance dashboard widget.</li>
+	<li>Added the option to choose a form or list for ActiveCampaign connections in the Subscribe Form module as forms trigger the autoresponder where lists do not.</li>
+	<li>Added support for option groups in the select field type.</li>
+	<li>Added an admin notice on the settings page alerting users when Beaver Builder can't write files.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed a bug with the layout of the Post Grid, Post Carousel, Content Slider, Post Slider and Testimonial modules when inserted into a Tabs or Accordion module via shortcode.</li>
+	<li>Fixed a bug with pagination in the Posts module when added via shortcode.</li>
+	<li>Fixed a bug with the responsive styling of the Heading module.</li>
+	<li>Fixed a bug with the Heading module and live preview.</li>
+	<li>Fixed a bug with the toggle behavior of button style options when the background color is not set.</li>
+	<li>Fixed a bug with white labeling not showing for the Beaver Builder theme in the network admin.</li>
+	<li>Fixed a bug with vertically centered columns horizontally centering content.</li>
+	<li>Fixed a bug with vertically centered columns preventing slideshows from showing.</li>
+	<li>Fixed a bug with Menu module styling of list items.</li>
+	<li>Fixed a bug with Menu module alignment not working on mobile.</li>
+	<li>Fixed a bug with builder content loaded via shortcode causing non-builder content to go full-width.</li>
+	<li>Fixed a bug with TinyMCE in nested settings forms on FireFox.</li>
+	<li>Fixed a bug with full height rows overlapping in IE11.</li>
+	<li>Fixed a bug with row video backgrounds not working when added via URL.</li>
+	<li>Fixed a bug with cache files not being created with the correct file permissions.</li>
+	<li>Fixed a bug with column border colors being rendered when none are set.</li>
+	<li>Fixed a bug with reversed column stacking not working on Safari.</li>
+	<li>Fixed a bug with column resizing and global rows.</li>
+	<li>Fixed a bug with delayed CSS loading when using the layout shortcode or render_query function.</li>
+	<li>Fixed a bug with CSS specificity when multiple Subscribe Form modules are on the same page.</li>
+	<li>Fixed a bug with the Campaign Monitor integration causing warnings in PHP7. </li>
+	<li>Fixed a bug with row text colors overriding text colors in the Number module.</li>
+	<li>Fixed a bug with the lightbox not working for Gallery modules inside of a Tabs module.</li>
+	<li>Fixed a bug with FontAwesome icons in the headings of Tabs modules converting to a plus icon when clicked.</li>
+	<li>Fixed a bug with audio players not going full width in the Accordion module.</li>
+</ul>
+
 <h4>1.8.1 - 06/15/2016</h4>
 <p><strong>Bug Fixes</strong></p>
 <ul>
