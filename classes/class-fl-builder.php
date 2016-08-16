@@ -299,9 +299,10 @@ final class FLBuilder {
 		$js_url  = plugins_url('/js/', FL_BUILDER_FILE);
 
 		// Register additional CSS
-		wp_register_style('fl-slideshow',           $css_url . 'fl-slideshow.css', array(), $ver);
+		wp_register_style('fl-slideshow',           $css_url . 'fl-slideshow.css', array('yui3'), $ver);
 		wp_register_style('jquery-bxslider',        $css_url . 'jquery.bxslider.css', array(), $ver);
 		wp_register_style('jquery-magnificpopup',   $css_url . 'jquery.magnificpopup.css', array(), $ver);
+		wp_register_style('yui3',           		$css_url . 'yui3.css', array(), $ver);
 		
 		// Register icon CDN CSS
 		wp_register_style('font-awesome',           'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css', array(), $ver);
@@ -319,14 +320,7 @@ final class FLBuilder {
 		wp_register_script('jquery-mosaicflow',     $js_url . 'jquery.mosaicflow.min.js', array('jquery'), $ver, true);
 		wp_register_script('jquery-waypoints',      $js_url . 'jquery.waypoints.min.js', array('jquery'), $ver, true);
 		wp_register_script('jquery-wookmark',       $js_url . 'jquery.wookmark.min.js', array('jquery'), $ver, true);
-		
-		// YUI 3 (Needed for the slideshow)
-		if(FLBuilderModel::is_ssl()) {
-			wp_register_script('yui3', 'https://yui-s.yahooapis.com/3.5.1/build/yui/yui-min.js', array(), '3.5.1', false);
-		}
-		else {
-			wp_register_script('yui3', 'http://yui.yahooapis.com/3.5.1/build/yui/yui-min.js', array(), '3.5.1', false);
-		}
+		wp_register_script('yui3',       			$js_url . 'yui3.js', array(), $ver, true);
 	}
 
 	/**
@@ -945,6 +939,7 @@ final class FLBuilder {
 			
 			// Do shortcodes here since letting the WP filter run can cause an infinite loop.
 			if ( apply_filters( 'fl_builder_render_shortcodes', true ) ) {
+				$content = apply_filters( 'fl_builder_before_render_shortcodes', $content );
 				$pattern = get_shortcode_regex();
 				$content = preg_replace_callback( "/$pattern/s", 'FLBuilder::double_escape_shortcodes', $content );
 				$content = do_shortcode( $content );
@@ -1960,7 +1955,7 @@ final class FLBuilder {
 		}
 		
 		// Custom Global CSS (included here for proper specificity)
-		if ( 'published' == $node_status ) {
+		if ( 'published' == $node_status && $include_global ) {
 			$css .= $global_settings->css;
 		}
 		

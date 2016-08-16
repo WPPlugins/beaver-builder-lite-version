@@ -32,14 +32,27 @@ class FLbuilder_WPCLI_Command extends WP_CLI_Command {
 		if ( class_exists( 'FLBuilderModel' ) ) {
 
 			if ( $network == true ) {
-				$blogs = wp_get_sites();
+
+				if ( function_exists( 'get_sites' ) ) {
+					$blogs = get_sites();
+				} else {
+					$blogs = wp_get_sites();
+				}
+
 				foreach ( $blogs as $keys => $blog ) {
-					$blog_id = $blogs[ $keys ]['blog_id'];
+
+					// Cast $blog as an array instead of WP_Site object
+					if ( is_object( $blog ) ) {
+						$blog = (array) $blog;
+					}
+
+					$blog_id = $blog['blog_id'];
 					switch_to_blog( $blog_id );
 					FLBuilderModel::delete_asset_cache_for_all_posts();
 					WP_CLI::success( "Cleared the page builder cache for blog " . get_option( 'home' ) );
 					restore_current_blog();
 				}
+
 			} else {
 				FLBuilderModel::delete_asset_cache_for_all_posts();
 				WP_CLI::success( "Cleared the page builder cache" );

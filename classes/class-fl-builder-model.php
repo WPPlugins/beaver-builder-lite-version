@@ -193,6 +193,11 @@ final class FLBuilderModel {
 
 			if(isset($_POST['fl_builder_data'])) {
 				
+				// Decode settings if our ModSecurity fix is enabled. 
+				if ( isset( $_POST['fl_builder_data']['settings'] ) ) {
+					$_POST['fl_builder_data']['settings'] = FLBuilderUtils::modsec_fix_decode( $_POST['fl_builder_data']['settings'] );
+				}
+				
 				$data = FLBuilderUtils::json_decode_deep( wp_unslash( $_POST['fl_builder_data'] ) );
 				
 				foreach($data as $key => $val) {

@@ -235,7 +235,8 @@
 		 */ 
 		_initClasses: function()
 		{
-			var body = $( 'body' );
+			var body = $( 'body' ),
+				ua   = navigator.userAgent;
 			
 			// Add the builder body class.
 			if ( ! body.hasClass( 'archive' ) && $( '.fl-builder-content-primary' ).length > 0 ) {
@@ -250,6 +251,11 @@
 			// Add the builder mobile body class.
 			if(FLBuilderLayout._isMobile()) {
 				body.addClass('fl-builder-mobile');
+			}
+			
+			// IE11 body class.
+			if ( ua.indexOf( 'Trident/7.0' ) > -1 && ua.indexOf( 'rv:11.0' ) > -1 ) {
+				body.addClass( 'fl-builder-ie-11' );
 			}
 		},
 		
@@ -731,11 +737,14 @@
 						callback();
 					}
 					
-					if ( history.pushState ) {
-						history.pushState( null, null, '#' + element.attr( 'id' ) );
-					}
-					else {
-						window.location.hash = element.attr( 'id' );
+					if ( undefined != element.attr( 'id' ) ) {
+						
+						if ( history.pushState ) {
+							history.pushState( null, null, '#' + element.attr( 'id' ) );
+						}
+						else {
+							window.location.hash = element.attr( 'id' );
+						}
 					}
 				} );
 			}

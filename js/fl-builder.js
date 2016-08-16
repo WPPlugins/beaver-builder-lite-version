@@ -3421,6 +3421,9 @@
 			// Close the builder panel and destroy overlay events.
 			FLBuilder._closePanel();
 			FLBuilder._destroyOverlayEvents();
+			
+			// Trigger the col-resize-start hook.
+			FLBuilder.triggerHook( 'col-resize-start' );
 		},
 		
 		/**
@@ -3467,6 +3470,9 @@
 			// Set the width attributes.
 			data.col.css( 'width', colRound + '%' );
 			data.sibling.css( 'width', siblingRound + '%' );
+			
+			// Trigger the col-resize-drag hook.
+			FLBuilder.triggerHook( 'col-resize-drag' );
 		},
 		
 		/**
@@ -3504,6 +3510,9 @@
 			
 			// Set the resizing flag to false with a timeout so other events get the right value.
 			setTimeout( function() { FLBuilder._colResizing = false; }, 50 );
+			
+			// Trigger the col-resize-stop hook.
+			FLBuilder.triggerHook( 'col-resize-stop' );
 		},
 		
 		/**
@@ -3540,6 +3549,9 @@
 				group_id	: group.data( 'node' ),
 				silent		: true
 			});
+			
+			// Trigger the col-reset-widths hook.
+			FLBuilder.triggerHook( 'col-reset-widths' );
 			
 			e.stopPropagation();
 		},
@@ -5970,13 +5982,15 @@
 		_updateEditorField: function()
 		{
 			var textarea  = $( this ),
+				field     = textarea.closest( '.fl-editor-field' ),
 				form      = textarea.closest( '.fl-builder-settings' ),
 				wrap      = textarea.closest( '.wp-editor-wrap' ),
 				id        = textarea.attr( 'id' ),
-				setting   = textarea.closest( '.fl-editor-field' ).attr( 'id' ),
+				setting   = field.attr( 'id' ),
 				editor    = typeof tinyMCE == 'undefined' ? false : tinyMCE.get( id ),
-				hidden    = textarea.siblings( 'textarea[name="' + setting + '"]' );
-			
+				hidden    = textarea.siblings( 'textarea[name="' + setting + '"]' ),
+				wpautop   = field.data( 'wpautop' );
+				
 			// Add a hidden textarea if we don't have one.
 			if ( 0 === hidden.length ) {
 				hidden = $( '<textarea name="' + setting + '"></textarea>' ).hide();
@@ -5984,15 +5998,7 @@
 			}
 			
 			// Save editor content.
-			if ( 'rich-text' == form.data( 'type' ) ) {
-				
-				if ( editor && wrap.hasClass( 'tmce-active' ) ) {
-					editor.save();
-				}
-				
-				hidden.val( textarea.val() );
-			}
-			else {
+			if ( wpautop ) {
 				
 				if ( editor && wrap.hasClass( 'tmce-active' ) ) {
 					hidden.val( editor.getContent() );
@@ -6003,6 +6009,14 @@
 				else {
 					hidden.val( textarea.val() );
 				}
+			}
+			else {
+				
+				if ( editor && wrap.hasClass( 'tmce-active' ) ) {
+					editor.save();
+				}
+				
+				hidden.val( textarea.val() );
 			}
 		},
 		
@@ -6112,6 +6126,11 @@
 			// Append the builder namespace to the action.
 			data.fl_action = data.action;
 			
+			// Prevent ModSecurity false positives if our fix is enabled. 
+			if ( 'undefined' != typeof data.settings ) {
+				data.settings = FLBuilder._ajaxModSecFix( data.settings );
+			}
+			
 			// Store the data in a single variable to avoid conflicts.
 			data = { fl_builder_data: data };
 			
@@ -6206,6 +6225,34 @@
 		hideAjaxLoader: function()
 		{
 			$( '.fl-builder-loading' ).hide();
+		},
+
+		/**
+		 * Base64 encode settings to prevent ModSecurity false 
+		 * positives if our fix is enabled.
+		 *
+		 * @since 1.8.4
+		 * @access private
+		 * @method _ajaxModSecFix
+		 */   
+		_ajaxModSecFix: function( settings )
+		{
+			var prop;
+			
+			if ( FLBuilderConfig.modSecFix && 'undefined' != typeof btoa ) {
+				
+				for ( prop in settings ) {
+					
+					if ( 'string' == typeof settings[ prop ] ) {
+						settings[ prop ] = btoa( settings[ prop ] );
+					}
+					else if( 'object' == typeof settings[ prop ] ) {
+						settings[ prop ] = FLBuilder._ajaxModSecFix( settings[ prop ] );
+					}
+				}
+			}
+			
+			return settings;
 		},
 		
 		/* Lightboxes

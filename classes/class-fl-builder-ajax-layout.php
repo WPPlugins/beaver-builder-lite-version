@@ -407,6 +407,7 @@ final class FLBuilderAJAXLayout {
 		
 		// Render shortcodes.
 		if ( apply_filters( 'fl_builder_render_shortcodes', true ) ) {
+			$html = apply_filters( 'fl_builder_before_render_shortcodes', $html );
 			ob_start();
 			echo do_shortcode( $html );
 			$html = ob_get_clean();

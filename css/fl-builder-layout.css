@@ -178,6 +178,11 @@
 	width: 100%;
 }
 
+/* Stupid IE Full Height Row Fixes */
+.fl-builder-ie-11 .fl-row-full-height .fl-row-content-wrap {
+	height: 1px;
+}
+
 .fl-builder-ie-11 .fl-row-full-height .fl-row-content {
 	flex: 0 0 auto;
 	flex-basis: 100%;
@@ -264,7 +269,7 @@
 /* Equal height align center */
 .fl-col-group-equal-height.fl-col-group-align-center .fl-col-content {
 	align-items: center;
-	justify-content: flex-start;
+	justify-content: center;
 	-webkit-align-items: center;
 	-webkit-box-align: center;
 	-webkit-box-pack: center;
