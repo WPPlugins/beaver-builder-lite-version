@@ -241,10 +241,10 @@
 			
 			// Content Class
 			if(this.type == 'row') {
-				contentClass = '> .fl-row-content-wrap';
+				contentClass = '.fl-row-content-wrap';
 			}
 			else {
-				contentClass = '> .fl-' + this.type + '-content';
+				contentClass = '.fl-' + this.type + '-content';
 			}
 			
 			// Class Names
