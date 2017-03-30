@@ -1,3 +1,56 @@
+<h4>1.9.5.1 - 3/21/2017</h4>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Rolled back change in 1.9.5 that fixed some photos not going full width on mobile. That was causing all photos to go full width on mobile even when not intended. We’ll revisit that fix in 1.10.</li>
+</ul>
+
+<h4>1.9.5 - 3/20/2017</h4>
+<p><strong>Enhancements</strong></p>
+<ul>
+	<li>Posts module pagination now works separately when multiple Posts modules are on a page.</li>
+	<li>Added support for WooCommerce Memberships.</li>
+	<li>Added support for setting a custom subject in the Contact Form and Subscribe Form modules.</li>
+	<li>Added JS config for overriding the offset of waypoint animations.</li>
+	<li>Added support for font-weights that have 'i' at the end of their value string.</li>
+	<li>Added fl_builder_editing_enabled filter.</li>
+	<li>Added fl_builder_module_details filter.</li>
+	<li>Added logic to prevent bad JS entered into the layout settings from breaking the builder.</li>
+	<li>Added post_class() call to the Posts module.</li>
+	<li>Update Google Fonts.</li>
+</ul>
+<p><strong>Changes</strong></p>
+<ul>
+	<li>Changed Video module embed field to a code editor.</li>
+	<li>Removed outline from the Accordion module when an item has focus.</li>
+</ul>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed content disappearing or being ordered incorrectly when dragging and dropping nested columns.</li>
+	<li>Fixed Posts module pagination not working when rendered via a shortcode.</li>
+	<li>Fixed module settings JS errors in Safari.</li>
+	<li>Fixed warning caused when DOING_AJAX is already defined.</li>
+	<li>Fixed Gravity Forms not showing in the Button module lightbox.</li>
+	<li>Fixed IE flexbox issues with full-height rows.</li>
+	<li>Fixed nested menu items not opening in the Menu module's accordion layout.</li>
+	<li>Fixed module export/import not working.</li>
+	<li>Fixed non-breaking space in the Number module.</li>
+	<li>Fixed content in nested columns not being exported to the default WordPress editor.</li>
+	<li>Fixed Posts Carousel and Posts Gallery icons always showing even when set not to display.</li>
+	<li>Fixed YouTube and Vimeo video backgrounds not filling the full width and height of a row.</li>
+	<li>Fixed photos not going full width on mobile devices.</li>
+	<li>Fixed pagination double slashes when using permalinks with no ending slash.</li>
+	<li>Fixed multiple translation issues.</li>
+	<li>Fixed photo fields showing incorrect selection when switching site to HTTPS.</li>
+	<li>Fixed layout settings css not applying when overriding/appending a user template.</li>
+	<li>Fixed validation errors with Map module.</li>
+	<li>Fixed conflict with WPEngine's PHP Compatibility plugin reporting a PHP7 warning.</li>
+	<li>Fixed ReCaptcha conflicts with other plugins.</li>
+	<li>Fixed linking to a specific tab in the Tabs module.</li>
+	<li>Fixed name being set to 0 in the Subscribe Form module when using ConvertKit.</li>
+	<li>Fixed PHP warning in the Gallery module when an image doesn't have an ID.</li>
+	<li>Fixed JavaScript error in FireFox.</li>
+</ul>
+
 <h4>1.9.4 - 01/18/2017</h4>
 <p><strong>Bug Fixes</strong></p>
 <ul>
