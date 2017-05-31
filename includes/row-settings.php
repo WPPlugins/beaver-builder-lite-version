@@ -68,6 +68,7 @@ FLBuilder::register_settings_form('row', array(
 							'options'       	=> array(
 								'top'          		=> __( 'Top', 'fl-builder' ),
 								'center'         	=> __( 'Center', 'fl-builder' ),
+								'bottom'         	=> __( 'Bottom', 'fl-builder' ),
 							),
 							'preview'         => array(
 								'type'            => 'none'
@@ -164,7 +165,8 @@ FLBuilder::register_settings_form('row', array(
 							'label'         => __('Photo', 'fl-builder'),
 							'preview'         => array(
 								'type'            => 'none'
-							)
+							),
+							'connections'	=> array( 'photo' )
 						),
 						'bg_repeat'     => array(
 							'type'          => 'select',
@@ -279,7 +281,8 @@ FLBuilder::register_settings_form('row', array(
 							'help'          => __('A video in the MP4 to use as the background of this row. Most modern browsers support this format.', 'fl-builder'),
 							'preview'         => array(
 								'type'            => 'refresh'
-							)
+							),
+							'connections'   => array( 'custom_field' )
 						),
 						'bg_video_url_webm'   => array(
 							'type'          => 'text',
@@ -287,7 +290,8 @@ FLBuilder::register_settings_form('row', array(
 							'help'          => __('A video in the WebM format to use as the background of this row. This format is required to support browsers such as FireFox and Opera.', 'fl-builder'),
 							'preview'         => array(
 								'type'            => 'refresh'
-							)
+							),
+							'connections'   => array( 'custom_field' )
 						),
 						'bg_video_service_url'   => array(
 							'type'          => 'text',
@@ -295,7 +299,8 @@ FLBuilder::register_settings_form('row', array(
 							'help'          => __('A video from Youtube or Vimeo to use as the background of this row. Most modern browsers support this format.', 'fl-builder'),
 							'preview'         => array(
 								'type'            => 'refresh'
-							)
+							),
+							'connections'   => array( 'custom_field' )
 						),
 						'bg_video_audio'	=> array(
 							'type'          	=> 'select',
@@ -315,7 +320,8 @@ FLBuilder::register_settings_form('row', array(
 							'help'          => __('A photo that will be displayed if the video fails to load.', 'fl-builder'),
 							'preview'         => array(
 								'type'            => 'refresh'
-							)
+							),
+							'connections'   => array( 'custom_field' )
 						)
 					)
 				),
@@ -348,7 +354,8 @@ FLBuilder::register_settings_form('row', array(
 							'label'         => __('Photos', 'fl-builder'),
 							'preview'         => array(
 								'type'            => 'none'
-							)
+							),
+							'connections'	=> array( 'multiple-photos' )
 						),
 						'ss_feed_url'   => array(
 							'type'          => 'text',
@@ -420,7 +427,8 @@ FLBuilder::register_settings_form('row', array(
 							'label'         => __('Photo', 'fl-builder'),
 							'preview'         => array(
 								'type'            => 'none'
-							)
+							),
+							'connections'	=> array( 'photo' )
 						),
 						'bg_parallax_speed' => array(
 							'type'          => 'select',
@@ -794,22 +802,22 @@ FLBuilder::register_settings_form('row', array(
 					)
 				),
 				'css_selectors' => array(
-					'title'         => __('CSS Selectors', 'fl-builder'),
+					'title'         => __('HTML Element', 'fl-builder'),
 					'fields'        => array(
 						'id'            => array(
 							'type'          => 'text',
 							'label'         => __('ID', 'fl-builder'),
 							'help'          => __( "A unique ID that will be applied to this row's HTML. Must start with a letter and only contain dashes, underscores, letters or numbers. No spaces.", 'fl-builder' ),
-							'preview'         => array(
-								'type'            => 'none'
+							'preview'       => array(
+								'type'          => 'none'
 							)
 						),
 						'class'         => array(
 							'type'          => 'text',
 							'label'         => __('Class', 'fl-builder'),
 							'help'          => __( "A class that will be applied to this row's HTML. Must start with a letter and only contain dashes, underscores, letters or numbers. Separate multiple classes with spaces.", 'fl-builder' ),
-							'preview'         => array(
-								'type'            => 'none'
+							'preview'       => array(
+								'type'          => 'none'
 							)
 						)
 					)

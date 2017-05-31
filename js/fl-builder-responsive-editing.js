@@ -18,16 +18,6 @@
 		_mode: 'default',
 		
 		/**
-		 * Cached references to fields that have logic run
-		 * on them when the preview is toggled.
-		 *
-		 * @since 1.9
-		 * @private
-		 * @property {Object} _fields
-		 */
-		_fields: {},
-		
-		/**
 		 * Refreshes the media queries for the responsive preview
 		 * if necessary.
 		 *
@@ -36,9 +26,21 @@
 		 */
 		refreshPreview: function()
 		{
-			if ( $( '.fl-responsive-preview' ).length ) {
-				FLBuilderForcedMediaQueries.update();
+			var width;
+			
+			if ( ! $( '.fl-responsive-preview' ).length || 'default' == this._mode ) {
+				return;
 			}
+			else if ( 'responsive' == this._mode ) {
+				width = FLBuilderConfig.global.responsive_breakpoint >= 320 ? 320 : FLBuilderConfig.global.responsive_breakpoint;
+				FLBuilderSimulateMediaQuery.update( width );
+			}
+			else if ( 'medium' == this._mode ) {
+				width = FLBuilderConfig.global.medium_breakpoint >= 769 ? 769 : FLBuilderConfig.global.medium_breakpoint;
+				FLBuilderSimulateMediaQuery.update( width );
+			}
+			
+			FLBuilder._resizeLayout();
 		},
 		
 		/**
@@ -51,6 +53,7 @@
 		_init: function()
 		{
 			this._bind();
+			this._initMediaQueries();
 		},
 		
 		/**
@@ -67,6 +70,32 @@
 			FLBuilder.addHook( 'settings-lightbox-closed', this._clearPreview );
 			
 			$( 'body' ).delegate( '.fl-field-responsive-toggle', 'click', this._settingToggleClicked );
+		},
+		
+		/**
+		 * Initializes faux media queries.
+		 *
+		 * @since 1.10
+		 * @access private
+		 * @method _initMediaQueries
+		 */
+		_initMediaQueries: function()
+		{
+			// Don't simulate media queries for stylesheets that match these paths.
+			FLBuilderSimulateMediaQuery.ignore( [
+				FLBuilderConfig.pluginUrl,
+				'fl-theme-builder',
+				'/wp-includes/',
+				'/wp-admin/'
+			] );
+			
+			// Reparse stylesheets that match these paths on each update.
+			FLBuilderSimulateMediaQuery.reparse( [
+				FLBuilderConfig.postId + '-layout-draft.css?',
+				FLBuilderConfig.postId + '-layout-draft-partial.css?',
+				FLBuilderConfig.postId + '-layout-preview.css?',
+				FLBuilderConfig.postId + '-layout-preview-partial.css?'
+			] );
 		},
 		
 		/**
@@ -115,16 +144,16 @@
 			if ( 'responsive' == mode ) {
 				width = FLBuilderConfig.global.responsive_breakpoint >= 320 ? 320 : FLBuilderConfig.global.responsive_breakpoint;
 				content.width( width );
-				FLBuilderForcedMediaQueries.update( width, callback );
+				FLBuilderSimulateMediaQuery.update( width, callback );
 			}
 			else if ( 'medium' == mode ) {
 				width = FLBuilderConfig.global.medium_breakpoint >= 769 ? 769 : FLBuilderConfig.global.medium_breakpoint;
 				content.width( width );
-				FLBuilderForcedMediaQueries.update( width, callback );
+				FLBuilderSimulateMediaQuery.update( width, callback );
 			}
 			else {
 				content.width( '' );
-				FLBuilderForcedMediaQueries.update( 10000, callback );
+				FLBuilderSimulateMediaQuery.update( null, callback );
 			}
 			
 			// Set the content background color.
@@ -295,8 +324,6 @@
 			
 			if ( Number( FLBuilderConfig.global.responsive_enabled ) ) {
 				
-				FLBuilderResponsiveEditing._fields = {};
-				
 				self._initFields( 'unit', 'input', 'keyup', self._spacingFieldKeyup, [
 					'margin_top',
 					'margin_bottom',
@@ -322,6 +349,7 @@
 		 * @access private
 		 * @method _initFields
 		 * @param {String} type
+		 * @param {String} selector
 		 * @param {String} event
 		 * @param {Function} callback
 		 * @param {Array} names
@@ -332,12 +360,7 @@
 				fields = form.find( '.fl-field' ).has( '.fl-field-responsive-setting' ),
 				field  = null,
 				name   = null,
-				i      = 0,
-				j      = 0;
-				
-			if ( 'object' != typeof this._fields[ type ] ) {
-				this._fields[ type ] = {};
-			}
+				i      = 0;
 				
 			for ( ; i < fields.length; i++ ) {
 				
@@ -354,18 +377,10 @@
 					continue;
 				}
 				
-				this._fields[ type ][ name ] = {
-					'default'    : field.find( '.fl-field-responsive-setting-default ' + selector ),
-					'medium'     : field.find( '.fl-field-responsive-setting-medium ' + selector ),
-					'responsive' : field.find( '.fl-field-responsive-setting-responsive ' + selector )
-				};
-				
-				for ( j in this._fields[ type ][ name ] ) {
-					this._fields[ type ][ name ][ j ].on( event, callback );
-				}
-				
-				this._fields[ type ][ name ][ 'default' ].trigger( event );
-				
+				field.find( '.fl-field-responsive-setting-default ' + selector ).on( event, callback );
+				field.find( '.fl-field-responsive-setting-medium ' + selector ).on( event, callback );
+				field.find( '.fl-field-responsive-setting-responsive ' + selector ).on( event, callback );
+				field.find( '.fl-field-responsive-setting-default ' + selector ).trigger( event );
 				field.attr( 'data-responsive-init', 1 );
 			}
 		},
@@ -376,14 +391,19 @@
 		 * @since 1.9
 		 * @access private
 		 * @method _getFields
+		 * @param {Object} element
+		 * @param {String} selector
+		 * @return {Object}
 		 */
-		_getFields: function( element )
+		_getFields: function( element, selector )
 		{
-			var field  = $( element ).closest( '.fl-field' );
-				type   = field.attr( 'data-type' ),
-				name   = field.attr( 'id' ).replace( 'fl-field-', '' );
+			var field = $( element ).closest( '.fl-field' );
 				
-			return this._fields[ type ][ name ];
+			return {
+				'default'    : field.find( '.fl-field-responsive-setting-default ' + selector ),
+				'medium'     : field.find( '.fl-field-responsive-setting-medium ' + selector ),
+				'responsive' : field.find( '.fl-field-responsive-setting-responsive ' + selector )
+			};
 		},
 		
 		/**
@@ -395,7 +415,7 @@
 		 */
 		_textFieldKeyup: function()
 		{
-			var fields             = FLBuilderResponsiveEditing._getFields( this ),
+			var fields             = FLBuilderResponsiveEditing._getFields( this, 'input' ),
 				defaultPlaceholder = fields.default.attr( 'placeholder' ),
 				defaultValue       = fields.default.val(),
 				mediumValue        = fields.medium.val();
@@ -431,7 +451,7 @@
 				parts                = $( this ).closest( '.fl-field' ).attr( 'id' ).replace( 'fl-field-', '' ).split( '_' ),
 				field                = parts[0],
 				dimension            = parts[1],
-				fields               = FLBuilderResponsiveEditing._fields[ 'unit' ][ field + '_' + dimension ],
+				fields               = FLBuilderResponsiveEditing._getFields( this, 'input' ),
 				config               = FLBuilderConfig.global,
 				configPrefix         = null,
 				defaultVal           = fields.default.val(),
@@ -527,20 +547,24 @@
 		 */
 		_previewSpacingFields: function()
 		{
-			var mode   = FLBuilderResponsiveEditing._mode,
-				form   = $( '.fl-builder-settings' ),
-				fields = null,
-				prop   = null;
+			var mode = FLBuilderResponsiveEditing._mode,
+				form = $( '.fl-builder-settings' );
 			
 			if ( 0 === form.length || undefined === form.attr( 'data-node' ) ) {
 				return;
 			}
 			
-			fields = FLBuilderResponsiveEditing._fields[ 'unit' ];
+			form.find( '.fl-field' ).has( '.fl-field-responsive-setting' ).each( function() {
+				
+				var fields  = FLBuilderResponsiveEditing._getFields( this, 'input' ),
+					preview = fields.responsive.closest( '.fl-field' ).data( 'preview' );
+					
+				if ( 'refresh' == preview.type ) {
+					return;
+				}
 			
-			for ( prop in fields ) {
-				fields[ prop ][ mode ].trigger( 'keyup' );
-			}
+				fields[ mode ].trigger( 'keyup' );
+			} );
 		},
 	};
 	
