@@ -452,6 +452,7 @@
 			});
 
 			FLBuilder._lightbox.on('close', FLBuilder._lightboxClosed);
+			FLBuilder._lightbox.on('beforeClose', FLBuilder._destroyEditorFields);
 
 			/* Actions lightbox */
 			FLBuilder._actionsLightbox = new FLLightbox({
@@ -6220,6 +6221,8 @@
 					library : { type : 'image' },
 					multiple: false
 				});
+				FLBuilder._singlePhotoSelector.on( 'open', FLBuilder._wpmedia_reset_errors );
+				_wpPluploadSettings['defaults']['multipart_params']['fl_upload_type']= 'photo';
 			}
 		},
 
@@ -6521,6 +6524,9 @@
 					library : { type : 'video' },
 					multiple: false
 				});
+
+				FLBuilder._singleVideoSelector.on( 'open', FLBuilder._wpmedia_reset_errors );
+				_wpPluploadSettings['defaults']['multipart_params']['fl_upload_type']= 'video';
 			}
 
 			FLBuilder._singleVideoSelector.once('select', $.proxy(FLBuilder._singleVideoSelected, this));
@@ -7034,6 +7040,28 @@
 		},
 
 		/**
+		 * Destroy all TinyMCE editors.
+		 *
+		 * @since 1.10.8
+		 * @method _destroyEditorFields
+		 */
+		_destroyEditorFields: function()
+		{
+			var i, id;
+
+			if ( 'undefined' === typeof tinymce ) {
+				return;
+			}
+
+			for ( i = tinymce.editors.length - 1; i > -1 ; i-- ) {
+				tinyMCE.execCommand( 'mceRemoveEditor', true, tinymce.editors[ i ].id );
+			}
+
+			$( '.wplink-autocomplete' ).remove();
+			$( '.ui-helper-hidden-accessible' ).remove();
+		},
+
+		/**
 		 * Updates all editor fields within a settings form.
 		 *
 		 * @since 1.0
@@ -7460,8 +7488,18 @@
 		 */
 		_btoa: function(str) {
 			return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-	        return String.fromCharCode('0x' + p1);
-	    }));
+				return String.fromCharCode('0x' + p1);
+			}));
+		},
+
+		/**
+		 * @since 1.10.8
+		 * @access private
+		 * @method _wpmedia_reset_errors
+		 */
+		_wpmedia_reset_errors: function() {
+			$('.upload-error').remove()
+			$('.media-uploader-status' ).removeClass( 'errors' ).hide()
 		},
 
 		/* Lightboxes
