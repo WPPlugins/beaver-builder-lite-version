@@ -1,12 +1,11 @@
-/* Responsive Utilities
+/* Columns
 ------------------------------------------------------ */
 
-.fl-visible-desktop,
-.fl-visible-mobile {
-	display: none;
-}
-.fl-visible-desktop-medium,
-.fl-visible-medium,
-.fl-visible-medium-mobile {
-	display: block;
+/* Reversed Responsive Stacking */
+.fl-col-group.fl-col-group-medium-reversed {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-wrap: wrap-reverse;
+	flex-wrap: wrap-reverse;
+	flex-direction: row-reverse;
 }

@@ -1,16 +1,3 @@
-/* Responsive Utilities
------------------------------------------------------- */
-
-.fl-visible-desktop,
-.fl-visible-desktop-medium,
-.fl-visible-medium {
-	display: none;
-}
-.fl-visible-medium-mobile,
-.fl-visible-mobile {
-	display: block;
-}
-
 /* Rows
 ------------------------------------------------------ */
 
@@ -20,6 +7,39 @@
 .fl-row-bg-parallax .fl-row-content-wrap {
 	background-attachment: scroll !important;
 	background-position: center center !important;
+}
+
+/* Column Groups
+------------------------------------------------------ */
+
+/* Equal Heights */
+.fl-col-group.fl-col-group-equal-height {
+	display: block;
+}
+.fl-col-group.fl-col-group-equal-height.fl-col-group-custom-width {
+	display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+}
+
+/* Reversed Responsive Stacking */
+.fl-col-group.fl-col-group-responsive-reversed {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-wrap: wrap-reverse;
+	flex-wrap: wrap-reverse;
+	flex-direction: row-reverse;
+}
+.fl-col-group.fl-col-group-responsive-reversed .fl-col:not(.fl-col-small-custom-width) {
+	flex-basis: 100%;
+	width: 100% !important;
+}
+.fl-col-group.fl-col-group-medium-reversed:not(.fl-col-group-responsive-reversed) {
+	display: unset;
+	display: unset;
+	-webkit-flex-wrap: unset;
+	flex-wrap: unset;
+	flex-direction: unset;
 }
 
 /* Columns
@@ -32,17 +52,8 @@
 	margin-right: auto;
 	width: auto !important;
 }
-.fl-col-small {
+.fl-col-small:not(.fl-col-small-full-width) {
 	max-width: 400px;
-}
-.fl-col-group.fl-col-group-equal-height {
-	display: block;
-}
-.fl-col-group.fl-col-group-equal-height.fl-col-group-custom-width {
-	display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
 }
 .fl-block-col-resize {
 	display:none;
