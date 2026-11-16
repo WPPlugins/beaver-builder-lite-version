@@ -15,6 +15,7 @@ final class FLBuilderShortcodes {
 	 */
 	static public function init() {
 		add_shortcode( 'fl_builder_insert_layout', 'FLBuilderShortcodes::insert_layout' );
+		add_shortcode( 'fl-safe', array( __CLASS__, 'safe_shortcode' ) );
 	}
 
 	/**
@@ -26,18 +27,23 @@ final class FLBuilderShortcodes {
 	 * @return string
 	 */
 	static public function insert_layout( $attrs ) {
-		$builder_active = in_the_loop() && FLBuilderModel::is_builder_active();
-		$post_type 		= isset( $attrs['type'] ) ? $attrs['type'] : get_post_types();
+		$builder_active = FLBuilderModel::is_builder_active();
+		$post_type      = isset( $attrs['type'] ) ? $attrs['type'] : get_post_types();
 		$site_id        = isset( $attrs['site'] ) ? absint( $attrs['site'] ) : null;
-		$args  	   		= array(
-			'post_type' 	 => $post_type,
+		/**
+		 * Whether to render layout CSS and JS assets inline within shortcode output.
+		 */
+		$inline_assets = apply_filters( 'fl_builder_render_assets_inline', false );
+		$args          = array(
+			'post_type'      => $post_type,
 			'posts_per_page' => -1,
+			'has_password'   => false,
 		);
 
 		// Build the args array.
 		if ( isset( $attrs['id'] ) ) {
 
-			$args['orderby'] = 'post__in';
+			$args['orderby']             = 'post__in';
 			$args['ignore_sticky_posts'] = true;
 
 			if ( is_numeric( $attrs['id'] ) ) {
@@ -45,10 +51,23 @@ final class FLBuilderShortcodes {
 			} else {
 				$args['post__in'] = explode( ',', $attrs['id'] );
 			}
-		} elseif ( isset( $attrs['slug'] ) ) {
+		} elseif ( isset( $attrs['slug'] ) && '' !== $attrs['slug'] ) {
 			$args['orderby'] = 'name';
-			$args['name'] 	 = $attrs['slug'];
+			$args['name']    = $attrs['slug'];
 		} else {
+			return;
+		}
+
+		/**
+		 * @see fl_builder_insert_layout_args
+		 */
+		$args = apply_filters( 'fl_builder_insert_layout_args', $args, $attrs );
+		/**
+		 * @see fl_builder_insert_layout_render
+		 */
+		$render = apply_filters( 'fl_builder_insert_layout_render', true, $attrs, $args );
+
+		if ( ! $render ) {
 			return;
 		}
 
@@ -58,14 +77,39 @@ final class FLBuilderShortcodes {
 		if ( $builder_active ) {
 			echo '<div class="fl-builder-shortcode-mask-wrap"><div class="fl-builder-shortcode-mask"></div>';
 		}
+		if ( ! $inline_assets ) {
+			add_filter( 'fl_builder_render_assets_inline', '__return_true' );
+		}
 
 		FLBuilder::render_query( $args, $site_id );
+		if ( ! $inline_assets ) {
+			add_filter( 'fl_builder_render_assets_inline', '__return_false' );
+		}
 
 		if ( $builder_active ) {
 			echo '</div>';
 		}
 
 		return ob_get_clean();
+	}
+
+	/**
+	 * Allow users to wrap code that breaks the builder in a shortcode.
+	 * @since 2.4.2
+	 */
+	static public function safe_shortcode( $atts, $content ) {
+		$atts = shortcode_atts( array(
+			'msg' => __( 'Content not rendered while builder is active', 'fl-builder' ),
+		), $atts, 'fl-safe' );
+
+		if ( $content ) {
+			if ( ! FLBuilderModel::is_builder_active() ) {
+				return do_shortcode( $content );
+			} else {
+				$refresh = '<script>jQuery(function(){window.FLBuilderConfig.shouldRefreshOnPublish=true;});</script>';
+				return esc_html( $atts['msg'] ) . $refresh;
+			}
+		}
 	}
 }
 

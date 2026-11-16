@@ -9,15 +9,184 @@
  */
 class FLBuilderImporter extends WP_Import {
 
+	// Display import page title
+	public function header() {
+		echo '<div class="wrap">';
+		echo '<h2>' . __( 'Import Beaver Builder Content', 'fl-builder' ) . '</h2>';
+	}
+
+	/**
+	 * Display introductory text and file upload form
+	 */
+	public function greet() {
+		echo '<div class="narrow">';
+		echo '<p>' . __( 'Howdy! Upload your WordPress eXtended RSS (WXR) file and we&#8217;ll import the posts, pages, comments, custom fields, categories, and tags into this site.', 'wordpress-importer' ) . '</p>';
+		echo '<p>' . __( 'Choose a WXR (.xml) file to upload, then click Upload file and import.', 'wordpress-importer' ) . '</p>';
+		wp_import_upload_form( 'admin.php?import=bb_import&amp;step=1' );
+		echo '</div>';
+	}
+
+	public function dispatch() {
+
+		add_filter( 'wp_import_post_meta', function ( $meta, $id, $post ) {
+			foreach ( $meta as $k => $data ) {
+				if ( '_fl_builder_data' === $data['key'] ) {
+					$meta[ $k ]['value'] = serialize( fl_maybe_fix_unserialize( $this->rewrite_urls( $data['value'] ) ) );
+				}
+			}
+			return $meta;
+		}, 10, 3);
+		parent::dispatch();
+	}
+
+	private function rewrite_urls( $data ) {
+		$rewrites = isset( $_REQUEST['rewrite_urls'] ) ? $_REQUEST['rewrite_urls'] : false;
+
+		if ( ! $rewrites ) {
+			return $data;
+		}
+		$old_url = $this->base_url;
+		$new_url = get_site_url();
+		$data    = str_replace( $old_url, $new_url, $data );
+		return $data;
+	}
+
 	/**
 	 * @since 1.8
 	 * @return array
 	 */
-	function parse( $file ) {
+	public function parse( $file ) {
+
+		if ( extension_loaded( 'xml' ) ) {
+			$parser = new FLBuilderImportParserXML();
+			$result = $parser->parse( $file );
+
+				// If SimpleXML succeeds or this is an invalid WXR file then return the results
+			if ( ! is_wp_error( $result ) ) {
+				return $result;
+			}
+		} else {
+			$result = new WP_Error( 'no_xml', __( 'The xml PHP extension is not installed.', 'fl-builder' ) );
+		}
+
+		// We have a malformed XML file, so display the error and fallthrough to regex
+		if ( is_wp_error( $result ) ) {
+			echo '<pre>';
+			if ( 'XML_parse_error' == $result->get_error_code() ) {
+				$error = $result->get_error_data();
+				echo $error[0] . ':' . $error[1] . ' ' . esc_html( $error[2] );
+			} else {
+				echo $result->get_error_message();
+			}
+			echo '</pre>';
+		}
+
+			$data = file_get_contents( $file );
+			$bad  = preg_match( '#[^\x00-\x7F]#', $data );
+		if ( $bad ) {
+				echo __( 'Some bad characters were found in the xml file', 'fl-builder' );
+		}
+			echo '</pre>';
+			echo '<p><strong>' . __( 'There was an error when reading this WXR file', 'fl-builder' ) . '</strong><br />';
+			echo '<p>' . __( 'Details are shown above. The importer will now try again with a different parser...', 'fl-builder' ) . '</p>';
 		$parser = new FLBuilderImportParserRegex();
 		return $parser->parse( $file );
 	}
 }
+
+// phpcs:ignore Generic.Files.OneObjectStructurePerFile.MultipleFound
+class FLBuilderImportParserXML extends WXR_Parser_XML {
+
+	public function tag_close( $parser, $tag ) {
+		switch ( $tag ) {
+			case 'wp:comment':
+				unset( $this->sub_data['key'], $this->sub_data['value'] ); // remove meta sub_data
+				if ( ! empty( $this->sub_data ) ) {
+					$this->data['comments'][] = $this->sub_data;
+				}
+				$this->sub_data = false;
+				break;
+			case 'wp:commentmeta':
+				$this->sub_data['commentmeta'][] = array(
+					'key'   => $this->sub_data['key'],
+					'value' => $this->sub_data['value'],
+				);
+				break;
+			case 'category':
+				if ( ! empty( $this->sub_data ) ) {
+					$this->sub_data['name'] = $this->cdata;
+					$this->data['terms'][]  = $this->sub_data;
+				}
+				$this->sub_data = false;
+				break;
+			case 'wp:postmeta':
+				if ( ! empty( $this->sub_data ) ) {
+					if ( stristr( $this->sub_data['key'], '_fl_builder_' ) ) {
+						/**
+						 * PCRE backtrack limit used when processing imported builder data.
+						 */
+						FLBuilderImporterDataFix::set_pcre_limit( apply_filters( 'fl_builder_importer_pcre', '23001337' ) );
+						if ( '_fl_builder_data_settings' == $this->sub_data['key'] || '_fl_builder_draft_settings' == $this->sub_data['key'] ) {
+							$data = FLBuilderImporterDataFix::run( $this->sub_data['value'], false );
+						} else {
+							$data = FLBuilderImporterDataFix::run( $this->sub_data['value'], true );
+							if ( ! $data && ( $data != $this->sub_data['value'] ) ) {
+								$data = $this->sub_data['value'];
+							}
+						}
+
+						if ( is_object( $data ) || is_array( $data ) ) {
+							$data = serialize( $data );
+						}
+						$this->sub_data['value'] = $data;
+					}
+					$this->data['postmeta'][] = $this->sub_data;
+				}
+				$this->sub_data = false;
+				break;
+			case 'item':
+				$this->posts[] = $this->data;
+				$this->data    = false;
+				break;
+			case 'wp:category':
+			case 'wp:tag':
+			case 'wp:term':
+				$n = substr( $tag, 3 );
+				array_push( $this->$n, $this->data );
+				$this->data = false;
+				break;
+			case 'wp:author':
+				if ( ! empty( $this->data['author_login'] ) ) {
+					$this->authors[ $this->data['author_login'] ] = $this->data;
+				}
+				$this->data = false;
+				break;
+			case 'wp:base_site_url':
+				$this->base_url = $this->cdata;
+				break;
+			case 'wp:wxr_version':
+				$this->wxr_version = $this->cdata;
+				break;
+			default:
+				if ( $this->in_sub_tag ) {
+					if ( false === $this->sub_data ) {
+						$this->sub_data = array();
+					}
+					$this->sub_data[ $this->in_sub_tag ] = ! empty( $this->cdata ) ? $this->cdata : '';
+					$this->in_sub_tag                    = false;
+				} elseif ( $this->in_tag ) {
+					if ( false === $this->data ) {
+						$this->data = array();
+					}
+					$this->data[ $this->in_tag ] = ! empty( $this->cdata ) ? $this->cdata : '';
+					$this->in_tag                = false;
+				}
+		}
+		$this->cdata         = false;
+		$this->base_blog_url = '';
+	}
+}
+
 
 /**
  * The Regex parser is the only parser we have found that
@@ -28,13 +197,15 @@ class FLBuilderImporter extends WP_Import {
  *
  * @since 1.8
  */
+// phpcs:ignore Generic.Files.OneObjectStructurePerFile.MultipleFound
 class FLBuilderImportParserRegex extends WXR_Parser_Regex {
 
 	/**
 	 * @since 1.8
 	 * @return array
 	 */
-	function parse( $file ) {
+	public function parse( $file ) {
+
 		// @codingStandardsIgnoreLine
 		$wxr_version = $in_post = false;
 
@@ -82,19 +253,21 @@ class FLBuilderImportParserRegex extends WXR_Parser_Regex {
 					continue;
 				}
 				if ( false !== strpos( $importline, '<item>' ) ) {
-					$post = '';
+					$post    = '';
 					$in_post = true;
 					continue;
 				}
 				if ( false !== strpos( $importline, '</item>' ) ) {
 					$in_post = false;
+
+					FLBuilderImporterDataFix::set_pcre_limit( apply_filters( 'fl_builder_importer_pcre', '23001337' ) );
 					$this->posts[] = $this->process_post( $post );
 					continue;
 				}
 				if ( $in_post ) {
 					$post .= $importline;
 				}
-			}// End while().
+			}
 
 			$this->fclose( $fp );
 
@@ -105,24 +278,33 @@ class FLBuilderImportParserRegex extends WXR_Parser_Regex {
 				}
 				foreach ( $post['postmeta'] as $postmeta_index => $postmeta ) {
 					if ( stristr( $postmeta['key'], '_fl_builder_' ) ) {
-						$this->posts[ $post_index ]['postmeta'][ $postmeta_index ]['value'] = FLBuilderImporterDataFix::run( $postmeta['value'] );
+
+						if ( '_fl_builder_data_settings' == $postmeta['key'] || '_fl_builder_draft_settings' == $postmeta['key'] ) {
+							$data = FLBuilderImporterDataFix::run( $postmeta['value'], false );
+						} else {
+							$data = FLBuilderImporterDataFix::run( $postmeta['value'], true );
+						}
+						if ( is_object( $data ) || is_array( $data ) ) {
+							$data = serialize( $data );
+						}
+						$this->posts[ $post_index ]['postmeta'][ $postmeta_index ]['value'] = $data;
 					}
 				}
 			}
-		}// End if().
+		}
 
 		if ( ! $wxr_version ) {
 			return new WP_Error( 'WXR_parse_error', __( 'This does not appear to be a WXR file, missing/invalid WXR version number', 'fl-builder' ) );
 		}
 
 		return array(
-			'authors' => $this->authors,
-			'posts' => $this->posts,
+			'authors'    => $this->authors,
+			'posts'      => $this->posts,
 			'categories' => $this->categories,
-			'tags' => $this->tags,
-			'terms' => $this->terms,
-			'base_url' => $this->base_url,
-			'version' => $wxr_version,
+			'tags'       => $this->tags,
+			'terms'      => $this->terms,
+			'base_url'   => $this->base_url,
+			'version'    => $wxr_version,
 		);
 	}
 }
@@ -134,18 +316,41 @@ class FLBuilderImportParserRegex extends WXR_Parser_Regex {
  *
  * @since 1.8
  */
+// phpcs:ignore Generic.Files.OneObjectStructurePerFile.MultipleFound
 final class FLBuilderImporterDataFix {
 
 	/**
 	 * @since 1.8
 	 * @return string
 	 */
-	static public function run( $data ) {
+	static public function run( $data, $linebreaks = true ) {
 		// return if empty
 		if ( empty( $data ) ) {
 			return $data;
 		}
 
+		if ( is_object( $data ) || is_array( $data ) ) {
+			return $data;
+		}
+
+		if ( ! is_serialized( $data ) ) {
+			return $data;
+		}
+
+		if ( $linebreaks ) {
+			$data = preg_replace_callback('!([a-z-_0-9]+)";s:(\d+):"(.*?)";!', function ( $m ) {
+				// new replace logic.
+				if ( 'css' === $m[1] || 'js' === $m[1] || 'html' === $m[1] || 'bb_css_code' === $m[1] || 'bb_js_code' === $m[1] ) {
+					$m[3] = str_replace( '<br data-fl-fixed=true />', "\n", $m[3] );
+				}
+				$m[3] = str_replace( '<br data-fl-fixed=true />', '<br />', $m[3] );
+				return $m[1] . '";s:' . strlen( $m[3] ) . ':"' . $m[3] . '";';
+			}, self::sanitize_from_word( $data, $linebreaks ) );
+		} else {
+			$data = preg_replace_callback('!s:(\d+):"(.*?)";!', function ( $m ) {
+				return 's:' . strlen( $m[2] ) . ':"' . $m[2] . '";';
+			}, self::sanitize_from_word( $data, $linebreaks ) );
+		}
 		$data = maybe_unserialize( $data );
 
 		// return if maybe_unserialize() returns an object or array, this is good.
@@ -155,6 +360,44 @@ final class FLBuilderImporterDataFix {
 
 		return preg_replace_callback( '!s:(\d+):([\\\\]?"[\\\\]?"|[\\\\]?"((.*?)[^\\\\])[\\\\]?");!', 'FLBuilderImporterDataFix::regex_callback', $data );
 	}
+
+	/**
+	 * Remove quotes etc pasted from a certain word processor.
+	 */
+	public static function sanitize_from_word( $content, $linebreaks ) {
+		// Convert microsoft special characters
+		$replace = array(
+			'‘'  => "'",
+			'’'  => "'",
+			'”'  => '"',
+			'“'  => '"',
+			'–'  => '-',
+			'—'  => '-',
+			'…'  => '&#8230;',
+			"\n" => '<br data-fl-fixed=true />',
+		);
+
+		if ( ! $linebreaks ) {
+			unset( $replace["\n"] );
+		}
+
+		foreach ( $replace as $k => $v ) {
+			$content = str_replace( $k, $v, $content );
+		}
+
+		/**
+		 * Optional strip all illegal chars, defaults to false
+		 * @see fl_import_strip_all
+		 * @since 2.3
+		 */
+		if ( true === apply_filters( 'fl_import_strip_all', false ) ) {
+			// Remove any non-ascii character
+			$content = preg_replace( '/[^\x20-\x7E]*/', '', $content );
+		}
+
+		return $content;
+	}
+
 
 	/**
 	 * @since 1.8
@@ -177,12 +420,12 @@ final class FLBuilderImporterDataFix {
 	 */
 	static private function unescape_mysql( $value ) {
 		return str_replace( array( '\\\\', "\\0", "\\n", "\\r", '\Z', "\'", '\"' ),
-			array( '\\',   "\0",  "\n",  "\r",  "\x1a", "'", '"' ),
+			array( '\\', "\0", "\n", "\r", "\x1a", "'", '"' ),
 		$value );
 	}
 
 	/**
-	 * Fix strange behaviour if you have escaped quotes in your replacement.
+	 * Fix strange behavior if you have escaped quotes in your replacement.
 	 *
 	 * @since 1.8
 	 * @access private
@@ -190,5 +433,16 @@ final class FLBuilderImporterDataFix {
 	 */
 	static private function unescape_quotes( $value ) {
 		return str_replace( '\"', '"', $value );
+	}
+
+	/**
+	 * Try increasing PCRE limit to avoid failing of importing huge postmeta data.
+	 *
+	 * @since 1.10.9
+	 * @param string $value
+	 */
+	static public function set_pcre_limit( $value ) {
+		@ini_set( 'pcre.backtrack_limit', $value ); // @codingStandardsIgnoreLine
+		@ini_set( 'pcre.recursion_limit', $value ); // @codingStandardsIgnoreLine
 	}
 }

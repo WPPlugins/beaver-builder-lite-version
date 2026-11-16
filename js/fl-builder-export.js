@@ -66,7 +66,7 @@
 				$.post( ajaxurl, {
 					action: 'fl_builder_export_templates_data',
 					type: $( 'input[name=content]:checked' ).val(),
-					_wpnonce: window.fl_builder_export_nonce
+					_wpnonce: window.fl_builder_export_nonce.nonce
 				}, FLBuilderExport._templateDataLoaded );
 			}
 		},
@@ -88,6 +88,10 @@
 
 			for ( i in data ) {
 				posts.append( '<p><label><input type="checkbox" name="fl-builder-export-template[]" value="' + data[ i ].id + '" /> ' + data[ i ].title + '</label></p>' );
+			}
+
+			if ( data.length < 1 ) {
+				posts.append( '<span>Nothing Found</span>' );
 			}
 
 			spinner.removeClass( 'is-active' );

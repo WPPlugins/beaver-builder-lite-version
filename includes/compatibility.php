@@ -1,179 +1,18 @@
 <?php
-
 /**
- * Misc functions for compatibility with other plugins.
- */
-
-/**
- * Support for tinyPNG.
+ * Misc functions that are not in classes.
  *
- * Runs cropped photos stored in cache through tinyPNG.
+ * For 3rd party compatibility actions/filters see classes/class-fl-builder-compatibility.php
  */
-function fl_builder_tinypng_support( $cropped_path ) {
-
-	if ( class_exists( 'Tiny_Settings' ) ) {
-		try {
-			$settings = new Tiny_Settings();
-			$settings->xmlrpc_init();
-			$compressor = $settings->get_compressor();
-			if ( $compressor ) {
-				$compressor->compress_file( $cropped_path['path'], false, false );
-			}
-		} catch ( Exception $e ) {
-			//
-		}
-	}
-}
-add_action( 'fl_builder_photo_cropped', 'fl_builder_tinypng_support' );
 
 /**
- * Support for WooCommerce Memberships.
- *
- * Makes sure builder content isn't rendered for protected posts.
+ * Siteground cache captures shutdown and breaks our dynamic js loading.
+ * Siteground changed their plugin, this code has to run super early.
+ * @since 2.0.4.2
  */
-function fl_builder_wc_memberships_support() {
-
-	if ( function_exists( 'wc_memberships_is_post_content_restricted' ) ) {
-
-		function fl_builder_wc_memberships_maybe_render_content( $do_render, $post_id ) {
-
-			if ( wc_memberships_is_post_content_restricted() ) {
-
-				// check if user has access to restricted content
-				if ( ! current_user_can( 'wc_memberships_view_restricted_post_content', $post_id ) ) {
-					$do_render = false;
-				} // End if().
-				elseif ( ! current_user_can( 'wc_memberships_view_delayed_post_content', $post_id ) ) {
-					$do_render = false;
-				}
-			}
-
-			return $do_render;
-		}
-		add_filter( 'fl_builder_do_render_content', 'fl_builder_wc_memberships_maybe_render_content', 10, 2 );
-	}
+if ( isset( $_GET['fl_builder_load_settings_config'] ) ) {
+	add_filter( 'option_siteground_optimizer_fix_insecure_content', '__return_false' );
 }
-add_action( 'plugins_loaded', 'fl_builder_wc_memberships_support', 11 );
-
-/**
- * Support for Option Tree.
- *
- * Older versions of Option Tree don't declare the ot_get_media_post_ID
- * function on the frontend which is needed for the media uploader and
- * throws an error if it doesn't exist.
- */
-function fl_builder_option_tree_support() {
-
-	if ( ! function_exists( 'ot_get_media_post_ID' ) ) {
-
-		function ot_get_media_post_ID() { // @codingStandardsIgnoreLine
-
-			// Option ID
-			$option_id = 'ot_media_post_ID';
-
-			// Get the media post ID
-			$post_id = get_option( $option_id, false );
-
-			// Add $post_ID to the DB
-			if ( false === $post_id ) {
-
-				global $wpdb;
-
-				// Get the media post ID
-				$post_id = $wpdb->get_var( "SELECT ID FROM $wpdb->posts WHERE `post_title` = 'Media' AND `post_type` = 'option-tree' AND `post_status` = 'private'" );
-
-				// Add to the DB
-				add_option( $option_id, $post_id );
-			}
-
-			return $post_id;
-		}
-	}
-}
-add_action( 'after_setup_theme', 'fl_builder_option_tree_support' );
-
-/**
- * If FORCE_SSL_ADMIN is enabled but the frontend is not SSL fixes a CORS error when trying to upload a photo.
- * `add_filter( 'fl_admin_ssl_upload_fix', '__return_false' );` will disable.
- *
- * @since 1.10.2
- */
-function fl_admin_ssl_upload_fix() {
-	if ( defined( 'FORCE_SSL_ADMIN' ) && ! is_ssl() && is_admin() && defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-		if ( isset( $_POST['action'] ) && 'upload-attachment' === $_POST['action'] && true === apply_filters( 'fl_admin_ssl_upload_fix', true ) ) {
-			force_ssl_admin( false );
-		}
-	}
-}
-add_action( 'plugins_loaded', 'fl_admin_ssl_upload_fix', 11 );
-
-/**
- * Disable support Buddypress pages since it's causing conflicts with `the_content` filter
- *
- * @param bool $is_editable Wether the post is editable or not
- * @param $post The post to check from
- * @return bool
- */
-function fl_builder_bp_pages_support( $is_editable, $post = false ) {
-
-	// Frontend check
-	if ( ! is_admin() && class_exists( 'BuddyPress' ) && ! bp_is_blog_page() ) {
-		$is_editable = false;
-	}
-
-	// Admin rows action link check and applies to page list
-	if ( is_admin() && class_exists( 'BuddyPress' ) && $post && 'page' == $post->post_type ) {
-
-		$bp = buddypress();
-		if ( $bp->pages ) {
-			foreach ( $bp->pages as $page ) {
-				if ( $post->ID == $page->id ) {
-					$is_editable = false;
-					break;
-				}
-			}
-		}
-	}
-
-	return $is_editable;
-}
-add_filter( 'fl_builder_is_post_editable', 'fl_builder_bp_pages_support', 11, 2 );
-
-/**
- * There is an issue with Jetpack Photon and circle cropped photo module
- * returning the wrong image sizes from the bb cache folder.
- * This filter disables photon for circle cropped photo module images.
- */
-function fl_photo_photon_exception( $val, $src, $tag ) {
-
-	// Make sure its a bb cached image.
-	if ( false !== strpos( $src, 'bb-plugin/cache' ) ) {
-
-		// now make sure its a circle cropped image.
-		if ( false !== strpos( basename( $src ), '-circle' ) ) {
-			return apply_filters( 'fl_photo_photon_exception', true );
-		}
-	}
-	// return original val
-	return $val;
-}
-add_filter( 'jetpack_photon_skip_image', 'fl_photo_photon_exception', 10, 3 );
-
-/**
- * WordPress pre 4.5 we need to make sure that ui-core|widget|mouse are loaded before sortable.
- */
-function fl_before_sortable_enqueue_callback() {
-
-	if ( version_compare( get_bloginfo( 'version' ), '4.5', '<' ) ) {
-		wp_deregister_script( 'jquery-ui-widget' );
-		wp_deregister_script( 'jquery-ui-mouse' );
-		wp_deregister_script( 'jquery-ui-core' );
-		wp_enqueue_script( 'jquery-ui-core', site_url( '/wp-includes/js/jquery/ui/core.min.js' ), array( 'jquery' ), '1.8.12' );
-		wp_enqueue_script( 'jquery-ui-widget', site_url( '/wp-includes/js/jquery/ui/widget.min.js' ), array( 'jquery' ), '1.8.12' );
-		wp_enqueue_script( 'jquery-ui-mouse', site_url( '/wp-includes/js/jquery/ui/mouse.min.js' ), array( 'jquery' ), '1.8.12' );
-	}
-}
-add_action( 'fl_before_sortable_enqueue', 'fl_before_sortable_enqueue_callback' );
 
 /**
  * Try to unserialize data normally.
@@ -184,9 +23,9 @@ add_action( 'fl_before_sortable_enqueue', 'fl_before_sortable_enqueue_callback' 
  * @return array
  */
 function fl_maybe_fix_unserialize( $data ) {
-	// @codingStandardsIgnoreStart
-	$unserialized = @unserialize( $data );
-	// @codingStandardsIgnoreEnd
+
+	$unserialized = maybe_unserialize( $data );
+
 	if ( ! $unserialized ) {
 		$unserialized = unserialize( preg_replace_callback( '!s:(\d+):"(.*?)";!', 'fl_maybe_fix_unserialize_callback', $data ) );
 	}
@@ -198,53 +37,389 @@ function fl_maybe_fix_unserialize( $data ) {
  *
  * @since 1.10.6
  */
-function fl_maybe_fix_unserialize_callback( $match ) {
-	return ( strlen( $match[2] ) == $match[1] ) ? $match[0] : 's:' . strlen( $match[2] ) . ':"' . $match[2] . '";';
+function fl_maybe_fix_unserialize_callback( $matches ) {
+	return ( strlen( $matches[2] ) == $matches[1] ) ? $matches[0] : 's:' . strlen( $matches[2] ) . ':"' . $matches[2] . '";';
 }
 
 /**
- * Filter rendered module content and if safemode is active safely display a message.
- * @since 1.10.7
+ * Set sane settings for SSL
+ * @since 2.2.1
  */
-function fl_builder_render_module_content_filter( $contents, $module ) {
-	if ( isset( $_GET['safemode'] ) && FLBuilderModel::is_builder_active() ) {
-		return sprintf( '<h3>[%1$s] %2$s %3$s</h3>', __( 'SAFEMODE', 'fl-builder' ), $module->name, __( 'module', 'fl-builder' ) );
+function fl_set_curl_safe_opts( $handle ) {
+	curl_setopt( $handle, CURLOPT_SSL_VERIFYPEER, 1 );
+	curl_setopt( $handle, CURLOPT_SSL_VERIFYHOST, 2 );
+	curl_setopt( $handle, CURLOPT_CAINFO, ABSPATH . WPINC . '/certificates/ca-bundle.crt' );
+	return $handle;
+}
+
+/**
+ * Fix pagination on category archive layout.
+ * @since 2.2.4
+ */
+function fl_theme_builder_archive_post_grid( $layouts ) {
+	global $wp_the_query;
+
+	if ( ! $layouts || $layouts['query']->post_count <= 0 ) {
+		return;
+	}
+
+	$post_grid     = null;
+	$exclusions    = array();
+	$current_loop  = 0;
+	$current_paged = 1;
+	$nodes         = array();
+
+	if ( $wp_the_query->get( 'flpaged' ) ) {
+		global $wp;
+		$current_url = home_url( $wp->request );
+		$flpaged     = preg_match( '/paged-([0-9]{1,})\/?([0-9]{1,})/', $current_url, $matches );
+		if ( $flpaged ) {
+			$current_loop  = (int) $matches[1] > 1 ? (int) $matches[1] - 1 : 1;
+			$current_paged = (int) $matches[2];
+		}
+	} elseif ( $wp_the_query->get( 'paged' ) ) {
+		$current_paged = $wp_the_query->get( 'paged' );
+	}
+
+	foreach ( $layouts['query']->posts as $i => $post_id ) {
+		$exclusions = FLThemeBuilderRulesLocation::get_saved_exclusions( $post_id );
+		$exclude    = false;
+
+		if ( $layouts['object'] && in_array( $layouts['object'], $exclusions ) ) {
+			$exclude = true;
+		} elseif ( in_array( $layouts['location'], $exclusions ) ) {
+			$exclude = true;
+		} elseif ( in_array( 'general:archive', $exclusions ) ) {
+			$exclude = true;
+		}
+
+		if ( $exclude ) {
+			continue;
+		}
+
+		$nodes      = FLBuilderModel::get_layout_data( 'published', $post_id );
+		$post_grids = fl_ordered_post_grid( $nodes );
+
+		if ( empty( $nodes ) || empty( $post_grids ) || ! isset( $post_grids[ $current_loop ] ) ) {
+			continue;
+		}
+
+		FLBuilderLoop::$loop_counter = $current_loop;
+		$get_node                    = $nodes[ $post_grids[ $current_loop ] ];
+		$query_post_grid             = FLBuilderLoop::query( $get_node->settings );
+		FLBuilderLoop::$loop_counter = 0;
+
+		$post_grid['post_count']  = $query_post_grid->post_count;
+		$post_grid['page_exists'] = $wp_the_query->max_num_pages >= $current_paged || $query_post_grid->max_num_pages >= $current_paged;
+		break;
+	}
+
+	return $post_grid;
+}
+
+/**
+ * Helper function that queries the themer layouts in archive pages.
+ */
+function fl_theme_builder_archive_layouts( $query, $returns = '' ) {
+	if ( ! $query ) {
+		return;
+	}
+
+	if ( ! class_exists( 'FLThemeBuilder' ) ) {
+		return;
+	}
+
+	if ( is_admin() || ! $query->is_main_query() ) {
+		return;
+	}
+
+	if ( ! $query->is_archive && ! $query->is_home && ! $query->is_search ) {
+		return;
+	}
+
+	$queried_object = get_queried_object();
+	$object         = null;
+	$location       = null;
+	$layouts_data   = array();
+
+	if ( ! $queried_object && ! is_home() && ! is_search() && ! is_date() ) {
+		return;
+	}
+
+	if ( is_home() ) {
+		$location = 'archive:post';
+	} elseif ( is_author() ) {
+		$location = 'general:author';
+	} elseif ( is_date() ) {
+		$location = 'general:date';
+	} elseif ( is_search() ) {
+		$location = 'general:search';
+	} elseif ( is_category() ) {
+		$location = 'taxonomy:category';
+
+		if ( is_object( $queried_object ) ) {
+			$object = $location . ':' . $queried_object->term_id;
+		}
+	} elseif ( is_tag() ) {
+		$location = 'taxonomy:post_tag';
+
+		if ( is_object( $queried_object ) ) {
+			$object = $location . ':' . $queried_object->term_id;
+		}
+	} elseif ( is_tax() ) {
+		$location = 'taxonomy:' . get_query_var( 'taxonomy' );
+
+		if ( is_object( $queried_object ) ) {
+			$location = 'taxonomy:' . $queried_object->taxonomy;
+			$object   = $location . ':' . $queried_object->term_id;
+		}
+	} elseif ( is_post_type_archive() && is_object( $queried_object ) ) {
+		$location = 'archive:' . $queried_object->query_var;
 	} else {
-		return $contents;
+		return;
+	}
+
+	$args = array(
+		'post_type'   => 'fl-theme-layout',
+		'post_status' => 'publish',
+		'fields'      => 'ids',
+		'meta_query'  => array(
+			'relation' => 'OR',
+			array(
+				'key'     => '_fl_theme_builder_locations',
+				'value'   => '"general:site"',
+				'compare' => 'LIKE',
+			),
+			array(
+				'key'     => '_fl_theme_builder_locations',
+				'value'   => '"' . $location . '"',
+				'compare' => 'LIKE',
+			),
+		),
+	);
+
+	if ( is_archive() || is_home() || is_search() ) {
+		$args['meta_query'][] = array(
+			'key'     => '_fl_theme_builder_locations',
+			'value'   => '"general:archive"',
+			'compare' => 'LIKE',
+		);
+	}
+
+	if ( $object ) {
+		$args['meta_query'][] = array(
+			'key'     => '_fl_theme_builder_locations',
+			'value'   => '"' . $object . '"',
+			'compare' => 'LIKE',
+		);
+	}
+
+	$layouts_data = array(
+		'location' => $location,
+		'object'   => $object,
+		'query'    => new WP_Query( $args ),
+	);
+
+	if ( ! empty( $returns ) && isset( $layouts_data[ $returns ] ) ) {
+		return $layouts_data[ $returns ];
+	} else {
+		return $layouts_data;
 	}
 }
-
-add_filter( 'fl_builder_render_module_content', 'fl_builder_render_module_content_filter', 10, 2 );
 
 /**
- * Duplicate posts plugin fixes when cloning BB template.
- *
- * @since 1.10.8
- * @param int $meta_id The newly added meta ID
- * @param int $object_id ID of the object metadata is for.
- * @param string $meta_key Metadata key
- * @param string $meta_value Metadata value
- * @return void
+ * Get the ordered post-grid modules from the layout data.
  */
-function fl_builder_template_meta_add( $meta_id, $object_id, $meta_key, $meta_value ) {
-	global $pagenow;
+function fl_ordered_post_grid( $data ) {
+	$parent_nodes  = array();
+	$ordered_nodes = array();
 
-	if ( 'admin.php' != $pagenow ) {
-		return;
+	foreach ( $data as $node_id => $node ) {
+		if ( 'module' != $node->type ) {
+			continue;
+		}
+
+		if ( ! isset( $node->settings->data_source ) || ! isset( $node->settings->pagination ) ) {
+			continue;
+		}
+
+		if ( ! in_array( $node->settings->data_source, array( 'main_query', 'custom_query' ) ) ) {
+			continue;
+		}
+
+		$root_node = false;
+		$grid_node = $node;
+
+		// Traverse parent nodes.
+		while ( ! $root_node ) {
+			if ( ! empty( $grid_node->parent ) && isset( $data[ $grid_node->parent ] ) ) {
+				$parent = $data[ $grid_node->parent ];
+
+				if ( ! isset( $parent_nodes[ $parent->type ] ) || ! isset( $parent_nodes[ $parent->type ][ $parent->node ] ) ) {
+					$parent_nodes[ $parent->type ][ $parent->node ] = array(
+						'position' => $parent->position,
+						'node'     => array(
+							$node_id => array(
+								'position' => $node->position,
+							),
+						),
+					);
+				} elseif ( isset( $parent_nodes[ $parent->type ][ $parent->node ] )
+					&& ! isset( $parent_nodes[ $parent->type ][ $parent->node ]['node'][ $node_id ] ) ) {
+						$parent_nodes[ $parent->type ][ $parent->node ]['node'][ $node_id ] = array(
+							'position' => $node->position,
+						);
+				}
+
+				// New node to crawl the tree.
+				$grid_node = $parent;
+
+			} elseif ( empty( $grid_node->parent ) && 'row' == $grid_node->type ) {
+				$root_node = true;
+			} else {
+				break;
+			}
+		}
 	}
 
-	if ( ! isset( $_REQUEST['action'] ) || 'duplicate_post_save_as_new_post' != $_REQUEST['action'] ) {
-		return;
+	// Order nodes by position
+	foreach ( $parent_nodes as $type => $parent_node ) {
+		uasort($parent_node, function ( $a, $b ) {
+			return $a['position'] - $b['position'];
+		});
+
+		foreach ( $parent_node as $parent_id => $parent ) {
+			if ( ! isset( $parent['node'] ) ) {
+				continue;
+			}
+
+			// Order post grids
+			uasort($parent['node'], function ( $a, $b ) {
+				return $a['position'] - $b['position'];
+			});
+			$parent_node[ $parent_id ] = $parent;
+
+			// Prioritize row ordering
+			if ( 'row' == $type ) {
+				foreach ( $parent['node'] as $node_id => $node ) {
+					if ( ! in_array( $node_id, $ordered_nodes ) ) {
+						$ordered_nodes[] = $node_id;
+					}
+				}
+			}
+		}
 	}
 
-	$post_type = get_post_type( $object_id );
-	if ( 'fl-builder-template' != $post_type || '_fl_builder_template_id' != $meta_key ) {
-		return;
-	}
-
-	// Generate new template ID;
-	$template_id = FLBuilderModel::generate_node_id();
-
-	update_post_meta( $object_id, '_fl_builder_template_id', $template_id );
+	return $ordered_nodes;
 }
-add_action( 'added_post_meta', 'fl_builder_template_meta_add', 10, 4 );
+
+/**
+ * Fix canonical for singular layout with post-grid module pagination.
+ * @since 2.4
+ */
+function fl_theme_builder_has_post_grid() {
+	if ( ! class_exists( 'FLThemeBuilder' ) ) {
+		return false;
+	}
+
+	if ( ! FLThemeBuilder::has_layout() ) {
+		return false;
+	}
+
+	$layout_ids = array();
+
+	// Checks themer layout
+	$header = FLThemeBuilderLayoutData::get_current_page_layout_ids( 'header' );
+	if ( ! empty( $header ) ) {
+		$layout_ids[] = $header[0];
+	}
+	$single = FLThemeBuilderLayoutData::get_current_page_layout_ids( 'singular' );
+	if ( ! empty( $single ) ) {
+		$layout_ids[] = $single[0];
+	}
+	$footer = FLThemeBuilderLayoutData::get_current_page_layout_ids( 'footer' );
+	if ( ! empty( $footer ) ) {
+		$layout_ids[] = $footer[0];
+	}
+	$parts = FLThemeBuilderLayoutData::get_current_page_layout_ids( 'part' );
+	if ( ! empty( $parts ) ) {
+		$layout_ids = array_merge( $layout_ids, $parts );
+	}
+
+	if ( empty( $layout_ids ) ) {
+		return false;
+	}
+
+	foreach ( $layout_ids as $layout_id ) {
+		$data = FLBuilderModel::get_layout_data( 'published', $layout_id );
+
+		foreach ( $data as $node_id => $node ) {
+			if ( 'module' == $node->type && isset( $node->settings->type ) && ( 'post-grid' == $node->settings->type || 'loop' == $node->settings->type ) ) {
+				return true;
+			}
+
+			if ( ! empty( $node->global ) ) {
+				$global_layout = FLBuilderModel::get_layout_data( 'published', $node->global );
+
+				if ( ! empty( $global_layout ) ) {
+					foreach ( $global_layout as $global_node ) {
+						if ( 'module' == $global_node->type ) {
+							if ( ! empty( $global_node->slug ) && ( 'post-grid' == $global_node->slug || 'loop' == $global_node->slug ) ) {
+								return true;
+							}
+
+							if ( ! empty( $global_node->settings->type ) && ( 'post-grid' == $global_node->settings->type || 'loop' == $global_node->settings->type ) ) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Global Styles polyfill for LITE
+ */
+if ( ! class_exists( 'FLBuilderGlobalStyles' ) && defined( 'FL_BUILDER_LITE' ) && true === FL_BUILDER_LITE ) {
+	class FLBuilderGlobalStyles {
+		public static function get_settings() {
+			return (object) [
+				'colors'            => [],
+				'button_color'      => '',
+				'button_background' => '',
+			];
+		}
+		public static function get_theme_json_js_config() {
+			return [ 'color' => [ 'palette' => [] ] ];
+		}
+		public static function generate_global_colors_css() {
+			return '';
+		}
+	}
+}
+
+if ( ! function_exists( 'str_starts_with' ) ) {
+	/**
+	 * Polyfill for `str_starts_with()` function added in PHP 8.0.
+	 *
+	 * Performs a case-sensitive check indicating if
+	 * the haystack begins with needle.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @param string $haystack The string to search in.
+	 * @param string $needle   The substring to search for in the `$haystack`.
+	 * @return bool True if `$haystack` starts with `$needle`, otherwise false.
+	 */
+	function str_starts_with( $haystack, $needle ) {
+		if ( '' === $needle ) {
+			return true;
+		}
+
+		return 0 === strpos( $haystack, $needle );
+	}
+}

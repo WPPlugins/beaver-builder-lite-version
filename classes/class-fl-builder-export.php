@@ -16,6 +16,7 @@ final class FLBuilderExport {
 		add_action( 'export_filters', 'FLBuilderExport::filters' );
 		add_action( 'wp_ajax_fl_builder_export_templates_data', 'FLBuilderExport::templates_data' );
 		add_action( 'export_wp', 'FLBuilderExport::export' );
+		add_filter( 'wxr_export_skip_postmeta', 'FLBuilderExport::wxr_filter_postmeta', 10, 2 );
 	}
 
 	/**
@@ -31,10 +32,10 @@ final class FLBuilderExport {
 			return;
 		}
 
-		wp_enqueue_style( 'fl-builder-export', FL_BUILDER_URL . 'css/fl-builder-export.css', array(), FL_BUILDER_VERSION );
-		wp_enqueue_script( 'fl-builder-export', FL_BUILDER_URL . 'js/fl-builder-export.js', array(), FL_BUILDER_VERSION, true );
+		wp_enqueue_style( 'fl-builder-export', FLBuilder::plugin_url() . 'css/fl-builder-export.css', array(), FL_BUILDER_VERSION );
+		wp_enqueue_script( 'fl-builder-export', FLBuilder::plugin_url() . 'js/fl-builder-export.js', array(), FL_BUILDER_VERSION, true );
 
-		wp_localize_script( 'fl-builder-export', 'fl_builder_export_nonce', wp_create_nonce( 'fl_builder_export_nonce' ) );
+		wp_localize_script( 'fl-builder-export', 'fl_builder_export_nonce', array( 'nonce' => wp_create_nonce( 'fl_builder_export_nonce' ) ) );
 	}
 
 	/**
@@ -61,20 +62,46 @@ final class FLBuilderExport {
 		$type  = isset( $_POST['type'] ) ? sanitize_text_field( $_POST['type'] ) : 'fl-builder-template';
 		$data  = array();
 		$query = new WP_Query( array(
-			'post_type' 		=> $type,
-			'orderby' 			=> 'title',
-			'order' 			=> 'ASC',
-			'posts_per_page' 	=> '-1',
+			'post_type'      => $type,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'posts_per_page' => '-1',
 		) );
 
 		foreach ( $query->posts as $post ) {
+			$terms = get_the_terms( $post->ID, 'fl-builder-template-type' );
+			$meta  = get_post_meta( $post->ID );
+			if ( ! $terms ) {
+				$terms = array();
+			}
+
+			$type      = ( is_wp_error( $terms ) || 0 === count( $terms ) ) ? false : $terms[0]->slug;
+			$global    = isset( $meta['_fl_builder_template_global'] ) ? $meta['_fl_builder_template_global'][0] : false;
+			$component = isset( $meta['_fl_builder_template_dynamic_editing'] ) ? $meta['_fl_builder_template_dynamic_editing'][0] : false;
+
+			if ( ! $type ) {
+				$type = get_post_meta( $post->ID, '_fl_theme_layout_type', true );
+				if ( $type ) {
+					$type = sprintf( ' - %s', ucfirst( $type ) );
+				}
+			} else {
+				$type = sprintf( ' - %s %s', __( 'Saved', 'fl-builder' ), ucfirst( $type ) );
+			}
+
+			if ( $component ) {
+				$type .= sprintf( ' - %s', __( 'Component', 'fl-builder' ) );
+			}
+			if ( $global && ! $component ) {
+				$type .= sprintf( ' - %s', __( 'Global', 'fl-builder' ) );
+			}
+
 			$data[] = array(
-				'id'	=> $post->ID,
-				'title' => $post->post_title,
+				'id'    => $post->ID,
+				'title' => $post->post_title . $type,
 			);
 		}
 
-		echo json_encode( $data );
+		echo FLBuilderUtils::json_encode( $data );
 
 		die();
 	}
@@ -87,10 +114,19 @@ final class FLBuilderExport {
 	 * @return void
 	 */
 	static public function export( $args ) {
+		/**
+		 * Allowed types for export
+		 * @see fl_builder_export_allowed_post_types
+		 */
+		$allowed_types = apply_filters( 'fl_builder_export_allowed_post_types', array(
+			'fl-builder-template',
+			'fl-theme-layout',
+		) );
+
 		if ( ! current_user_can( 'export' ) ) {
 			return;
 		}
-		if ( ! in_array( $args['content'], array( 'fl-builder-template', 'fl-theme-layout' ) ) ) {
+		if ( ! in_array( $args['content'], $allowed_types, true ) ) {
 			return;
 		}
 		if ( ! isset( $_REQUEST['fl-builder-template-export-select'] ) ) {
@@ -108,6 +144,22 @@ final class FLBuilderExport {
 		fl_export_wp( $_REQUEST['fl-builder-export-template'] );
 
 		die();
+	}
+
+	/**
+	 *
+	 * @param bool   $return_me
+	 * @param string $meta_key
+	 * @return bool
+	 */
+	static public function wxr_filter_postmeta( $return_me, $meta_key ) {
+		if ( '_edit_lock' == $meta_key ) {
+			$return_me = true;
+		}
+		if ( false !== strpos( $meta_key, '_fl_builder_history' ) ) {
+			$return_me = true;
+		}
+		return $return_me;
 	}
 }
 

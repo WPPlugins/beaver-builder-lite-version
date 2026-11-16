@@ -8,6 +8,18 @@
 final class FLBuilderUpdate {
 
 	/**
+	 * Per site option recording the version whose update completed for that site.
+	 *
+	 * Deliberately not _fl_builder_version: that is the network gate, and before
+	 * 2.10.2.1 (#5138) a blog level value of it could exist as a leftover, which
+	 * would make a site that never migrated look done.
+	 *
+	 * @since 2.11
+	 * @var string
+	 */
+	const SITE_VERSION_OPTION = '_fl_builder_site_migrated_version';
+
+	/**
 	 * Initialize hooks.
 	 *
 	 * @since 1.8
@@ -15,6 +27,18 @@ final class FLBuilderUpdate {
 	 */
 	static public function init() {
 		add_action( 'init', __CLASS__ . '::maybe_run', 11 );
+		add_action( 'fl_site_url_changed', array( __CLASS__, 'maybe_reregister_license' ), 10, 2 );
+	}
+
+	public static function maybe_reregister_license( $current, $saved ) {
+		if ( ! class_exists( 'FLUpdater' ) ) {
+			return;
+		}
+		$license = FLUpdater::get_subscription_license();
+		if ( '' !== $license ) {
+			FLUpdater::save_subscription_license( '' );
+			FLUpdater::save_subscription_license( $license );
+		}
 	}
 
 	/**
@@ -36,6 +60,11 @@ final class FLBuilderUpdate {
 			return;
 		}
 
+		// Only run on the main site for multisite installs.
+		if ( is_multisite() && ! is_network_admin() ) {
+			return;
+		}
+
 		// Get the saved version.
 		$saved_version = get_site_option( '_fl_builder_version' );
 
@@ -43,8 +72,7 @@ final class FLBuilderUpdate {
 		if ( ! $saved_version ) {
 			update_site_option( '_fl_builder_version', FL_BUILDER_VERSION );
 			return;
-		} // End if().
-		elseif ( ! version_compare( $saved_version, FL_BUILDER_VERSION, '=' ) ) {
+		} elseif ( ! version_compare( $saved_version, FL_BUILDER_VERSION, '=' ) ) {
 
 			if ( is_multisite() ) {
 				self::run_multisite( $saved_version );
@@ -52,7 +80,17 @@ final class FLBuilderUpdate {
 				self::run( $saved_version );
 			}
 
+			/**
+			 * Fires after all builder asset caches have been cleared.
+			 */
+			do_action( 'fl_builder_cache_cleared' );
+
 			update_site_option( '_fl_builder_version', FL_BUILDER_VERSION );
+
+			update_site_option( '_fl_builder_update_info', array(
+				'from' => $saved_version,
+				'to'   => FL_BUILDER_VERSION,
+			) );
 		}
 	}
 
@@ -84,6 +122,35 @@ final class FLBuilderUpdate {
 			self::v_1_10();
 		}
 
+		// Update to 1.10 or greater.
+		if ( version_compare( $saved_version, '2.2.2.6', '<' ) ) {
+			self::v_2226();
+		}
+
+		if ( version_compare( $saved_version, '2.8', '<' ) ) {
+			self::v_28();
+		}
+
+		if ( version_compare( $saved_version, '2.8.1', '<' ) ) {
+			self::v_281();
+		}
+
+		if ( version_compare( $saved_version, '2.8.2', '<' ) ) {
+			self::v_282();
+		}
+
+		if ( version_compare( $saved_version, '2.10', '<' ) ) {
+			self::v_210();
+		}
+
+		if ( version_compare( $saved_version, '2.11', '<' ) ) {
+			self::v_211();
+		}
+
+		if ( version_compare( $saved_version, '2.11.2', '<' ) ) {
+			self::v_2112();
+		}
+
 		// Clear all asset cache.
 		FLBuilderModel::delete_asset_cache_for_all_posts();
 
@@ -99,7 +166,6 @@ final class FLBuilderUpdate {
 	 * @return void
 	 */
 	static private function run_multisite( $saved_version ) {
-		global $blog_id;
 		global $wpdb;
 
 		// Network update to 1.10 or greater.
@@ -107,8 +173,9 @@ final class FLBuilderUpdate {
 			self::v_1_10( true );
 		}
 
-		// Save the original blog id.
-		$original_blog_id = $blog_id;
+		if ( version_compare( $saved_version, '2.11.2', '<' ) ) {
+			self::v_2112( true );
+		}
 
 		// Get all blog ids.
 		$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
@@ -116,11 +183,28 @@ final class FLBuilderUpdate {
 		// Loop through the blog ids and run the update.
 		foreach ( $blog_ids as $id ) {
 			switch_to_blog( $id );
-			self::run( $saved_version );
-		}
 
-		// Revert to the original blog.
-		switch_to_blog( $original_blog_id );
+			if ( self::site_needs_update() ) {
+				self::run( $saved_version );
+
+				// Record progress per site so an interrupted request resumes here
+				// instead of restarting from the first site. See issue 5443.
+				update_option( self::SITE_VERSION_OPTION, FL_BUILDER_VERSION );
+			}
+
+			restore_current_blog();
+		}
+	}
+
+	/**
+	 * Whether the current site still needs this version's update to run.
+	 *
+	 * @since 2.11
+	 * @access private
+	 * @return bool
+	 */
+	static private function site_needs_update() {
+		return get_option( self::SITE_VERSION_OPTION ) !== FL_BUILDER_VERSION;
 	}
 
 	/**
@@ -181,13 +265,13 @@ final class FLBuilderUpdate {
 			$meta  = $wpdb->get_results( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = '_fl_builder_layout'" );
 
 			// Build the export object.
-			$data           = new StdClass();
-			$data->version  = FL_BUILDER_VERSION;
-			$data->nodes    = $nodes;
-			$data->meta     = $meta;
+			$data          = new StdClass();
+			$data->version = FL_BUILDER_VERSION;
+			$data->nodes   = $nodes;
+			$data->meta    = $meta;
 
 			// Save the backup.
-			file_put_contents( $cache_dir['path'] . 'backup.dat', serialize( $data ) );
+			fl_builder_filesystem()->file_put_contents( $cache_dir['path'] . 'backup.dat', serialize( $data ) );
 		}
 	}
 
@@ -242,7 +326,7 @@ final class FLBuilderUpdate {
 					update_post_meta( $meta->post_id, '_fl_builder_layout', $meta->meta_value );
 				}
 			}
-		}// End if().
+		}
 	}
 
 	/**
@@ -265,12 +349,12 @@ final class FLBuilderUpdate {
 			foreach ( $metas as $meta ) {
 
 				// Get the old layout nodes from the database.
-				$published  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %s WHERE layout = %s AND status = 'published'", $table, $meta->meta_value ) );
-				$draft      = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %s WHERE layout = %s AND status = 'draft'", $table, $meta->meta_value ) );
+				$published = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %s WHERE layout = %s AND status = 'published'", $table, $meta->meta_value ) );
+				$draft     = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %s WHERE layout = %s AND status = 'draft'", $table, $meta->meta_value ) );
 
 				// Convert the old nodes to new ones.
-				$published  = self::v_1_2_8_convert_nodes( $published );
-				$draft      = self::v_1_2_8_convert_nodes( $draft );
+				$published = self::v_1_2_8_convert_nodes( $published );
+				$draft     = self::v_1_2_8_convert_nodes( $draft );
 
 				// Add the new layout post meta.
 				update_post_meta( $meta->post_id, '_fl_builder_data', $published );
@@ -301,12 +385,12 @@ final class FLBuilderUpdate {
 			$js  = glob( $cache_dir['path'] . '*.js' );
 
 			if ( is_array( $css ) ) {
-				array_map( 'unlink', $css );
+				array_map( array( fl_builder_filesystem(), 'unlink' ), $css );
 			}
 			if ( is_array( $js ) ) {
-				array_map( 'unlink', $js );
+				array_map( array( fl_builder_filesystem(), 'unlink' ), $js );
 			}
-		}// End if().
+		}
 	}
 
 	/**
@@ -320,7 +404,7 @@ final class FLBuilderUpdate {
 		$settings = get_option( '_fl_builder_settings' );
 
 		if ( $settings && is_string( $settings ) ) {
-			update_option( '_fl_builder_settings', json_decode( $settings ) );
+			FLBuilderUtils::update_option( '_fl_builder_settings', json_decode( $settings ) );
 		}
 	}
 
@@ -345,7 +429,7 @@ final class FLBuilderUpdate {
 				$node->parent = null;
 			}
 
-			$node->settings = self::v_1_2_8_json_decode_settings( $node->settings );
+			$node->settings           = self::v_1_2_8_json_decode_settings( $node->settings );
 			$new_nodes[ $node->node ] = $node;
 		}
 
@@ -406,12 +490,11 @@ final class FLBuilderUpdate {
 	 */
 	static private function v_1_4_6() {
 		// Remove the old fl-builder uploads folder.
-		$filesystem  = FLBuilderUtils::get_filesystem();
-		$upload_dir  = wp_upload_dir();
-		$path        = trailingslashit( $upload_dir['basedir'] ) . 'fl-builder';
+		$upload_dir = wp_upload_dir( null, false );
+		$path       = trailingslashit( $upload_dir['basedir'] ) . 'fl-builder';
 
 		if ( file_exists( $path ) ) {
-			$filesystem->rmdir( $path, true );
+			fl_builder_filesystem()->rmdir( $path, true );
 		}
 	}
 
@@ -424,7 +507,7 @@ final class FLBuilderUpdate {
 	 */
 	static private function v_1_6_3() {
 		$posts = get_posts( array(
-			'post_type' 	 => 'fl-builder-template',
+			'post_type'      => 'fl-builder-template',
 			'posts_per_page' => '-1',
 		) );
 
@@ -447,7 +530,7 @@ final class FLBuilderUpdate {
 	 */
 	static private function v_1_10( $network = false ) {
 		if ( ! function_exists( 'get_editable_roles' ) ) {
-			require_once( ABSPATH . 'wp-admin/includes/user.php' );
+			require_once ABSPATH . 'wp-admin/includes/user.php';
 		}
 
 		$roles             = get_editable_roles();
@@ -478,7 +561,7 @@ final class FLBuilderUpdate {
 			if ( $network ) {
 				update_site_option( '_fl_builder_user_access', $user_access );
 			} else {
-				update_option( '_fl_builder_user_access', $user_access );
+				FLBuilderUtils::update_option( '_fl_builder_user_access', $user_access, true );
 			}
 		}
 	}
@@ -556,6 +639,140 @@ final class FLBuilderUpdate {
 		}
 
 		return $data;
+	}
+
+	static private function v_2226() {
+
+		if ( false !== get_option( 'fl_debug_mode', false ) ) {
+			$current = get_option( 'fl_debug_mode' );
+			set_transient( 'fl_debug_mode', $current, 172800 ); // 48 hours
+			delete_option( 'fl_debug_mode' );
+		}
+	}
+	/**
+	 * Add new modules added in 2.8
+	 */
+	static private function v_28() {
+
+		$enabled = FLBuilderModel::get_admin_settings_option( '_fl_builder_enabled_modules', true );
+		// Nothing to do
+		if ( ! $enabled ) {
+			return;
+		}
+		$enabled[] = 'box';
+		// add new lite modules
+		if ( true === FL_BUILDER_LITE ) {
+			$enabled[] = 'button-group';
+			$enabled[] = 'callout';
+			$enabled[] = 'cta';
+			$enabled[] = 'menu';
+			$enabled[] = 'numbers';
+		}
+		FLBuilderModel::update_admin_settings_option( '_fl_builder_enabled_modules', $enabled, true );
+	}
+
+	static private function v_281() {
+		if ( ! get_option( 'fl_beta_updates' ) ) {
+			add_option( 'fl_beta_updates', false );
+		}
+		if ( ! get_option( 'fl_alpha_updates' ) ) {
+			add_option( 'fl_alpha_updates', false );
+		}
+		if ( get_option( '_fl_builder_enabled_modules' ) ) {
+			$modules = get_option( '_fl_builder_enabled_modules' );
+			delete_option( '_fl_builder_enabled_modules' );
+			add_option( '_fl_builder_enabled_modules', $modules );
+		}
+	}
+
+	/**
+	 * Fix global colors duplicate id.
+	 */
+	static public function v_282() {
+
+		$settings = get_option( '_fl_builder_styles' );
+
+		if ( ! empty( $settings->colors ) ) {
+			$unique_ids = array();
+
+			foreach ( $settings->colors as $i => $color ) {
+				if ( ! empty( $color['uid'] ) ) {
+					if ( in_array( $color['uid'], $unique_ids ) ) {
+						$settings->colors[ $i ]['uid'] = substr( md5( mt_rand() ), 0, 9 );
+					} else {
+						$unique_ids[] = $color['uid'];
+					}
+				}
+			}
+		}
+		update_option( '_fl_builder_styles', $settings );
+	}
+
+	/**
+	 * Update to version 2.10.
+	 */
+	static public function v_210() {
+		$global_settings                        = FLBuilderModel::get_global_settings( false );
+		$global_settings->top_level_box_spacing = '0';
+
+		FLBuilderModel::save_global_settings( (array) $global_settings );
+	}
+
+	/**
+	 * Clear oultine settings for existing site to keep backward compatibility.
+	 */
+	static public function v_211() {
+		$settings = get_option( '_fl_builder_styles' );
+		if ( ! is_object( $settings ) ) {
+			return;
+		}
+		foreach ( [ 'outlines_color', 'outlines_style', 'outlines_width', 'outlines_offset' ] as $property ) {
+			$settings->{$property} = '';
+		}
+		update_option( '_fl_builder_styles', $settings );
+	}
+
+	/**
+	 * Prior to this fix, get_enabled_icons() treated a saved empty array the
+	 * same as "unset" and silently fell back to all icon sets enabled, while
+	 * ajax_icon_set_toggle() (unlike the module/post-type toggles) had no
+	 * guard against saving that empty state. So a site that unchecked every
+	 * icon set one at a time could have `_fl_builder_enabled_icons` stored as
+	 * `[]`, or as `[ 'font-awesome' ]` (the legacy key get_enabled_icons()
+	 * strips before its fallback check), masked as "all enabled" by the bug.
+	 * Now that empty is a valid, honored state, reset any such existing value
+	 * back to unset so it resolves to the real default instead of "every icon
+	 * disabled" the moment this ships. See issue 5604.
+	 *
+	 * Guarded by a one-shot marker rather than relying solely on the version
+	 * gate in run()/run_multisite(), so a future release numbering mistake
+	 * can't cause this to silently re-run and wipe a deliberately empty
+	 * selection a second time.
+	 *
+	 * @since 2.11.2
+	 */
+	static private function v_2112( $network = false ) {
+		$marker = '_fl_builder_2112_icons_migrated';
+
+		if ( $network ? get_site_option( $marker ) : get_option( $marker ) ) {
+			return;
+		}
+
+		$current = $network ? get_site_option( '_fl_builder_enabled_icons' ) : get_option( '_fl_builder_enabled_icons' );
+
+		if ( is_array( $current ) && empty( array_diff( $current, array( 'font-awesome' ) ) ) ) {
+			if ( $network ) {
+				delete_site_option( '_fl_builder_enabled_icons' );
+			} else {
+				delete_option( '_fl_builder_enabled_icons' );
+			}
+		}
+
+		if ( $network ) {
+			update_site_option( $marker, true );
+		} else {
+			update_option( $marker, true );
+		}
 	}
 }
 

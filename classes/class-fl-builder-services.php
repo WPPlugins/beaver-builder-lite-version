@@ -15,116 +15,143 @@ final class FLBuilderServices {
 	 * @var array $services_data
 	 */
 	static private $services_data = array(
-		'activecampaign'    => array(
-			'type'              => 'autoresponder',
-			'name'              => 'ActiveCampaign',
-			'class'             => 'FLBuilderServiceActiveCampaign',
+		'activecampaign'          => array(
+			'type'  => 'autoresponder',
+			'name'  => 'ActiveCampaign',
+			'class' => 'FLBuilderServiceActiveCampaign',
 		),
-		'aweber'            => array(
-			'type'              => 'autoresponder',
-			'name'              => 'AWeber',
-			'class'             => 'FLBuilderServiceAWeber',
+		'aweber'                  => array(
+			'type'  => 'autoresponder',
+			'name'  => 'AWeber',
+			'class' => 'FLBuilderServiceAWeber',
 		),
-		'campaign-monitor'  => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Campaign Monitor',
-			'class'             => 'FLBuilderServiceCampaignMonitor',
+		'campaign-monitor'        => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Campaign Monitor',
+			'class' => 'FLBuilderServiceCampaignMonitor',
 		),
-		'campayn'  			=> array(
-			'type'              => 'autoresponder',
-			'name'              => 'Campayn',
-			'class'             => 'FLBuilderServiceCampayn',
+		'campayn'                 => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Campayn',
+			'class' => 'FLBuilderServiceCampayn',
 		),
-		'constant-contact'  => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Constant Contact',
-			'class'             => 'FLBuilderServiceConstantContact',
+		'constant-contact'        => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Constant Contact (deprecated)',
+			'class' => 'FLBuilderServiceConstantContact',
 		),
-		'convertkit'  		=> array(
-			'type'              => 'autoresponder',
-			'name'              => 'ConvertKit',
-			'class'             => 'FLBuilderServiceConvertKit',
+		'constant-contact-3'      => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Constant Contact',
+			'class' => 'FLBuilderServiceConstantContact3',
 		),
-		'drip'  			=> array(
-			'type'              => 'autoresponder',
-			'name'              => 'Drip',
-			'class'             => 'FLBuilderServiceDrip',
+		'convertkit'              => array(
+			'type'  => 'autoresponder',
+			'name'  => 'ConvertKit',
+			'class' => 'FLBuilderServiceConvertKit',
 		),
-		'email-address'     => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Email Address',
-			'class'             => 'FLBuilderServiceEmailAddress',
+		'drip'                    => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Drip',
+			'class' => 'FLBuilderServiceDrip',
 		),
-		'enormail'        	=> array(
-			'type'              => 'autoresponder',
-			'name'              => 'Enormail',
-			'class'             => 'FLBuilderServiceEnormail',
+		'email-address'           => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Email Address',
+			'class' => 'FLBuilderServiceEmailAddress',
 		),
-		'getresponse'       => array(
-			'type'              => 'autoresponder',
-			'name'              => 'GetResponse',
-			'class'             => 'FLBuilderServiceGetResponse',
+		'enormail'                => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Enormail',
+			'class' => 'FLBuilderServiceEnormail',
+		),
+		'getresponse'             => array(
+			'type'  => 'autoresponder',
+			'name'  => 'GetResponse',
+			'class' => 'FLBuilderServiceGetResponse',
 		),
 		'godaddy-email-marketing' => array(
-			'type'              => 'autoresponder',
-			'name'              => 'GoDaddy Email Marketing',
-			'class'             => 'FLBuilderServiceGoDaddyEmailMarketing',
+			'type'  => 'autoresponder',
+			'name'  => 'GoDaddy Email Marketing',
+			'class' => 'FLBuilderServiceGoDaddyEmailMarketing',
 		),
-		'hatchbuck'         => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Hatchbuck',
-			'class'             => 'FLBuilderServiceHatchbuck',
+
+		'groundhogg'              => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Groundhogg',
+			'class' => 'FLBuilderServiceGroundhogg',
 		),
-		'icontact'          => array(
-			'type'              => 'autoresponder',
-			'name'              => 'iContact',
-			'class'             => 'FLBuilderServiceIContact',
+		'hatchbuck'               => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Hatchbuck',
+			'class' => 'FLBuilderServiceHatchbuck',
 		),
-		'icontact-pro'          => array(
-			'type'              => 'autoresponder',
-			'name'              => 'iContact Pro',
-			'class'             => 'FLBuilderServiceIContactPro',
+		'icontact'                => array(
+			'type'  => 'autoresponder',
+			'name'  => 'iContact',
+			'class' => 'FLBuilderServiceIContact',
 		),
-		'infusionsoft'      => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Infusionsoft',
-			'class'             => 'FLBuilderServiceInfusionsoft',
+		'icontact-pro'            => array(
+			'type'  => 'autoresponder',
+			'name'  => 'iContact Pro',
+			'class' => 'FLBuilderServiceIContactPro',
 		),
-		'madmimi'           => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Mad Mimi',
-			'class'             => 'FLBuilderServiceMadMimi',
+		'infusionsoft'            => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Keap (Formerly InfusionSoft)',
+			'class' => 'FLBuilderServiceInfusionsoft',
 		),
-		'mailchimp'         => array(
-			'type'              => 'autoresponder',
-			'name'              => 'MailChimp',
-			'class'             => 'FLBuilderServiceMailChimp',
+		'madmimi'                 => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Mad Mimi',
+			'class' => 'FLBuilderServiceMadMimi',
 		),
-		'mailerlite'        => array(
-			'type'              => 'autoresponder',
-			'name'              => 'MailerLite',
-			'class'             => 'FLBuilderServiceMailerLite',
+		'mailchimp'               => array(
+			'type'  => 'autoresponder',
+			'name'  => 'MailChimp',
+			'class' => 'FLBuilderServiceMailChimp',
 		),
-		'mailpoet'          => array(
-			'type'              => 'autoresponder',
-			'name'              => 'MailPoet',
-			'class'             => 'FLBuilderServiceMailPoet',
+		'mailerlite'              => array(
+			'type'  => 'autoresponder',
+			'name'  => 'MailerLite',
+			'class' => 'FLBuilderServiceMailerLite',
 		),
-		'mailrelay'         => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Mailrelay',
-			'class'             => 'FLBuilderServiceMailrelay',
+		'mailjet'                 => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Mailjet',
+			'class' => 'FLBuilderServiceMailjet',
 		),
-		'sendinblue'        => array(
-			'type'              => 'autoresponder',
-			'name'              => 'SendinBlue',
-			'class'             => 'FLBuilderServiceSendinBlue',
+		'mailpoet'                => array(
+			'type'  => 'autoresponder',
+			'name'  => 'MailPoet',
+			'class' => 'FLBuilderServiceMailPoet',
 		),
-		'sendy'             => array(
-			'type'              => 'autoresponder',
-			'name'              => 'Sendy',
-			'class'             => 'FLBuilderServiceSendy',
-			'namespace'         => true,
+		'mailrelay'               => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Mailrelay',
+			'class' => 'FLBuilderServiceMailrelay',
+		),
+		'mautic'                  => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Mautic',
+			'class' => 'FLBuilderServiceMautic',
+		),
+		'ontraport'               => array(
+			'type'      => 'autoresponder',
+			'name'      => 'Ontraport',
+			'class'     => 'FLBuilderServiceOntraport',
+			'namespace' => true,
+		),
+		'sendinblue'              => array(
+			'type'  => 'autoresponder',
+			'name'  => 'Brevo ( Formerly SendinBlue )',
+			'class' => 'FLBuilderServiceSendinBlue',
+		),
+		'sendy'                   => array(
+			'type'      => 'autoresponder',
+			'name'      => 'Sendy',
+			'class'     => 'FLBuilderServiceSendy',
+			'namespace' => true,
 		),
 	);
 
@@ -138,25 +165,31 @@ final class FLBuilderServices {
 	 */
 	static public function get_services_data( $type = null ) {
 		$services = array();
+		/**
+		 * Array of email marketing service definitions available in the Subscribe Form module.
+		 */
+		$services_data = apply_filters( 'fl_builder_subscribe_form_services', self::$services_data );
 
 		// Return all services.
 		if ( ! $type ) {
-			$services = self::$services_data;
-		} // End if().
-		else {
+			$services = $services_data;
+		} else {
 
-			foreach ( self::$services_data as $key => $service ) {
+			foreach ( $services_data as $key => $service ) {
 				if ( $service['type'] == $type ) {
 					$services[ $key ] = $service;
 				}
 			}
 		}
 
-		foreach ( $services as $key => $service ) {
-			if ( isset( $service['namespace'] ) && ! version_compare( phpversion(), '5.3', '>=' ) ) {
-				unset( $services[ $key ] );
-			}
+		// Remove services that don't meet the requirements.
+		if ( isset( $services['mailpoet'] )
+			&& ! class_exists( 'WYSIJA' )
+			&& ( ! defined( 'MAILPOET_INITIALIZED' ) || ( defined( 'MAILPOET_INITIALIZED' ) && false === MAILPOET_INITIALIZED ) )
+			) {
+			unset( $services['mailpoet'] );
 		}
+
 		return $services;
 	}
 
@@ -178,7 +211,11 @@ final class FLBuilderServices {
 
 		// Make sure the service class is loaded.
 		if ( ! class_exists( $data['class'] ) ) {
-			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-service-' . $service . '.php';
+			if ( isset( $data['file'] ) && file_exists( $data['file'] ) ) {
+				require_once $data['file'];
+			} else {
+				require_once FL_BUILDER_DIR . 'classes/services/class-fl-builder-service-' . basename( $service ) . '.php';
+			}
 		}
 
 		return new $data['class']();
@@ -193,11 +230,12 @@ final class FLBuilderServices {
 	 * @return array The response array.
 	 */
 	static public function connect_service() {
-		$saved_services = FLBuilderModel::get_services();
-		$post_data      = FLBuilderModel::get_post_data();
-		$response       = array(
-			'error'         => false,
-			'html'          => '',
+		$saved_services  = FLBuilderModel::get_services();
+		$post_data       = FLBuilderModel::get_post_data();
+		$dynamic_options = isset( $post_data['dynamic_options'] ) ? $post_data['dynamic_options'] : null;
+		$response        = array(
+			'error' => false,
+			'html'  => '',
 		);
 
 		// Validate the service data.
@@ -234,7 +272,7 @@ final class FLBuilderServices {
 					$connection['data']
 				);
 
-				$response['html'] = self::render_account_settings( $service, $service_account );
+				$response['html'] = self::render_account_settings( $service, $service_account, $dynamic_options );
 			}
 		}
 
@@ -251,23 +289,24 @@ final class FLBuilderServices {
 	 * @return array The response array.
 	 */
 	static public function render_settings() {
-		$post_data          = FLBuilderModel::get_post_data();
-		$saved_services     = FLBuilderModel::get_services();
-		$module             = FLBuilderModel::get_module( $post_data['node_id'] );
-		$settings           = $module->settings;
-		$service            = $post_data['service'];
-		$response           = array(
-			'error'             => false,
-			'html'              => '',
+		$post_data      = FLBuilderModel::get_post_data();
+		$saved_services = FLBuilderModel::get_services();
+		$module         = FLBuilderModel::get_module( $post_data['node_id'] );
+		$settings       = $module->settings;
+		$service        = $post_data['service'];
+		$response       = array(
+			'error' => false,
+			'html'  => '',
 		);
+
+		$dynamic_options = isset( $post_data['dynamic_options'] ) ? $post_data['dynamic_options'] : null;
 
 		// Render the settings to connect a new account.
 		if ( isset( $post_data['add_new'] ) || ! isset( $saved_services[ $service ] ) ) {
-			$response['html'] = self::render_connect_settings( $service );
-		} // End if().
-		else {
-			$account = isset( $settings->service_account ) ? $settings->service_account : '';
-			$response['html'] = self::render_account_settings( $service, $account );
+			$response['html'] = self::render_connect_settings( $service, $dynamic_options );
+		} else {
+			$account          = isset( $settings->service_account ) ? $settings->service_account : '';
+			$response['html'] = self::render_account_settings( $service, $account, $dynamic_options );
 		}
 
 		// Return the response.
@@ -280,28 +319,28 @@ final class FLBuilderServices {
 	 * @since 1.5.4
 	 * @return string The settings markup.
 	 */
-	static public function render_connect_settings( $service ) {
+	static public function render_connect_settings( $service, $dynamic_options = null ) {
 		ob_start();
 
 		FLBuilder::render_settings_field( 'service_account', array(
-			'row_class'     => 'fl-builder-service-connect-row',
-			'class'         => 'fl-builder-service-connect-input',
-			'type'          => 'text',
-			'label'         => __( 'Account Name', 'fl-builder' ),
-			'help'          => __( 'Used to identify this connection within the accounts list and can be anything you like.', 'fl-builder' ),
-			'preview'       => array(
-				'type'          => 'none',
+			'row_class' => 'fl-builder-service-connect-row',
+			'class'     => 'fl-builder-service-connect-input',
+			'type'      => 'text',
+			'label'     => __( 'Account Name', 'fl-builder' ),
+			'help'      => __( 'Used to identify this connection within the accounts list and can be anything you like.', 'fl-builder' ),
+			'preview'   => array(
+				'type' => 'none',
 			),
-		));
+		), null, $dynamic_options );
 
 		$instance = self::get_service_instance( $service );
-		echo $instance->render_connect_settings();
+		echo $instance->render_connect_settings( $dynamic_options );
 
 		FLBuilder::render_settings_field( 'service_connect_button', array(
-			'row_class'     => 'fl-builder-service-connect-row',
-			'class'         => 'fl-builder-service-connect-button',
-			'type'          => 'button',
-			'label'         => __( 'Connect', 'fl-builder' ),
+			'row_class' => 'fl-builder-service-connect-row',
+			'class'     => 'fl-builder-service-connect-button',
+			'type'      => 'button',
+			'label'     => __( 'Connect', 'fl-builder' ),
 		));
 
 		return ob_get_clean();
@@ -313,16 +352,17 @@ final class FLBuilderServices {
 	 * @since 1.5.4
 	 * @param string $service The service id such as "mailchimp".
 	 * @param string $active The name of the active account, if any.
+	 * @param array $dynamic_options Selected fields for Dynamic Node, if any.
 	 * @return string The account settings markup.
 	 */
-	static public function render_account_settings( $service, $active = '' ) {
+	static public function render_account_settings( $service, $active = '', $dynamic_options = null ) {
 		ob_start();
 
-		$saved_services             = FLBuilderModel::get_services();
-		$settings                   = new stdClass();
-		$settings->service_account  = $active;
-		$options                    = array(
-			'' => __( 'Choose...', 'fl-builder' ),
+		$saved_services            = FLBuilderModel::get_services();
+		$settings                  = new stdClass();
+		$settings->service_account = $active;
+		$options                   = array(
+			'0' => __( 'Choose...', 'fl-builder' ),
 		);
 
 		// Build the account select options.
@@ -334,23 +374,23 @@ final class FLBuilderServices {
 
 		// Render the account select.
 		FLBuilder::render_settings_field( 'service_account', array(
-			'row_class'     => 'fl-builder-service-account-row',
-			'class'         => 'fl-builder-service-account-select',
-			'type'          => 'select',
-			'label'         => __( 'Account', 'fl-builder' ),
-			'options'       => $options,
-			'preview'       => array(
-				'type'          => 'none',
+			'row_class' => 'fl-builder-service-account-row',
+			'class'     => 'fl-builder-service-account-select',
+			'type'      => 'select',
+			'label'     => __( 'Account', 'fl-builder' ),
+			'options'   => $options,
+			'preview'   => array(
+				'type' => 'none',
 			),
-		), $settings);
+		), $settings, $dynamic_options );
 
 		// Render additional service fields if we have a saved account.
 		if ( ! empty( $active ) && isset( $saved_services[ $service ][ $active ] ) ) {
 
-			$post_data  = FLBuilderModel::get_post_data();
-			$module     = FLBuilderModel::get_module( $post_data['node_id'] );
-			$instance   = self::get_service_instance( $service );
-			$response   = $instance->render_fields( $active, $module->settings );
+			$post_data = FLBuilderModel::get_post_data();
+			$module    = FLBuilderModel::get_module( $post_data['node_id'] );
+			$instance  = self::get_service_instance( $service );
+			$response  = $instance->render_fields( $active, $module->settings );
 
 			if ( ! $response['error'] ) {
 				echo $response['html'];
@@ -369,10 +409,10 @@ final class FLBuilderServices {
 	 * @return array The response array.
 	 */
 	static public function render_fields() {
-		$post_data  = FLBuilderModel::get_post_data();
-		$module     = FLBuilderModel::get_module( $post_data['node_id'] );
-		$instance   = self::get_service_instance( $post_data['service'] );
-		$response   = $instance->render_fields( $post_data['account'], $module->settings );
+		$post_data = FLBuilderModel::get_post_data();
+		$module    = FLBuilderModel::get_module( $post_data['node_id'] );
+		$instance  = self::get_service_instance( $post_data['service'] );
+		$response  = $instance->render_fields( $post_data['account'], $module->settings );
 
 		return $response;
 	}

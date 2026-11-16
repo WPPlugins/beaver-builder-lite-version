@@ -6,7 +6,7 @@ if ( 'slideshow' == $settings->bg_type ) :
 
 	if ( ! empty( $source ) ) :
 
-?>
+		?>
 YUI({'logExclude': { 'yui': true } }).use('fl-slideshow', function(Y) {
 
 	if( null === Y.one('.fl-node-<?php echo $id; ?> .fl-bg-slideshow') ) {
@@ -16,10 +16,12 @@ YUI({'logExclude': { 'yui': true } }).use('fl-slideshow', function(Y) {
 	var oldSlideshow = Y.one('.fl-node-<?php echo $id; ?> .fl-bg-slideshow .fl-slideshow'),
 		newSlideshow = new Y.FL.Slideshow({
 			autoPlay            : true,
+			bgslideshow         : true,
 			crop                : true,
 			loadingImageEnabled : false,
 			randomize           : <?php echo $settings->ss_randomize; ?>,
 			responsiveThreshold : 0,
+			touchSupport        : false,
 			source              : [{<?php echo $source; ?>}],
 			speed               : <?php echo $settings->ss_speed * 1000; ?>,
 			stretchy            : true,
@@ -32,9 +34,11 @@ YUI({'logExclude': { 'yui': true } }).use('fl-slideshow', function(Y) {
 		oldSlideshow.remove(true);
 	}
 
-	newSlideshow.render('.fl-node-<?php echo $id; ?> .fl-bg-slideshow');
+	jQuery( '.fl-node-<?php echo $id; ?>' ).imagesLoaded( function(){
+		newSlideshow.render('.fl-node-<?php echo $id; ?> .fl-bg-slideshow');
+	} );
 });
-<?php
+		<?php
 
 	endif;
 

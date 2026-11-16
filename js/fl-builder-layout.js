@@ -29,6 +29,15 @@
 			// Init backgrounds.
 			FLBuilderLayout._initBackgrounds();
 
+			// Init buttons.
+			FLBuilderLayout._initButtons();
+
+			// Init row shape layer height.
+			FLBuilderLayout._initRowShapeLayerHeight();
+
+			// Init the new tab notice on links opening in a new tab.
+			FLBuilderLayout._initLinkNotices();
+
 			// Only init if the builder isn't active.
 			if ( 0 === $('.fl-builder-edit').length ) {
 
@@ -38,12 +47,15 @@
 				// Init the browser hash.
 				FLBuilderLayout._initHash();
 
-				// Init module animations.
-				FLBuilderLayout._initModuleAnimations();
-
 				// Init forms.
 				FLBuilderLayout._initForms();
+
+				FLBuilderLayout._reorderMenu();
 			}
+			else {
+				FLBuilderLayout._initNestedColsWidth();
+			}
+			$('body').removeClass( 'fl-no-js' );
 		},
 
 		/**
@@ -98,20 +110,17 @@
 		 * @since 1.8.1
 		 * @method reloadSlider
 		 */
-		reloadSlider: function( element )
+		reloadSlider: function( content )
 		{
-			var $element 	= 'undefined' == typeof element ? $( 'body' ) : $( element ),
-				bxContent	= $element.find('.bx-viewport .fl-post-carousel-wrapper'),
-				bxObject   	= null;
+			var $content = 'undefined' == typeof content ? $('body') : $(content);
 
-			if ( bxContent.length ) {
-				bxContent.each(function(){
-					bxObject = $(this).data( 'bxSlider');
-					if ( bxObject ) {
-						bxObject.reloadSlider();
-					}
-				})
-
+			// reload sliders.
+			if ($content.find('.bx-viewport > div').length > 0) {
+				$.each($content.find('.bx-viewport > div'), function (key, slider) {
+					setTimeout(function () {
+						$(slider).data('bxSlider').reloadSlider();
+					}, 100);
+				});
 			}
 		},
 
@@ -198,6 +207,23 @@
 		},
 
 		/**
+		 * Public method for reloading an embedded Google Map within the tabs or hidden element.
+		 *
+		 * @since 2.2
+		 * @method reloadGoogleMap
+		 */
+		reloadGoogleMap: function(element){
+			var $element  = 'undefined' == typeof element ? $( 'body' ) : $( element ),
+			    googleMap = $element.find( 'iframe[src*="google.com/maps"]' );
+
+			if ( googleMap.length ) {
+			    googleMap.attr( 'src', function(i, val) {
+			        return val;
+			    });
+			}
+		},
+
+		/**
 		 * Unbinds builder layout events.
 		 *
 		 * @since 1.0
@@ -254,8 +280,8 @@
 			var body = $( 'body' ),
 				ua   = navigator.userAgent;
 
-			// Add the builder body class.
-			if ( ! body.hasClass( 'archive' ) && $( '.fl-builder-content-primary' ).length > 0 ) {
+			// Add the builder body class (skip on block-only frontend to avoid layout break).
+			if ( ! body.hasClass( 'fl-builder-blocks-only' ) && ! body.hasClass( 'archive' ) && $( '.fl-builder-content-primary' ).length > 0 ) {
 				body.addClass('fl-builder');
 			}
 
@@ -267,6 +293,22 @@
 			// Add the builder mobile body class.
 			if(FLBuilderLayout._isMobile()) {
 				body.addClass('fl-builder-mobile');
+			}
+
+			if ( $(window).width() < FLBuilderLayoutConfig.breakpoints.small ) {
+				body.addClass( 'fl-builder-breakpoint-small' );
+			}
+
+			if ( $(window).width() > FLBuilderLayoutConfig.breakpoints.small && $(window).width() < FLBuilderLayoutConfig.breakpoints.medium ) {
+				body.addClass( 'fl-builder-breakpoint-medium' );
+			}
+
+			if ( $(window).width() > FLBuilderLayoutConfig.breakpoints.medium && $(window).width() < FLBuilderLayoutConfig.breakpoints.large ) {
+				body.addClass( 'fl-builder-breakpoint-large' );
+			}
+
+			if ( $(window).width() > FLBuilderLayoutConfig.breakpoints.large ) {
+				body.addClass( 'fl-builder-breakpoint-default' );
 			}
 
 			// IE11 body class.
@@ -291,6 +333,7 @@
 			if($('.fl-row-bg-parallax').length > 0 && !FLBuilderLayout._isMobile()) {
 				FLBuilderLayout._scrollParallaxBackgrounds();
 				FLBuilderLayout._initParallaxBackgrounds();
+				win.on('resize.fl-bg-parallax', FLBuilderLayout._initParallaxBackgrounds);
 				win.on('scroll.fl-bg-parallax', FLBuilderLayout._scrollParallaxBackgrounds);
 			}
 
@@ -298,8 +341,35 @@
 			if($('.fl-bg-video').length > 0) {
 				FLBuilderLayout._initBgVideos();
 				FLBuilderLayout._resizeBgVideos();
-				win.on('resize.fl-bg-video', FLBuilderLayout._resizeBgVideos);
+
+				// Ensure FLBuilderLayout._resizeBgVideos() is only called once on window resize.
+				var resizeBGTimer = null;
+				win.on('resize.fl-bg-video', function(e){
+					clearTimeout( resizeBGTimer );
+					resizeBGTimer = setTimeout(function() {
+						FLBuilderLayout._resizeBgVideos(e);
+					}, 100 );
+				});
 			}
+		},
+
+		/**
+		 * Initializes all buttons in a layout.
+		 *
+		 * @since 2.10
+		 * @access private
+		 * @method _initButtons
+		 */
+		_initButtons: function()
+		{
+			// Trigger click event on Enter or Space key press for deprecated button markup.
+			$('a.fl-button[role="button"]').on('keydown', function(event) {
+				if (event.key === 'Enter' || event.key === ' ') {
+					// Necessary to prevent the default behavior of the space key from scrolling the page
+					event.preventDefault();
+					$(this).trigger('click');
+				}
+			});
 		},
 
 		/**
@@ -325,22 +395,29 @@
 		{
 			var row     = $(this),
 				content = row.find('> .fl-row-content-wrap'),
-				src     = row.data('parallax-image'),
-				loaded  = row.data('parallax-loaded'),
-				img     = new Image();
+				winWidth = $(window).width(),
+				screenSize = '',
+				imageSrc = {
+					default: '',
+					medium: '',
+					responsive: '',
+				};
 
-			if(loaded) {
-				return;
+			imageSrc.default = row.data('parallax-image') || '';
+			imageSrc.medium = row.data('parallax-image-medium') || imageSrc.default;
+			imageSrc.responsive = row.data('parallax-image-responsive') || imageSrc.medium;
+
+			if (winWidth > FLBuilderLayoutConfig.breakpoints.medium) {
+				screenSize = 'default';
+			} else if (winWidth > FLBuilderLayoutConfig.breakpoints.small && winWidth <= FLBuilderLayoutConfig.breakpoints.medium ) {
+				screenSize = 'medium';
+			} else if (winWidth <= FLBuilderLayoutConfig.breakpoints.small) {
+				screenSize = 'responsive';
 			}
-			else if(typeof src != 'undefined') {
 
-				$(img).on('load', function() {
-					content.css('background-image', 'url(' + src + ')');
-					row.data('parallax-loaded', true);
-				});
+			content.css('background-image', 'url(' + imageSrc[screenSize] + ')');
+			row.data('current-image-loaded', screenSize );
 
-				img.src = src;
-			}
 		},
 
 		/**
@@ -366,14 +443,16 @@
 		 */
 		_scrollParallaxBackground: function()
 		{
-			var win     = $(window),
-				row     = $(this),
-				content = row.find('> .fl-row-content-wrap'),
-				speed   = row.data('parallax-speed'),
-				offset  = content.offset(),
-				yPos    = -((win.scrollTop() - offset.top) / speed);
+			var win     	  = $(window),
+				row     	  = $(this),
+				content 	  = row.find('> .fl-row-content-wrap'),
+				speed   	  = row.data('parallax-speed'),
+				offset  	  = content.offset(),
+				yPos		  = -((win.scrollTop() - offset.top) / speed),
+				initialOffset = ( row.data('parallax-offset') != null ) ? row.data('parallax-offset') : 0,
+				totalOffset   = yPos - initialOffset;
 
-			content.css('background-position', 'center ' + yPos + 'px');
+			content.css('background-position', 'center ' + totalOffset + 'px');
 		},
 
 		/**
@@ -397,60 +476,66 @@
 		 */
 		_initBgVideo: function()
 		{
-			var wrap 		= $( this ),
-				width  		= wrap.data( 'width' ),
-				height  	= wrap.data( 'height' ),
-				mp4  		= wrap.data( 'mp4' ),
-				youtube 	= wrap.data( 'youtube'),
-				vimeo 		= wrap.data( 'vimeo'),
-				mp4Type  	= wrap.data( 'mp4-type' ),
-				webm  		= wrap.data( 'webm' ),
-				webmType  	= wrap.data( 'webm-type' ),
-				fallback  	= wrap.data( 'fallback' ),
-				loaded  	= wrap.data( 'loaded' ),
+			var wrap   = $( this ),
+				width       = wrap.data( 'width' ),
+				height      = wrap.data( 'height' ),
+				mp4         = wrap.data( 'mp4' ),
+				youtube     = wrap.data( 'youtube'),
+				vimeo       = wrap.data( 'vimeo'),
+				mp4Type     = wrap.data( 'mp4-type' ),
+				webm        = wrap.data( 'webm' ),
+				webmType    = wrap.data( 'webm-type' ),
+				fallback    = wrap.data( 'fallback' ),
+				loaded      = wrap.data( 'loaded' ),
+				videoMobile = wrap.data( 'video-mobile' ),
+				playPauseButton = wrap.find('.fl-bg-video-play-pause-control'),
 				fallbackTag = '',
-				videoTag	= null,
-				mp4Tag    	= null,
-				webmTag    	= null;
+				videoTag    = null,
+				mp4Tag      = null,
+				webmTag     = null;
 
 			// Return if the video has been loaded for this row.
 			if ( loaded ) {
 				return;
 			}
-			// Append the video tag for non-mobile.
-			else if ( ! FLBuilderLayout._isMobile() ) {
 
-				videoTag  = $( '<video autoplay loop muted preload></video>' );
+			videoTag  = $( '<video autoplay loop muted playsinline></video>' );
 
-				// MP4 Source Tag
-				if ( 'undefined' != typeof mp4 ) {
+			/**
+			 * Add poster image (fallback image)
+			 */
+			if( 'undefined' != typeof fallback && '' != fallback ) {
+				videoTag.attr( 'poster', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' )
+				videoTag.css({
+					backgroundImage: 'url("' + fallback + '")',
+					backgroundColor: 'transparent',
+					backgroundRepeat: 'no-repeat',
+					backgroundSize: 'cover',
+					backgroundPosition: 'center center',
+				})
+			}
 
-					mp4Tag = $( '<source />' );
-					mp4Tag.attr( 'src', mp4 );
-					mp4Tag.attr( 'type', mp4Type );
+			// MP4 Source Tag
+			if ( 'undefined' != typeof mp4 && '' != mp4 ) {
 
-					if ( 'undefined' == typeof webm ) {
-						mp4Tag.on( 'error', FLBuilderLayout._videoBgSourceError );
-					}
+				mp4Tag = $( '<source />' );
+				mp4Tag.attr( 'src', mp4 );
+				mp4Tag.attr( 'type', mp4Type );
 
-					videoTag.append( mp4Tag );
-				}
+				videoTag.append( mp4Tag );
+			}
+			// WebM Source Tag
+			if ( 'undefined' != typeof webm && '' != webm ) {
 
-				// WebM Source Tag
-				if ( 'undefined' != typeof webm ) {
+				webmTag = $( '<source />' );
+				webmTag.attr( 'src', webm );
+				webmTag.attr( 'type', webmType );
 
-					webmTag = $( '<source />' );
-					webmTag.attr( 'src', webm );
-					webmTag.attr( 'type', webmType );
+				videoTag.append( webmTag );
+			}
 
-					if ( 'undefined' != typeof mp4 ) {
-						webmTag.on( 'error', FLBuilderLayout._videoBgSourceError );
-					}
-
-					videoTag.append( webmTag );
-				}
-
-				// Check what video player we are going to load in a row
+			// This is either desktop, or mobile is enabled.
+			if ( ! FLBuilderLayout._isMobile() || ( FLBuilderLayout._isMobile() && "yes" == videoMobile ) ) {
 				if ( 'undefined' != typeof youtube ) {
 					FLBuilderLayout._initYoutubeBgVideo.apply( this );
 				}
@@ -459,14 +544,34 @@
 				}
 				else {
 					wrap.append( videoTag );
+
+					if ( playPauseButton.length > 0 ) {
+						var video = videoTag[0];
+
+						playPauseButton.on( 'click', { video: video }, function(e) {
+							var video = e.data.video;
+
+							if ( video.paused ) {
+								video.play();
+							} else {
+								video.pause();
+							}
+						} );
+
+						$( video ).on( 'play playing', function () {
+							playPauseButton.removeClass( 'fa-play' ).addClass( 'fa-pause' );
+						} );
+						
+						$( video ).on( 'pause ended waiting', function () {
+							playPauseButton.removeClass( 'fa-pause' ).addClass( 'fa-play' );
+						} );
+					}
 				}
 			}
-			// Append the fallback tag for mobile.
-			else if ( '' !== fallback ) {
-				fallbackTag = $( '<div></div>' );
-				fallbackTag.addClass( 'fl-bg-video-fallback' );
-				fallbackTag.css( 'background-image', 'url(' + fallback + ')' );
-				wrap.append( fallbackTag );
+			else {
+				// if we are here, it means we are on mobile and NO is set so remove video src and use fallback
+				videoTag.attr('src', '')
+				wrap.append( videoTag );
 			}
 
 			// Mark this video as loaded.
@@ -482,14 +587,31 @@
 		 */
 		_initYoutubeBgVideo: function()
 		{
-			var playerWrap	= $(this),
-				videoId 	= playerWrap.data('video-id'),
+			var playerWrap  = $(this),
+				videoId     = playerWrap.data('video-id'),
 				videoPlayer = playerWrap.find('.fl-bg-video-player'),
 				enableAudio = playerWrap.data('enable-audio'),
-				player;
+				audioButton = playerWrap.find('.fl-bg-video-audio'),
+				playPauseButton = playerWrap.find('.fl-bg-video-play-pause-control'),
+				startTime   = 'undefined' !== typeof playerWrap.data('start') ? playerWrap.data('start') : 0,
+				startTime   = 'undefined' !== typeof playerWrap.data('t') && startTime === 0 ? playerWrap.data('t') : startTime,
+				endTime     = 'undefined' !== typeof playerWrap.data('end') ? playerWrap.data('end') : 0,
+				loop        = 'undefined' !== typeof playerWrap.data('loop') ? playerWrap.data('loop') : 1,
+				stateCount  = 0,
+				player,fallback_showing;
 
 			if ( videoId ) {
-
+				fallback = playerWrap.data('fallback') || false
+				if( fallback ) {
+					playerWrap.find('iframe').remove()
+					fallbackTag = $( '<div></div>' );
+					fallbackTag.addClass( 'fl-bg-video-fallback' );
+					fallbackTag.css( 'background-image', 'url(' + playerWrap.data('fallback') + ')' );
+					fallbackTag.css( 'background-size', 'cover' );
+					fallbackTag.css( 'transition', 'background-image 1s')
+					playerWrap.append( fallbackTag );
+					fallback_showing = true;
+				}
 				FLBuilderLayout._onYoutubeApiReady( function( YT ) {
 					setTimeout( function() {
 
@@ -497,10 +619,10 @@
 							videoId: videoId,
 							events: {
 								onReady: function(event) {
-									if ( "no" === enableAudio ) {
+									if ( "no" === enableAudio || FLBuilderLayout._isMobile() ) {
 										event.target.mute();
 									}
-									else if ("yes" === enableAudio && event.target.isMuted ) {
+									else if ( "yes" === enableAudio && event.target.isMuted ) {
 										event.target.unMute();
 									}
 
@@ -508,23 +630,100 @@
 									playerWrap.data('YTPlayer', player);
 									FLBuilderLayout._resizeYoutubeBgVideo.apply(playerWrap);
 
+									// Queue the video.
 									event.target.playVideo();
+
+									if ( audioButton.length > 0 && ! FLBuilderLayout._isMobile() ) {
+										audioButton.on( 'click', {button: audioButton, player: player}, FLBuilderLayout._toggleBgVideoAudio );
+									}
+
+									if ( playPauseButton.length > 0 ) {
+										playPauseButton.on( 'click', {player: player}, function(e) {
+											var player = e.data.player;
+			
+											if ( 1 === player.getPlayerState() ) {
+												player.pauseVideo();
+											} else {
+												player.playVideo();
+											}
+										});
+									}
 								},
 								onStateChange: function( event ) {
-									if ( event.data === YT.PlayerState.ENDED ) {
-										player.seekTo( 0 );
+
+									if ( event.data === 1 ) {
+										if ( fallback_showing ) {
+											$( '.fl-bg-video-fallback' ).css( 'background-image', 'url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7)' )
+										}
 									}
+									// Manual check if video is not playable in some browsers.
+									// StateChange order: [-1, 3, -1]
+									if ( stateCount < 4 ) {
+										stateCount++;
+									}
+
+									// Comply with the audio policy in some browsers like Chrome and Safari.
+									if ( stateCount > 1 && -1 === event.data && "yes" === enableAudio ) {
+										player.mute();
+										player.playVideo();
+										audioButton.show();
+									}
+
+									if ( event.data === YT.PlayerState.ENDED && 1 === loop ) {
+										if ( startTime > 0 ) {
+											player.seekTo( startTime );
+										}
+										else {
+											player.playVideo();
+										}
+									}
+
+									if ( event.data === YT.PlayerState.PLAYING ) {
+										playPauseButton.removeClass( 'fa-play' ).addClass( 'fa-pause' );
+									} else if ( event.data === YT.PlayerState.PAUSED ) {
+										playPauseButton.removeClass( 'fa-pause' ).addClass( 'fa-play' );
+									} else if ( event.data === YT.PlayerState.BUFFERING ) {
+										playPauseButton.removeClass( 'fa-play' ).addClass( 'fa-pause' );
+									} else if ( event.data === YT.PlayerState.CUED ) {
+										playPauseButton.removeClass( 'fa-pause' ).addClass( 'fa-play' );
+									} else if ( event.data === YT.PlayerState.ENDED ) {
+										playPauseButton.removeClass( 'fa-pause' ).addClass( 'fa-play' );
+									}
+								},
+								onError: function(event) {
+									console.info('YT Error: ' + event.data)
+									FLBuilderLayout._onErrorYoutubeVimeo(playerWrap)
 								}
 							},
 							playerVars: {
+								playsinline: FLBuilderLayout._isMobile() ? 1 : 0,
 								controls: 0,
 								showinfo: 0,
-								rel : 0
+								rel : 0,
+								start: startTime,
+								end: endTime,
 							}
 						} );
 					}, 1 );
 				} );
 			}
+		},
+
+		/**
+		 * On youtube or vimeo error show the fallback image if available.
+		 * @since 2.0.7
+		 */
+		_onErrorYoutubeVimeo: function(playerWrap) {
+
+			fallback = playerWrap.data('fallback') || false
+			if( ! fallback ) {
+				return false;
+			}
+			playerWrap.find('iframe').remove()
+			fallbackTag = $( '<div></div>' );
+			fallbackTag.addClass( 'fl-bg-video-fallback' );
+			fallbackTag.css( 'background-image', 'url(' + playerWrap.data('fallback') + ')' );
+			playerWrap.append( fallbackTag );
 		},
 
 		/**
@@ -557,28 +756,128 @@
 		{
 			var playerWrap	= $(this),
 				videoId 	= playerWrap.data('video-id'),
+				videoHash 	= playerWrap.data('video-hash'),
 				videoPlayer = playerWrap.find('.fl-bg-video-player'),
 				enableAudio = playerWrap.data('enable-audio'),
+				audioButton = playerWrap.find('.fl-bg-video-audio'),
+				playPauseButton = playerWrap.find('.fl-bg-video-play-pause-control'),
+				playerState = '',
 				player,
-				width = playerWrap.outerWidth();
+				width = playerWrap.outerWidth(),
+				ua    = navigator.userAgent;
 
 			if ( typeof Vimeo !== 'undefined' && videoId )	{
-				player = new Vimeo.Player(videoPlayer[0], {
-					id: videoId,
-			        loop: true,
-			        title: false,
-			        portrait: false
-				});
+				
+				const vimOptions = {
+					loop       : true,
+					title      : false,
+					portrait   : false,
+					background : true,
+					autopause  : false,
+					muted      : true,
+				};
 
+				if ( videoHash.length ) {
+					vimOptions.url = `https://player.vimeo.com/video/${ videoId }?h=${ videoHash }`;
+				} else {
+					vimOptions.id = videoId;
+				}
+
+				player = new Vimeo.Player(videoPlayer[0], vimOptions );
 				playerWrap.data('VMPlayer', player);
 				if ( "no" === enableAudio ) {
 					player.setVolume(0);
 				}
 				else if ("yes" === enableAudio ) {
-					player.setVolume(1);
+					// Chrome, Safari, Firefox have audio policy restrictions for autoplay videos.
+					if ( ua.indexOf("Safari") > -1 || ua.indexOf("Chrome") > -1 || ua.indexOf("Firefox") > -1 ) {
+						player.setVolume(0);
+						audioButton.show();
+					}
+					else {
+						player.setVolume(1);
+					}
 				}
 
-				player.play();
+				player.play().catch(function(error) {
+					FLBuilderLayout._onErrorYoutubeVimeo(playerWrap)
+				});
+
+				if ( audioButton.length > 0 ) {
+					audioButton.on( 'click', {button: audioButton, player: player}, FLBuilderLayout._toggleBgVideoAudio );
+				}
+
+				player.on( 'play', function() {
+					playerState = 'play';
+					playPauseButton.removeClass( 'fa-play' ).addClass( 'fa-pause' );
+				} );
+				player.on( 'pause', function() {
+					playerState = 'pause';
+					playPauseButton.removeClass( 'fa-pause' ).addClass( 'fa-play' );
+				} );
+				player.on( 'ended', function() {
+					playerState = 'ended';
+					playPauseButton.removeClass( 'fa-pause' ).addClass( 'fa-play' );
+				} );
+				player.on( 'bufferstart', function() {
+					playerState = 'bufferstart';
+					playPauseButton.removeClass( 'fa-play' ).addClass( 'fa-pause' );
+				} );
+
+				if ( playPauseButton.length > 0 ) {
+					playPauseButton.on( 'click', { player: player }, function( e ) {
+						var player = e.data.player;
+
+						if ( playerState === 'play' ) {
+							player.pause();
+						} else {
+							player.play();
+						}
+					} );
+				}
+			}
+		},
+
+		/**
+		 * Mute / unmute audio on row's video background.
+		 * It works for both Youtube and Vimeo.
+		 *
+		 * @since 2.1.3
+		 * @access private
+		 * @method _toggleBgVideoAudio
+		 * @param {Object} e Method arguments
+		 */
+		_toggleBgVideoAudio: function( e ) {
+			var player  = e.data.player,
+			    control = e.data.button.find('.fl-audio-control');
+
+			if ( control.hasClass( 'fa-volume-off' ) ) {
+				// Unmute
+				control
+					.removeClass( 'fa-volume-off' )
+					.addClass( 'fa-volume-up' );
+				e.data.button.find( '.fa-times' ).hide();
+
+				if ( 'function' === typeof player.unMute ) {
+					player.unMute();
+				}
+				else {
+					player.setVolume( 1 );
+				}
+			}
+			else {
+				// Mute
+				control
+					.removeClass( 'fa-volume-up' )
+					.addClass( 'fa-volume-off' );
+				e.data.button.find( '.fa-times' ).show();
+
+				if ( 'function' === typeof player.unMute ) {
+					player.mute();
+				}
+				else {
+					player.setVolume( 0 );
+				}
 			}
 		},
 
@@ -589,7 +888,8 @@
 		 * @since 1.6.3.3
 		 * @access private
 		 * @method _videoBgSourceError
-		 * @param {Object} e An event object.
+		 * @param {Object} e An event object
+		 * @deprecated 2.0.3
 		 */
 		_videoBgSourceError: function( e )
 		{
@@ -598,8 +898,12 @@
 				vid		    = wrap.find( 'video' ),
 				fallback  	= wrap.data( 'fallback' ),
 				fallbackTag = '';
+			source.remove();
 
-			if ( '' !== fallback ) {
+			if ( vid.find( 'source' ).length ) {
+				// Don't show the fallback if we still have other sources to check.
+				return;
+			} else if ( '' !== fallback ) {
 				fallbackTag = $( '<div></div>' );
 				fallbackTag.addClass( 'fl-bg-video-fallback' );
 				fallbackTag.css( 'background-image', 'url(' + fallback + ')' );
@@ -652,7 +956,13 @@
 				newHeight   = Math.round(vidHeight * wrapWidth/vidWidth),
 				newLeft     = 0,
 				newTop      = 0,
-				iframe 		= wrap.find('iframe');
+				iframe 		= wrap.find('iframe'),
+				isRowFullHeight = $(this).closest('.fl-row-bg-video').hasClass('fl-row-full-height'),
+				vidCSS          = {
+					top:       '50%',
+					left:      '50%',
+					transform: 'translate(-50%,-50%)',
+				};
 
 			if ( vid.length ) {
 				if(vidHeight === '' || typeof vidHeight === 'undefined' || vidWidth === '' || typeof vidWidth === 'undefined') {
@@ -665,25 +975,28 @@
 					// Try to set the actual video dimension on 'loadedmetadata' when using URL as video source
 					vid.on('loadedmetadata', FLBuilderLayout._resizeOnLoadedMeta);
 
+					return;
 				}
-				else {
 
-					if(newHeight < wrapHeight) {
-						newHeight   = wrapHeight;
-						newWidth    = Math.round(vidWidth * wrapHeight/vidHeight);
-						newLeft     = -((newWidth - wrapWidth)/2);
+				if ( ! isRowFullHeight ) {
+					if ( newHeight < wrapHeight ) {
+						newHeight = wrapHeight;
+						newWidth  = vidHeight ? Math.round(vidWidth * wrapHeight/vidHeight) : newWidth;
+						newLeft   = -((newWidth - wrapWidth) / 2);
 					}
 					else {
-						newTop      = -((newHeight - wrapHeight)/2);
+						newTop = -((newHeight - wrapHeight)/2);
 					}
-
-					vid.css({
-						'left'      : newLeft + 'px',
-						'top'       : newTop + 'px',
-						'height'    : newHeight + 'px',
-						'width'     : newWidth + 'px'
-					});
+					vidCSS = {
+						left   : newLeft + 'px',
+						top    : newTop + 'px',
+						height : newHeight + 'px',
+						width  : newWidth + 'px',
+					}
 				}
+
+				vid.css( vidCSS );
+
 			}
 			else if ( iframe.length ) {
 
@@ -709,6 +1022,8 @@
 				vidWidth 	= video[0].videoWidth,
 				vidHeight 	= video[0].videoHeight,
 				newHeight   = Math.round(vidHeight * wrapWidth/vidWidth),
+				newWidth    = wrapWidth,
+				newLeft     = 0,
 				newTop 		= 0;
 
 			if(newHeight < wrapHeight) {
@@ -761,57 +1076,6 @@
 		},
 
 		/**
-		 * Initializes module animations.
-		 *
-		 * @since 1.1.9
-		 * @access private
-		 * @method _initModuleAnimations
-		 */
-		_initModuleAnimations: function()
-		{
-			if(typeof jQuery.fn.waypoint !== 'undefined' && !FLBuilderLayout._isMobile()) {
-				$('.fl-animation').each( function() {
-					var node = $( this ),
-						nodeTop = node.offset().top,
-						winHeight = $( window ).height(),
-						bodyHeight = $( 'body' ).height(),
-						offset = '80%';
-
-					if ( bodyHeight - nodeTop < winHeight * 0.2 ) {
-						offset = '100%';
-					}
-
-					node.waypoint({
-						offset: offset,
-						handler: FLBuilderLayout._doModuleAnimation
-					});
-				} );
-			}
-		},
-
-		/**
-		 * Runs a module animation.
-		 *
-		 * @since 1.1.9
-		 * @access private
-		 * @method _doModuleAnimation
-		 */
-		_doModuleAnimation: function()
-		{
-			var module = 'undefined' == typeof this.element ? $(this) : $(this.element),
-				delay  = parseFloat(module.data('animation-delay'));
-
-			if(!isNaN(delay) && delay > 0) {
-				setTimeout(function(){
-					module.addClass('fl-animated');
-				}, delay * 1000);
-			}
-			else {
-				module.addClass('fl-animated');
-			}
-		},
-
-		/**
 		 * Opens a tab or accordion item if the browser hash is set
 		 * to the ID of one on the page.
 		 *
@@ -842,28 +1106,50 @@
 							}, 100 );
 						}
 						if ( element.hasClass( 'fl-tabs-panel' ) ) {
-
 							setTimeout( function() {
-
 								tabs 			= element.closest( '.fl-tabs' );
 								responsiveLabel = element.find( '.fl-tabs-panel-label' );
 								tabIndex 		= responsiveLabel.data( 'index' );
 								label 			= tabs.find( '.fl-tabs-labels .fl-tabs-label[data-index=' + tabIndex + ']' );
 
-								if ( responsiveLabel.is( ':visible' ) ) {
-									responsiveLabel.trigger( 'click' );
-								}
-								else {
-									label[0].click();
-									FLBuilderLayout._scrollToElement( element );
-								}
-
+								label[0].click();
+								FLBuilderLayout._scrollToElement(element);
 							}, 100 );
 						}
 					}
 				}
 				catch( e ) {}
 			}
+		},
+
+		/**
+		 * Adds a visually-hidden "(opens in new tab)" notice to links
+		 * inside a builder layout that target a new tab, and removes it
+		 * from ones that don't. Runs on the live DOM only, across every
+		 * module, so the notice is never part of any saved content. Covers
+		 * both real anchors (`target` attribute) and non-anchor elements
+		 * like the Box module's `role="link"` div, which carries the same
+		 * intent via a `data-link-target` attribute instead.
+		 *
+		 * @since 2.12
+		 * @access private
+		 * @method _initLinkNotices
+		 */
+		_initLinkNotices: function()
+		{
+			$( '.fl-builder-content a[target], .fl-builder-content [role="link"][data-link-target]' ).each( function() {
+				var link   = $( this ),
+					notice = link.children( 'span.fl-new-tab-notice' ),
+					target = link.attr( 'target' ) || link.attr( 'data-link-target' );
+
+				if ( '_blank' === target ) {
+					if ( 0 === notice.length ) {
+						link.append( '<span class="fl-new-tab-notice sr-only">' + FLBuilderLayoutConfig.i18n.opensInNewTab + '</span>' );
+					}
+				} else if ( notice.length > 0 ) {
+					notice.remove();
+				}
+			});
 		},
 
 		/**
@@ -875,7 +1161,7 @@
 		 */
 		_initAnchorLinks: function()
 		{
-			$( 'a' ).each( FLBuilderLayout._initAnchorLink );
+			$( 'a, [role="link"]' ).each( FLBuilderLayout._initAnchorLink );
 		},
 
 		/**
@@ -888,14 +1174,16 @@
 		_initAnchorLink: function()
 		{
 			var link    = $( this ),
-				href    = link.attr( 'href' ),
+				href    = link.data( 'url' ) ? link.data( 'url' ) : link.attr( 'href' ),
+				target  = link.data( 'url' ) ? new URL( href, window.location.href ) : this,
 				loc     = window.location,
 				id      = null,
-				element = null;
+				element = null,
+				flNode  = false;
 
-			if ( 'undefined' != typeof href && href.indexOf( '#' ) > -1 ) {
+			if ( 'undefined' != typeof href && href.indexOf( '#' ) > -1 && link.closest('svg').length < 1 ) {
 
-				if ( loc.pathname.replace( /^\//, '' ) == this.pathname.replace( /^\//, '' ) && loc.hostname == this.hostname ) {
+				if ( loc.pathname.replace( /^\//, '' ) == target.pathname.replace( /^\//, '' ) && loc.hostname == target.hostname ) {
 
 					try {
 
@@ -908,7 +1196,8 @@
 						element = $( '#' + id );
 
 						if ( element.length > 0 ) {
-							if ( link.hasClass( 'fl-scroll-link' ) || element.hasClass( 'fl-row' ) || element.hasClass( 'fl-col' ) || element.hasClass( 'fl-module' ) ) {
+							flNode = element.hasClass( 'fl-row' ) || element.hasClass( 'fl-col' ) || element.hasClass( 'fl-module' );
+							if ( !element.hasClass( 'fl-no-scroll' ) && ( link.hasClass( 'fl-scroll-link' ) || flNode ) ) {
 								$( link ).on( 'click', FLBuilderLayout._scrollToElementOnLinkClick );
 							}
 							if ( element.hasClass( 'fl-accordion-item' ) ) {
@@ -935,7 +1224,8 @@
 		 */
 		_scrollToElementOnLinkClick: function( e, callback )
 		{
-			var element = $( '#' + $( this ).attr( 'href' ).split( '#' ).pop() );
+			var attribute = $( this ).data( 'url' ) ? $( this ).data( 'url' ) : $( this ).attr( 'href' );
+			var element = $( '#' + attribute.split( '#' ).pop() );
 
 			FLBuilderLayout._scrollToElement( element, callback );
 
@@ -960,26 +1250,35 @@
 
 			if ( element.length > 0 ) {
 
-				if ( element.offset().top > doc.height() - win.height() ) {
+				if ( 'fixed' === element.css('position') || 'fixed' === element.parent().css('position') ) {
+					dest = element.position().top;
+				}
+				else if ( element.offset().top > doc.height() - win.height() ) {
 					dest = doc.height() - win.height();
 				}
 				else {
 					dest = element.offset().top - config.offset;
 				}
 
-				$( 'html, body' ).animate( { scrollTop: dest }, config.duration, config.easing, function() {
+				$( 'html, body' ).stop( true ).animate( { scrollTop: dest }, config.duration, config.easing, function() {
 
 					if ( 'undefined' != typeof callback ) {
 						callback();
 					}
 
-					if ( undefined != element.attr( 'id' ) ) {
+					if ( undefined != element.attr( 'id' ) && window.location.hash !== '#' + element.attr( 'id' ) ) {
 
-						if ( history.pushState ) {
-							history.pushState( null, null, '#' + element.attr( 'id' ) );
-						}
-						else {
+						var firefox_version = window.navigator.userAgent.match( /Firefox\/(\d+)\./ ),
+							firefox_version = firefox_version ? parseInt( firefox_version[1], 10 ) : null;
+
+						if ( firefox_version !== null && firefox_version < 135 ) {
 							window.location.hash = element.attr( 'id' );
+						} else {
+							if ( history.pushState ) {
+								history.pushState( null, null, '#' + element.attr( 'id' ) );
+							} else {
+								window.location.hash = element.attr( 'id' );
+							}
 						}
 					}
 				} );
@@ -1037,8 +1336,7 @@
 
 					var callback = function() {
 						if ( element ) {
-							responsiveLabel.trigger( 'click' );
-							element = false;
+							responsiveLabel.trigger( $.Event( 'click', { which: 1 } ) );
 						}
 					};
 
@@ -1152,8 +1450,96 @@
 		{
 			var field = $( this );
 
+			field.removeAttr( 'aria-invalid' );
 			field.removeClass( 'fl-form-error' );
-			field.siblings( '.fl-form-error-message' ).hide();
+			const message = field.attr('aria-describedby');
+			message ? $( '#' + message ).hide() : field.siblings( '.fl-form-error-message' ).hide();
+		},
+
+		/**
+		 * Init Row Shape Layer's height.
+		 *
+		 * @since 2.5.3
+		 * @access private
+		 * @method _initRowShapeLayerHeight
+		 */
+		_initRowShapeLayerHeight: function () {
+			FLBuilderLayout._adjustRowShapeLayerHeight();
+			$( window ).on( 'resize', FLBuilderLayout._adjustRowShapeLayerHeight );
+		},
+
+		/**
+		 * Set parent column width of nested columns when it's zero or blank.
+		 *
+		 * @since 2.7.4
+		 * @access private
+		 * @method _initNestedColsWidth
+		 */
+		_initNestedColsWidth: function()
+		{
+			var nestedCols = $( '.fl-col-has-cols' );
+
+			if ( nestedCols.length <= 0 ) {
+				return;
+			}
+
+			$( nestedCols ).each( function(index, col ){
+				// A column whose ancestor is hidden at the current breakpoint
+				// (row/column visibility settings) measures 0 even though its
+				// width is fine — jQuery only unhides the element itself when
+				// measuring, not its ancestors. Writing emptyColWidth there
+				// collapses a column that was never empty, and the inline style
+				// outlives the responsive preview. Only measure what's rendered.
+				if ( ! col.getClientRects().length ) {
+					return;
+				}
+
+				if ( $( col ).width() <= 0 ) {
+					$( col ).css( 'width', FLBuilderLayoutConfig.emptyColWidth );
+				}
+			});
+		},
+
+		/**
+		 * Adjust Row Shape Layer's height to fix to remove the fine line that appears on certain screen sizes.
+		 *
+		 * @since 2.5.3
+		 * @access private
+		 * @method _adjustRowShapeLayerHeight
+		 */
+		_adjustRowShapeLayerHeight: function() {
+			var rowShapeLayers = $('.fl-builder-shape-layer');
+
+			$( rowShapeLayers ).each(function (index) {
+				var rowShapeLayer = $(this),
+					shape = $(rowShapeLayer).find('svg'),
+					height = shape.height(),
+					excludeShapes = '.fl-builder-shape-circle, .fl-builder-shape-dot-cluster, .fl-builder-shape-topography, .fl-builder-shape-rect';
+
+				if ( ! rowShapeLayer.is( excludeShapes ) ) {
+					$(shape).css('height', Math.ceil( height ) );
+				}
+			});
+		},
+		_string_to_slug: function( str ) {
+			str = str.replace(/^\s+|\s+$/g, ''); // trim
+			if ( 'undefined' == typeof window._fl_string_to_slug_regex ) {
+				regex = new RegExp('[^a-zA-Z0-9\'":() !.,-_|]', 'g');
+			} else {
+				regex = new RegExp('[^' + window._fl_string_to_slug_regex + '\'":\(\) !.,-_|\\\p{Letter}]', 'ug');
+			}
+			str = str.replace(regex, '') // remove invalid chars
+				.replace(/\s+/g, ' '); // collapse whitespace and replace by a space
+			return str;
+		},
+		_reorderMenu: function() {
+			if ( $('#wp-admin-bar-fl-builder-frontend-edit-link-default li').length > 1 ) {
+					$( '#wp-admin-bar-fl-builder-frontend-duplicate-link' )
+					.appendTo('#wp-admin-bar-fl-builder-frontend-edit-link-default')
+					.css( 'padding-top', '5px' )
+					.css( 'border-top', '2px solid #1D2125' )
+					.css( 'margin-top', '5px' )
+				}
 		}
 	};
 

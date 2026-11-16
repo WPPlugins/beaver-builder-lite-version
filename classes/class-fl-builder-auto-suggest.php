@@ -21,22 +21,26 @@ final class FLBuilderAutoSuggest {
 
 				case 'fl_as_posts':
 					$data = self::posts();
-				break;
+					break;
 
 				case 'fl_as_terms':
 					$data = self::terms();
-				break;
+					break;
 
 				case 'fl_as_users':
 					$data = self::users();
-				break;
+					break;
 
 				case 'fl_as_links':
 					$data = self::links();
-				break;
+					break;
 			}
 
 			if ( isset( $data ) ) {
+				/**
+				 * Auto-suggest results array before it is returned to the browser.
+				 */
+				$data = apply_filters( 'fl_builder_auto_suggest_lookup', $data, $_REQUEST['fl_as_action'] );
 				return $data;
 			}
 		}
@@ -56,26 +60,42 @@ final class FLBuilderAutoSuggest {
 
 			case 'fl_as_posts':
 				$data = self::posts_value( $value );
-			break;
+				break;
 
 			case 'fl_as_terms':
 				$data = self::terms_value( $value, $data );
-			break;
+				break;
 
 			case 'fl_as_users':
 				$data = self::users_value( $value );
-			break;
+				break;
 
-			default :
-
-				if ( function_exists( $action . '_value' ) ) {
+			default:
+				if ( str_starts_with( $action, 'fl_as_' ) && function_exists( $action . '_value' ) ) {
 					$data = call_user_func_array( $action . '_value', array( $value, $data ) );
 				}
 
-			break;
+				break;
 		}
 
 		return isset( $data ) ? str_replace( "'", '&#39;', json_encode( $data ) ) : '';
+	}
+
+	/**
+	 * Returns the values for all suggest fields in a settings form.
+	 *
+	 * @since 2.0
+	 * @param array $fields
+	 * @return array
+	 */
+	static public function get_values( $fields ) {
+		$values = array();
+
+		foreach ( $fields as $field ) {
+			$values[ $field['name'] ] = self::get_value( $field['action'], $field['value'], $field['data'] );
+		}
+
+		return $values;
 	}
 
 	/**
@@ -89,11 +109,7 @@ final class FLBuilderAutoSuggest {
 
 		$like = stripslashes( urldecode( $_REQUEST['fl_as_query'] ) );
 
-		if ( method_exists( $wpdb, 'esc_like' ) ) {
-			$like = esc_sql( $wpdb->esc_like( $like ) );
-		} else {
-			$like = like_escape( esc_sql( $like ) );
-		}
+		$like = esc_sql( $wpdb->esc_like( $like ) );
 
 		return $like;
 	}
@@ -107,25 +123,31 @@ final class FLBuilderAutoSuggest {
 	static public function posts() {
 		global $wpdb;
 
-		$data	= array();
-		$like	= self::get_like();
-		$type	= esc_sql( $_REQUEST['fl_as_action_data'] );
+		$data     = array();
+		$like     = self::get_like();
+		$types    = explode( ',', esc_sql( $_REQUEST['fl_as_action_data'] ) );
+		$types_in = join( "', '", array_map( 'esc_sql', $types ) );
 
+		// @codingStandardsIgnoreStart
 		$posts	= $wpdb->get_results( $wpdb->prepare( "
 			SELECT ID, post_title FROM {$wpdb->posts}
 			WHERE post_title LIKE %s
-			AND post_type = %s
+			AND post_type IN ('{$types_in}')
 			AND post_status = 'publish'
-		", '%' . $like . '%', $type ) );
+		", '%' . $like . '%' ) );
+		// @codingStandardsIgnoreEnd
 
 		foreach ( $posts as $post ) {
 			$data[] = array(
-				'name' => $post->post_title,
+				'name'  => $post->post_title,
 				'value' => $post->ID,
 			);
 		}
 
-		return $data;
+		/**
+		 * Array of post results for the posts auto-suggest field.
+		 */
+		return apply_filters( 'fl_builder_auto_suggest_posts_lookup', $data );
 	}
 
 	/**
@@ -140,23 +162,30 @@ final class FLBuilderAutoSuggest {
 
 		$data = array();
 
-		if ( ! empty( $ids ) ) {
+		// Cast to integers so attacker data can never reach the SQL template.
+		// array_map returns integers (array_filter with 'intval' only tested
+		// truthiness and kept the raw strings, which allowed SQL injection via
+		// the ORDER BY FIELD clause).
+		$list = array_filter( array_map( 'absint', explode( ',', $ids ) ) );
 
-			$order = implode( ',', array_filter( explode( ',', $ids ), 'intval' ) );
-			$list = explode( ',', $ids );
-			$how_many = count( $list );
+		if ( ! empty( $list ) ) {
+
+			$how_many     = count( $list );
 			$placeholders = array_fill( 0, $how_many, '%d' );
-			$format = implode( ', ', $placeholders );
+			$format       = implode( ', ', $placeholders );
 
-			$query = "SELECT ID, post_title FROM {$wpdb->posts} WHERE ID IN ($format) ORDER BY FIELD(ID, $order)";
+			// Both the IN list and the ORDER BY FIELD list use %d placeholders;
+			// the integer ids are passed twice as bound values.
+			$query = "SELECT ID, post_title FROM {$wpdb->posts} WHERE ID IN ($format) ORDER BY FIELD(ID, $format)";
+			$args  = array_merge( $list, $list );
 
 			// @codingStandardsIgnoreStart
-			$posts = $wpdb->get_results( $wpdb->prepare( $query, $list ) );
+			$posts = $wpdb->get_results( $wpdb->prepare( $query, $args ) );
 			// @codingStandardsIgnoreEnd
 
 			foreach ( $posts as $post ) {
 				$data[] = array(
-					'name' => $post->post_title,
+					'name'  => $post->post_title,
 					'value' => $post->ID,
 				);
 			}
@@ -175,12 +204,12 @@ final class FLBuilderAutoSuggest {
 		$data = array();
 		$cats = get_categories(array(
 			'hide_empty' => 0,
-			'taxonomy'	 => $_REQUEST['fl_as_action_data'],
+			'taxonomy'   => $_REQUEST['fl_as_action_data'],
 		));
 
 		foreach ( $cats as $cat ) {
 			$data[] = array(
-				'name' => $cat->name,
+				'name'  => htmlspecialchars_decode( $cat->name ),
 				'value' => $cat->term_id,
 			);
 		}
@@ -203,13 +232,13 @@ final class FLBuilderAutoSuggest {
 
 			$cats = get_categories(array(
 				'hide_empty' => 0,
-				'taxonomy'	 => $taxonomy,
-				'include'	 => $ids,
+				'taxonomy'   => $taxonomy,
+				'include'    => $ids,
 			));
 
 			foreach ( $cats as $cat ) {
 				$data[] = array(
-					'name' => $cat->name,
+					'name'  => htmlspecialchars_decode( $cat->name ),
 					'value' => $cat->term_id,
 				);
 			}
@@ -233,7 +262,7 @@ final class FLBuilderAutoSuggest {
 
 		foreach ( $users as $user ) {
 			$data[] = array(
-				'name' => $user->user_login,
+				'name'  => $user->user_login,
 				'value' => $user->ID,
 			);
 		}
@@ -255,10 +284,10 @@ final class FLBuilderAutoSuggest {
 
 		if ( ! empty( $ids ) ) {
 
-			$list = explode( ',', $ids );
-			$how_many = count( $list );
+			$list         = explode( ',', $ids );
+			$how_many     = count( $list );
 			$placeholders = array_fill( 0, $how_many, '%d' );
-			$format = implode( ', ', $placeholders );
+			$format       = implode( ', ', $placeholders );
 
 			$query = "SELECT * FROM {$wpdb->users} WHERE ID IN ($format)";
 
@@ -268,7 +297,7 @@ final class FLBuilderAutoSuggest {
 
 			foreach ( $users as $user ) {
 				$data[] = array(
-					'name' => $user->user_login,
+					'name'  => $user->user_login,
 					'value' => $user->ID,
 				);
 			}
@@ -285,20 +314,20 @@ final class FLBuilderAutoSuggest {
 	static public function links() {
 		global $wpdb;
 
-		$data	= array();
-		$like	= self::get_like();
-		$types	= FLBuilderLoop::post_types();
-		$slugs	= array();
+		$data  = array();
+		$like  = self::get_like();
+		$types = FLBuilderLoop::post_types();
+		$slugs = array( 'attachment' );
 
 		foreach ( $types as $slug => $type ) {
 			$slugs[] = esc_sql( $slug );
 		}
 
-		// we cant use an array of arrays for prepare() so use sprintf 1st.
-		$query = sprintf( "SELECT ID, post_title FROM {$wpdb->posts}
+		// we can't use an array of arrays for prepare() so use sprintf 1st.
+		$query = sprintf( "SELECT ID, post_title, post_type FROM {$wpdb->posts}
 			WHERE post_title LIKE %%s
 			AND post_type IN ('%s')
-			AND post_status = 'publish'",
+			AND post_status IN ('publish', 'inherit')",
 			implode( "', '", $slugs )
 		);
 
@@ -307,9 +336,26 @@ final class FLBuilderAutoSuggest {
 		// @codingStandardsIgnoreEnd
 
 		foreach ( $posts as $post ) {
+
+			switch ( $post->post_type ) {
+				case 'attachment':
+					$name  = basename( wp_get_attachment_url( $post->ID ) );
+					$value = wp_get_attachment_url( $post->ID );
+					break;
+				case 'popup':
+					$name  = esc_html( $post->post_title );
+					$value = '#popmake-' . $post->ID;
+					break;
+				default:
+					$name  = esc_html( $post->post_title );
+					$value = get_permalink( $post->ID );
+			}
+
 			$data[] = array(
-				'name' => $post->post_title,
-				'value' => get_permalink( $post->ID ),
+				'name'  => $name,
+				'value' => $value,
+				'type'  => ucfirst( $post->post_type ),
+				'id'    => $post->ID,
 			);
 		}
 

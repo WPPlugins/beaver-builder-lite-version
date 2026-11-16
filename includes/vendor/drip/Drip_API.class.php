@@ -4,7 +4,7 @@
  * Drip API
  * @author Svetoslav Marinov (SLAVI)
  */
-Class Drip_Api {
+Class FL_Drip_Api {
 	private $version = "2";
     private $api_token = '';
     private $error_code = '';
@@ -24,7 +24,7 @@ Class Drip_Api {
 
     /**
      * Accepts the token and saves it internally.
-     * 
+     *
      * @param string $api_token e.g. qsor48ughrjufyu2dadraasfa1212424
      * @throws Exception
      */
@@ -68,11 +68,14 @@ Class Drip_Api {
 
         // here we distinguish errors from no campaigns.
         // when there's no json that's an error
-        $campaigns = empty($raw_json)
-                ? false
-                : empty($raw_json['campaigns'])
-                    ? array()
-                    : $raw_json['campaigns'];
+
+        if ( empty( $raw_json ) ) {
+          $campaigns = false;
+        } elseif( empty($raw_json['campaigns']) ) {
+          $campaigns = array();
+        } else {
+          $campaigns = $raw_json['campaigns'];
+        }
 
         return $campaigns;
     }
@@ -106,13 +109,56 @@ Class Drip_Api {
 
         // here we distinguish errors from no campaign
         // when there's no json that's an error
-        $campaigns = empty($raw_json)
-                ? false
-                : empty($raw_json['campaigns'])
-                    ? array()
-                    : $raw_json['campaigns'];
+        if ( empty( $raw_json ) ) {
+          $campaigns = false;
+        } elseif( empty($raw_json['campaigns']) ) {
+          $campaigns = array();
+        } else {
+          $campaigns = $raw_json['campaigns'];
+        }
 
         return $campaigns;
+    }
+
+	/**
+     * Requests the workflows for the given account.
+     * @param array
+     * @return array
+     */
+    public function get_workflows($params) {
+        if (empty($params['account_id'])) {
+            throw new Exception("Account ID not specified");
+        }
+
+        $account_id = $params['account_id'];
+        unset($params['account_id']); // clear it from the params
+
+        if (isset($params['status'])) {
+            if (!in_array($params['status'], array('active', 'draft', 'paused', 'all'))) {
+                throw new Exception("Invalid workflow status.");
+            }
+        } elseif (0) {
+            $params['status'] = 'active'; // api defaults to all but we want active ones
+        }
+
+        $url = $this->api_end_point . "$account_id/workflows";
+        $res = $this->make_request($url, $params);
+
+        if (!empty($res['buffer'])) {
+            $raw_json = json_decode($res['buffer'], true);
+        }
+
+        // here we distinguish errors from no workflows.
+        // when there's no json that's an error
+        if ( empty( $raw_json ) ) {
+          $workflows = false;
+        } elseif( empty($raw_json['workflows']) ) {
+          $workflows = array();
+        } else {
+          $workflows = $raw_json['workflows'];
+        }
+
+        return $workflows;
     }
 
     /**
@@ -129,11 +175,13 @@ Class Drip_Api {
             $raw_json = json_decode($res['buffer'], true);
         }
 
-        $data = empty($raw_json)
-            ? false
-            : empty($raw_json['accounts'])
-                ? array()
-                : $raw_json['accounts'];
+        if ( empty( $raw_json ) ) {
+          $data = false;
+        } elseif( empty($raw_json['accounts']) ) {
+          $data = array();
+        } else {
+          $data = $raw_json['accounts'];
+        }
 
         return $data;
     }
@@ -155,18 +203,20 @@ Class Drip_Api {
             $raw_json = json_decode($res['buffer'], true);
         }
 
-        $data = empty($raw_json)
-            ? false
-            : empty($raw_json['accounts'])
-                ? array()
-                : $raw_json['accounts'];
+        if ( empty( $raw_json ) ) {
+          $data = false;
+        } elseif( empty($raw_json['accounts']) ) {
+          $data = array();
+        } else {
+          $data = $raw_json['accounts'];
+        }
 
         return $data;
     }
 
     /**
      * Sends a request to add a subscriber and returns its record or false
-     * 
+     *
      * @param array $params
      * @param array/bool $account
      */
@@ -174,10 +224,10 @@ Class Drip_Api {
         if (empty($params['account_id'])) {
             throw new Exception("Account ID not specified");
         }
-        
+
         $account_id = $params['account_id'];
         unset($params['account_id']); // clear it from the params
-        
+
         $api_action = "/$account_id/subscribers";
         $url = $this->api_end_point . $api_action;
 
@@ -190,17 +240,19 @@ Class Drip_Api {
             $raw_json = json_decode($res['buffer'], true);
         }
 
-        $data = empty($raw_json)
-            ? false
-            : empty($raw_json['subscribers'])
-                ? array()
-                : $raw_json['subscribers'][0];
+        if ( empty( $raw_json ) ) {
+          $data = false;
+        } elseif( empty($raw_json['subscribers']) ) {
+          $data = array();
+        } else {
+          $data = $raw_json['subscribers'][0];
+        }
 
         return $data;
     }
 
     /**
-     * 
+     *
      * @param array $params
      * @param array $params
      */
@@ -233,18 +285,20 @@ Class Drip_Api {
             $raw_json = json_decode($res['buffer'], true);
         }
 
-        $data = empty($raw_json)
-            ? false
-            : empty($raw_json['subscribers'])
-                ? array()
-                : $raw_json['subscribers'][0];
+        if ( empty( $raw_json ) ) {
+          $data = false;
+        } elseif( empty($raw_json['subscribers']) ) {
+          $data = array();
+        } else {
+          $data = $raw_json['subscribers'][0];
+        }
 
         return $data;
     }
 
     /**
      * Subscribes a user to a given campaign for a given account.
-     * 
+     *
      * @param array $params
      * @param array $accounts
      */
@@ -283,19 +337,21 @@ Class Drip_Api {
             $raw_json = json_decode($res['buffer'], true);
         }
 
-        $data = empty($raw_json)
-            ? false
-            : empty($raw_json['subscribers'])
-                ? array()
-                : $raw_json['subscribers'][0];
+        if ( empty( $raw_json ) ) {
+          $data = false;
+        } elseif( empty($raw_json['subscribers']) ) {
+          $data = array();
+        } else {
+          $data = $raw_json['subscribers'][0];
+        }
 
         return $data;
     }
 
     /**
-     * 
+     *
      * Some keys are removed from the params so they don't get send with the other data to Drip.
-     * 
+     *
      * @param array $params
      * @param array $params
      */
@@ -321,7 +377,7 @@ Class Drip_Api {
 
         $api_action = "$account_id/subscribers/$subscriber_id/unsubscribe";
         $url = $this->api_end_point . $api_action;
-        
+
         $req_params = $params;
         $res = $this->make_request($url, $req_params, self::POST);
 
@@ -329,11 +385,13 @@ Class Drip_Api {
             $raw_json = json_decode($res['buffer'], true);
         }
 
-        $data = empty($raw_json)
-            ? false
-            : empty($raw_json['subscribers'])
-                ? array()
-                : $raw_json['subscribers'][0];
+        if ( empty( $raw_json ) ) {
+          $data = false;
+        } elseif( empty($raw_json['subscribers']) ) {
+          $data = array();
+        } else {
+          $data = $raw_json['subscribers'][0];
+        }
 
         return $data;
     }
@@ -347,7 +405,7 @@ Class Drip_Api {
      */
     public function tag_subscriber($params) {
         $status = false;
-        
+
         if (empty($params['account_id'])) {
             throw new Exception("Account ID not specified");
         }
@@ -381,7 +439,7 @@ Class Drip_Api {
     /**
      *
      * This calls DELETE /:account_id/tags to remove the tags. It just returns some status code no content
-     * 
+     *
      * @param array $params
      * @param bool $status success or failure
      */
@@ -416,6 +474,54 @@ Class Drip_Api {
         }
 
         return $status;
+    }
+
+	/**
+     * Add subscriber to a given workflow for a given account.
+     *
+     * @param array $params
+     * @param array $accounts
+     */
+    public function subscribe_workflow($params) {
+        if (empty($params['account_id'])) {
+            throw new Exception("Account ID not specified");
+        }
+
+		$account_id = $params['account_id'];
+        unset($params['account_id']); // clear it from the params
+
+        if (empty($params['workflow_id'])) {
+            throw new Exception("Workflow ID not specified");
+        }
+
+        $workflow_id = $params['workflow_id'];
+        unset($params['workflow_id']); // clear it from the params
+
+        if (empty($params['email'])) {
+            throw new Exception("Email not specified");
+        }
+
+		$api_action = "$account_id/workflows/$workflow_id/subscribers";
+        $url = $this->api_end_point . $api_action;
+
+        // The API wants the params to be JSON encoded
+        $req_params = array('subscribers' => array($params));
+
+        $res = $this->make_request($url, $req_params, self::POST);
+
+        if (!empty($res['buffer'])) {
+            $raw_json = json_decode($res['buffer'], true);
+        }
+
+        if ( empty( $raw_json ) ) {
+          $data = false;
+        } elseif( empty($raw_json['subscribers']) ) {
+          $data = array();
+        } else {
+          $data = $raw_json['subscribers'][0];
+        }
+
+        return $data;
     }
 
     /**
@@ -453,7 +559,7 @@ Class Drip_Api {
 
         return $status;
     }
-    
+
     /**
      *
      * @param string $url
@@ -480,8 +586,7 @@ Class Drip_Api {
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $ch = fl_set_curl_safe_opts( $ch );
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connect_timeout);
         curl_setopt($ch, CURLOPT_USERPWD, $this->api_token . ":" . ''); // no pwd
@@ -514,7 +619,7 @@ Class Drip_Api {
 
         $buffer = curl_exec($ch);
         $status = !empty($buffer);
-        
+
         $data = array(
             'url'       => $url,
             'params'    => $params,
@@ -553,7 +658,7 @@ Class Drip_Api {
     public function get_error_message() {
         return $this->error_message;
     }
-    
+
     /**
      * Retruns whatever was accumultaed in error_code
      * @return string
@@ -590,7 +695,7 @@ Class Drip_Api {
              */
             if (!empty($json_arr['errors'])) { // JSON
                 $messages = $error_codes = array();
-                
+
                 foreach ($json_arr['errors'] as $rec) {
                     $messages[] = $rec['message'];
                     $error_codes[] = $rec['code'];
@@ -600,7 +705,7 @@ Class Drip_Api {
                 $this->error_message = join("\n", $messages);
             } else { // There's no JSON in the reply so we'll extract the message from the HTML page by removing the HTML.
                 $msg = $res['buffer'];
-                
+
                 $msg = preg_replace('#.*?<body[^>]*>#si', '', $msg);
                 $msg = preg_replace('#</body[^>]*>.*#si', '', $msg);
                 $msg = strip_tags($msg);

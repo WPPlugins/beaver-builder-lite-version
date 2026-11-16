@@ -21,16 +21,15 @@ final class FLBuilderPhoto {
 
 		foreach ( get_intermediate_image_sizes() as $size ) {
 
-			// Hidden size added in 4.4 for responsive images. We don't need it.
-			if ( 'medium_large' == $size ) {
-				continue;
-			}
-
 			$sizes[ $size ] = array( 0, 0 );
 
-			if ( in_array( $size, array( 'thumbnail', 'medium', 'large' ) ) ) {
+			if ( in_array( $size, array( 'thumbnail', 'medium', 'medium_large', 'large' ) ) ) {
 				$sizes[ $size ][0] = get_option( $size . '_size_w' );
 				$sizes[ $size ][1] = get_option( $size . '_size_h' );
+
+				if ( 0 === absint( $sizes[ $size ][1] ) ) {
+					$sizes[ $size ][1] = $sizes[ $size ][0];
+				}
 			} elseif ( isset( $_wp_additional_image_sizes ) && isset( $_wp_additional_image_sizes[ $size ] ) ) {
 				$sizes[ $size ] = array(
 					$_wp_additional_image_sizes[ $size ]['width'],
@@ -51,7 +50,21 @@ final class FLBuilderPhoto {
 	 * @return object
 	 */
 	static public function get_attachment_data( $id ) {
-		$data = wp_prepare_attachment_for_js( $id );
+		$attachment = get_post( $id );
+
+		// wp_prepare_attachment_for_js() checks current_user_can('read_post', $post_parent)
+		// which triggers a PHP notice if the parent's post type is not registered (e.g. after
+		// a plugin that registered the post type has been deactivated). Clear the parent
+		// temporarily to avoid this.
+		if ( $attachment && $attachment->post_parent ) {
+			$parent = get_post( $attachment->post_parent );
+			if ( $parent && ! get_post_type_object( $parent->post_type ) ) {
+				$attachment              = clone $attachment;
+				$attachment->post_parent = 0;
+			}
+		}
+
+		$data = wp_prepare_attachment_for_js( $attachment ? $attachment : $id );
 
 		if ( gettype( $data ) == 'array' ) {
 			return json_decode( json_encode( $data ) );
@@ -69,7 +82,7 @@ final class FLBuilderPhoto {
 	 */
 	static public function get_thumb( $photo ) {
 		if ( empty( $photo ) ) {
-			echo FL_BUILDER_URL . 'img/spacer.png';
+			echo FLBuilder::plugin_url() . 'img/spacer.png';
 		} elseif ( ! isset( $photo->sizes ) ) {
 			echo $photo->url;
 		} elseif ( ! empty( $photo->sizes->thumbnail ) ) {

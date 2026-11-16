@@ -52,7 +52,7 @@ final class FLBuilderUserAccess {
 			$data['order'] = '10';
 		}
 		self::$registered_settings[ $key ] = $data;
-		self::$settings = null; // must bust the settings cache.
+		self::$settings                    = null; // must bust the settings cache.
 	}
 
 	/**
@@ -76,11 +76,7 @@ final class FLBuilderUserAccess {
 		$groups   = array();
 		$settings = self::$registered_settings;
 
-		/**
-		 * Sort the groups based on priority.
-		 * TODO update when were 5.3+ in PHP.
-		 */
-		uasort( $settings, create_function( '$a,$b', 'return $a["order"] > $b["order"];' ) );
+		uasort( $settings, array( __CLASS__, 'sort' ) );
 
 		foreach ( $settings as $key => $data ) {
 
@@ -90,6 +86,15 @@ final class FLBuilderUserAccess {
 			$groups[ $data['group'] ][ $key ] = $data;
 		}
 		return $groups;
+	}
+
+	/**
+	 * Custom sort function instead of create_function which is deprecated in php 7.2
+	 * @since 1.11
+	 * TODO when we ditch php5 we can use the spaceship here <=>
+	 */
+	private static function sort( $a, $b ) {
+		return ( $a['order'] > $b['order'] ) ? 1 : 0;
 	}
 
 	/**
@@ -200,7 +205,7 @@ final class FLBuilderUserAccess {
 
 		self::$settings = null;
 
-		FLBuilderModel::update_admin_settings_option( '_fl_builder_user_access', $settings, false );
+		FLBuilderModel::update_admin_settings_option( '_fl_builder_user_access', $settings, false, true );
 	}
 
 	/**
@@ -211,12 +216,15 @@ final class FLBuilderUserAccess {
 	 */
 	static public function get_all_roles() {
 		if ( ! function_exists( 'get_editable_roles' ) ) {
-			require_once( ABSPATH . 'wp-admin/includes/user.php' );
+			require_once ABSPATH . 'wp-admin/includes/user.php';
 		}
 
 		$editable_roles = get_editable_roles();
-		$roles = array();
-		$caps  = apply_filters( 'fl_builder_user_access_capabilities', array( 'edit_posts' ) );
+		$roles          = array();
+		/**
+		 * WordPress capabilities used to determine which user roles can access the builder.
+		 */
+		$caps = apply_filters( 'fl_builder_user_access_capabilities', array( 'edit_posts' ) );
 
 		foreach ( $editable_roles as $role => $data ) {
 			foreach ( $caps as $cap ) {
@@ -239,21 +247,8 @@ final class FLBuilderUserAccess {
 	 * @return bool
 	 */
 	static public function current_user_can( $key ) {
-		$user	  = wp_get_current_user();
+		$user     = wp_get_current_user();
 		$settings = self::get_saved_settings();
-		$caps     = apply_filters( 'fl_builder_user_access_capabilities', array( 'edit_posts' ) );
-		$user_can = false;
-
-		// Return false for users that can't edit posts.
-		foreach ( $caps as $cap ) {
-			if ( current_user_can( $cap ) ) {
-				$user_can = true;
-			}
-		}
-
-		if ( ! $user_can ) {
-			return false;
-		}
 
 		// Return false if no settings saved.
 		if ( ! isset( $settings[ $key ] ) ) {
@@ -261,7 +256,7 @@ final class FLBuilderUserAccess {
 		}
 
 		// Make sure super admins have administrator access.
-		if ( is_super_admin() && ! in_array( 'administrator', $user->roles ) ) {
+		if ( is_multisite() && is_super_admin() && ! in_array( 'administrator', $user->roles ) ) {
 			$user->roles[] = 'administrator';
 		}
 
@@ -284,13 +279,21 @@ final class FLBuilderUserAccess {
 	 * @private
 	 * @return void
 	 */
-	static function register_default_settings() {
+	public static function register_default_settings() {
+		self::register_setting( 'builder_access', array(
+			'default'     => [ 'administrator', 'editor' ],
+			'group'       => __( 'Frontend', 'fl-builder' ),
+			'label'       => __( 'Builder Access', 'fl-builder' ),
+			'description' => __( 'The selected roles will have access to the builder for editing posts, pages, and CPTs.', 'fl-builder' ),
+			'order'       => '1',
+		) );
+
 		self::register_setting( 'unrestricted_editing', array(
-			'default'     => 'all',
+			'default'     => [ 'administrator', 'editor' ],
 			'group'       => __( 'Frontend', 'fl-builder' ),
 			'label'       => __( 'Unrestricted Editing', 'fl-builder' ),
-			'description' => __( 'The selected roles will have unrestricted access to all editing features.', 'fl-builder' ),
-			'order'       => '1',
+			'description' => __( 'The selected roles will have unrestricted access to all editing features within the builder.', 'fl-builder' ),
+			'order'       => '2',
 		) );
 	}
 }

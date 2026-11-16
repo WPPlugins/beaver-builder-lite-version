@@ -3,7 +3,7 @@
  *
  * Iris Color Picker - v1.0.7 - 2014-11-28
  * https://github.com/Automattic/Iris
- * Copyright (c) 2014 Matt Wiebe; Licensed GPLv2 
+ * Copyright (c) 2014 Matt Wiebe; Licensed GPLv2
  */
 
 /**
@@ -14,15 +14,15 @@ var FLBuilderColorPicker;
 (function( $, undef ) {
 
 	var FLBuilderColorPresets 	= [],
-		UA 						= navigator.userAgent.toLowerCase(), 
-		isIE					= navigator.appName === 'Microsoft Internet Explorer', 
+		UA 						= navigator.userAgent.toLowerCase(),
+		isIE					= navigator.appName === 'Microsoft Internet Explorer',
 		IEVersion				= isIE ? parseFloat( UA.match( /msie ([0-9]{1,}[\.0-9]{0,})/ )[1] ) : 0,
 		nonGradientIE			= ( isIE && IEVersion < 10 ),
 		gradientType			= false,
 		vendorPrefixes			= [ '-moz-', '-webkit-', '-o-', '-ms-' ];
 
 	/**
-	 * Run some tests to check if the current browser supports CSS3 gradients. 
+	 * Run some tests to check if the current browser supports CSS3 gradients.
 	 * Sets gradientType accordingly.
 	 *
 	 * @since 1.6.4
@@ -36,15 +36,15 @@ var FLBuilderColorPicker;
 		if ( nonGradientIE ) {
 			// if yes, set gradientType to filter
 			gradientType = 'filter';
-		} 
+		}
 		else {
 
 			// if no, runs a quick test to check if the browser supports modern gradient syntax
 			el = $( '<div id="iris-gradtest" />' );
 			base = 'linear-gradient(top,#fff,#000)';
-			
+
 			$.each( vendorPrefixes, function( i, val ){
-				
+
 				el.css( bgImageString, val + base );
 
 				if ( el.css( bgImageString ).match( 'gradient' ) ) {
@@ -52,7 +52,7 @@ var FLBuilderColorPicker;
 					return false;
 				}
 			});
-			
+
 			// check for legacy webkit gradient syntax
 			if ( gradientType === false ) {
 				el.css( 'background', '-webkit-gradient(linear,0% 0%,0% 100%,from(#fff),to(#000))' );
@@ -62,7 +62,7 @@ var FLBuilderColorPicker;
 				}
 
 			}
-			
+
 			el.remove();
 		}
 	}
@@ -80,11 +80,11 @@ var FLBuilderColorPicker;
 	 */
 	function createGradient( origin, stops ) {
 		origin 	= ( origin === 'top' ) ? 'top' : 'left';
-		stops 	= $.isArray( stops ) ? stops : Array.prototype.slice.call( arguments, 1 );
-		
+		stops 	= Array.isArray( stops ) ? stops : Array.prototype.slice.call( arguments, 1 );
+
 		if ( gradientType === 'webkit' ) {
 			return legacyWebkitGradient( origin, stops );
-		} 
+		}
 		else {
 			return vendorPrefixes[ gradientType ] + 'linear-gradient(' + origin + ', ' + stops.join(', ') + ')';
 		}
@@ -102,11 +102,11 @@ var FLBuilderColorPicker;
 		var type, self, lastIndex, filter, startPosProp, endPosProp, dimensionProp, template, html;
 
 		origin = ( origin === 'top' ) ? 'top' : 'left';
-		stops  = $.isArray( stops ) ? stops : Array.prototype.slice.call( arguments, 1 );
+		stops  = Array.isArray( stops ) ? stops : Array.prototype.slice.call( arguments, 1 );
 		// 8 hex: AARRGGBB
 		// GradientType: 0 vertical, 1 horizontal
 		type 		  = ( origin === 'top' ) ? 0 : 1;
-		self 		  = $( this ); 
+		self 		  = $( this );
 		lastIndex 	  = stops.length - 1;
 		filter 		  = 'filter';
 		startPosProp  = ( type === 1 ) ? 'left' : 'top';
@@ -114,16 +114,16 @@ var FLBuilderColorPicker;
 		dimensionProp = ( type === 1 ) ? 'height' : 'width';
 		template 	  = '<div class="iris-ie-gradient-shim" style="position:absolute;' + dimensionProp + ':100%;' + startPosProp + ':%start%;' + endPosProp + ':%end%;' + filter + ':%filter%;" data-color:"%color%"></div>';
 		html 		  = '';
-		
+
 		// need a positioning context
 		if ( self.css('position') === 'static' ) {
 			self.css( {position: 'relative' } );
 		}
 
 		stops = fillColorStops( stops );
-		
+
 		$.each(stops, function( i, startColor ) {
-			
+
 			var endColor, endStop, filterVal;
 
 			// we want two at a time. if we're on the last pair, bail.
@@ -132,19 +132,19 @@ var FLBuilderColorPicker;
 			}
 
 			endColor = stops[ i + 1 ];
-			
+
 			//if our pairs are at the same color stop, moving along.
 			if ( startColor.stop === endColor.stop ) {
 				return;
 			}
 
 			endStop = 100 - parseFloat( endColor.stop ) + '%';
-			startColor.octoHex = new Color( startColor.color ).toIEOctoHex();
-			endColor.octoHex = new Color( endColor.color ).toIEOctoHex();
+			startColor.octoHex = new FLBuilderColor( startColor.color ).toIEOctoHex();
+			endColor.octoHex = new FLBuilderColor( endColor.color ).toIEOctoHex();
 			filterVal = 'progid:DXImageTransform.Microsoft.Gradient(GradientType=' + type + ', StartColorStr=\'' + startColor.octoHex + '\', EndColorStr=\'' + endColor.octoHex + '\')';
 			html += template.replace( '%start%', startColor.stop ).replace( '%end%', endStop ).replace( '%filter%', filterVal );
 		});
-		
+
 		self.find( '.iris-ie-gradient-shim' ).remove();
 		$( html ).prependTo( self );
 	}
@@ -156,19 +156,19 @@ var FLBuilderColorPicker;
 	 * @since 1.6.4
 	 * @method legacyWebkitGradient
 	 * @param  {String} origin    Where the gradient starts.
-	 * @param  {Array} colorList   
+	 * @param  {Array} colorList
 	 * @return {String}           The correct CSS gradient syntax.
 	 */
 	function legacyWebkitGradient( origin, colorList ) {
 		var stops = [];
-		
+
 		origin = ( origin === 'top' ) ? '0% 0%,0% 100%,' : '0% 100%,100% 100%,';
 		colorList = fillColorStops( colorList );
-		
+
 		$.each( colorList, function( i, val ){
 			stops.push( 'color-stop(' + ( parseFloat( val.stop ) / 100 ) + ', ' + val.color + ')' );
 		});
-		
+
 		return '-webkit-gradient(linear,' + origin + stops.join(',') + ')';
 	}
 
@@ -211,7 +211,7 @@ var FLBuilderColorPicker;
 		$.each( percs, function( i ){
 			newColorList[i] = { color: colors[i], stop: percs[i] };
 		});
-		
+
 		return newColorList;
 	}
 
@@ -234,7 +234,7 @@ var FLBuilderColorPicker;
 		if ( stops.length <= 2 || $.inArray( false, stops ) < 0 ) {
 			return stops;
 		}
-		
+
 		while ( i < stops.length - 1 ) {
 			if ( ! foundFirst && stops[i] === false ) {
 				first = i - 1;
@@ -245,19 +245,19 @@ var FLBuilderColorPicker;
 			}
 			i++;
 		}
-		
+
 		steps = last - first;
 		firstVal = parseInt( stops[first].replace('%'), 10 );
 		incr = ( parseFloat( stops[last].replace('%') ) - firstVal ) / steps;
 		i = first + 1;
 		step = 1;
-		
+
 		while ( i < last ) {
 			stops[i] = ( firstVal + ( step * incr ) ) + '%';
 			step++;
 			i++;
 		}
-		
+
 		return backFillColorStops( stops );
 	}
 
@@ -266,10 +266,10 @@ var FLBuilderColorPicker;
 	 * @method flBuilderParseColorValue
 	 * @return {Array}
 	 */
-	flBuilderParseColorValue = function( val ) {
+	function flBuilderParseColorValue( val ) {
 		var value = val.replace(/\s+/g, ''),
-		    alpha = ( value.indexOf('rgba') !== -1 ) ? parseFloat( value.replace(/^.*,(.+)\)/, '$1') * 100 ) : 100,
-			rgba  = ( alpha < 100 ) ? true : false;
+			rgba  = ( value.indexOf('rgba') !== -1 ) ? true : false,
+		    alpha = rgba ? parseFloat( value.replace(/^.*,(.+)\)/, '$1') * 100 ) : 100;
 
 		return { value: value, alpha: alpha, rgba: rgba };
 	}
@@ -306,12 +306,12 @@ var FLBuilderColorPicker;
 		template = 'hsl(%h%,' + opts.s + '%,' + opts.l + '%)';
 		i = 0;
 		steps = [];
-		
+
 		while ( i <= 360 ) {
 			steps.push( template.replace('%h%', i) );
 			i += 30;
 		}
-		
+
 		return this.each(function() {
 			$(this).flBuilderColorPickerGradient( origin, steps );
 		});
@@ -326,7 +326,7 @@ var FLBuilderColorPicker;
 	 */
 	FLBuilderColorPicker = function( settings )
 	{
-		this._html  = '<div class="fl-color-picker-ui"><div class="iris-picker"><div class="iris-picker-inner"><div class="iris-square"><a class="iris-square-value" href="#"><span class="iris-square-handle ui-slider-handle"></span></a><div class="iris-square-inner iris-square-horiz"></div><div class="iris-square-inner iris-square-vert"></div></div><div class="iris-slider iris-strip"><div class="iris-slider-offset"></div></div></div></div></div>';
+		this._html  = '<div class="fl-color-picker-ui"><div class="iris-picker"><div class="iris-picker-inner"><div class="iris-square"><a class="iris-square-value" href="javascript:void(0);"><span class="iris-square-handle ui-slider-handle"></span></a><div class="iris-square-inner iris-square-horiz"></div><div class="iris-square-inner iris-square-vert"></div></div><div class="iris-slider iris-strip"><div class="iris-slider-offset"></div></div></div></div></div>';
 
 		// default settings
 		var defaults = {
@@ -341,6 +341,13 @@ var FLBuilderColorPicker;
 			target : false, // a DOM element / jQuery selector that the element will be appended within. Only used when called on an input.
 			width  : 200, // the width of the collection of UI elements
 			presets: [],
+			globals: function () {
+				return {
+					bb: [],
+					wp: [],
+					theme: []
+				}
+			},
 			labels : {
 				colorPresets 		: 'Color Presets',
 				colorPicker 		: 'Color Picker',
@@ -363,7 +370,7 @@ var FLBuilderColorPicker;
 			// initialize the color picker single instance
 			this._init();
 		}
-		
+
 	};
 
 	/**
@@ -371,13 +378,13 @@ var FLBuilderColorPicker;
 	 *
 	 * @since 1.6.4
 	 * @property {Object} prototype
-	 */ 
+	 */
 	FLBuilderColorPicker.prototype = {
 
 		/**
 		 * Initial markup for the color picker.
 		 *
-		 * @since 1.6.4 
+		 * @since 1.6.4
 		 * @property {String} _html
 		 */
 		_html 				: '',
@@ -389,7 +396,7 @@ var FLBuilderColorPicker;
 		 * @property {String} _color
 		 */
 		_color 				: '',
-		
+
 		/**
 		 * A reference to the current picker setting element.
 		 *
@@ -397,7 +404,7 @@ var FLBuilderColorPicker;
 		 * @property {Object} _currentElement
 		 */
 		_currentElement 	: '',
-		
+
 		/**
 		 * Whether the picker has been initialized or not.
 		 *
@@ -405,7 +412,7 @@ var FLBuilderColorPicker;
 		 * @property {Boolean} _inited
 		 */
 		_inited				: false,
-		
+
 		/**
 		 * Defaults for the HSL controls.
 		 *
@@ -417,7 +424,7 @@ var FLBuilderColorPicker;
 			vert  : 'l',
 			strip : 'h'
 		},
-		
+
 		/**
 		 * Defaults for the HSV controls.
 		 *
@@ -429,7 +436,7 @@ var FLBuilderColorPicker;
 			vert  : 'v',
 			strip : 's'
 		},
-		
+
 		/**
 		 * @since 1.6.4
 		 * @property {Object} _scale
@@ -450,9 +457,19 @@ var FLBuilderColorPicker;
 		_init: function(){
 
 			var self  = this,
-				el    = $( self.options.elements );
+				el    = $( self.options.elements, window.parent.document );
 
-			this._color = new Color( '#ff0000' ).setHSpace( self.options.mode );
+			// Just prep the color inputs and bail early if the color picker
+			// markup has already been initialized in the DOM.
+			if( $( 'html', window.parent.document ).hasClass( 'fl-color-picker-init' ) ){
+				this._buildPresetsUI();
+				this._presetsControls();
+				this._globalColorControls();
+				this._prepareColorFields();
+				return;
+			}
+
+			this._color = new FLBuilderColor( '#ff0000' ).setHSpace( self.options.mode );
 
 			// Set picker color presets
 			FLBuilderColorPresets = this.options.presets;
@@ -463,11 +480,7 @@ var FLBuilderColorPicker;
 
 			// appends color picker markup to the body
 			// check if there's already a color picker instance
-			if( $('html').hasClass( 'fl-color-picker-init' ) ){
-				self.picker = $( '.fl-color-picker-ui' );
-			} else {
-				self.picker = $( this._html ).appendTo( 'body' );
-			}
+			self.picker = $( this._html ).appendTo( $( 'body', window.parent.document ) );
 
 			// Browsers / Versions
 			// Feature detection doesn't work for these, and $.browser is deprecated
@@ -506,15 +519,13 @@ var FLBuilderColorPicker;
 			// COLOR PRESETS UI -------------------------------------//
 
 			// cache reference to the picker wrapper
-			this._ui 	  = $( '.fl-color-picker-ui' );
-			this._iris 	  = $( '.iris-picker' );
-			this._wrapper = $( 'body' );
+			this._ui 	  = $( '.fl-color-picker-ui', window.parent.document );
+			this._iris 	  = $( '.iris-picker', window.parent.document );
+			this._wrapper = $( 'body', window.parent.document );
 
-			if( !$('html').hasClass( 'fl-color-picker-init' ) ){
-				this._ui
-					.prepend( this._hexHtml )
-					.append( this._presetsHtml );
-			}
+			this._ui
+				.prepend( this._hexHtml )
+				.append( this._presetsHtml );
 
 			self.element = this._ui.find( '.fl-color-picker-input' );
 			self._initControls();
@@ -526,7 +537,9 @@ var FLBuilderColorPicker;
 			self._addInputListeners( self.element );
 
 			// build the presets UI
-			this._buildUI();
+			this._buildPresetsUI();
+			this._presetsControls();
+			this._globalColorControls();
 
 			// adds needed markup and bind functions to all color fields
 			this._prepareColorFields();
@@ -534,14 +547,11 @@ var FLBuilderColorPicker;
 			// bind picker control events
 			this._pickerControls();
 
-			// bind presets control events
-			this._presetsControls();
-
 			// adds opacity/alpha support
 			this._buildAlphaUI();
-			
+
 			// now we know that the picker is already added to the body
-			$('html').addClass( 'fl-color-picker-init' );
+			$( 'html', window.parent.document ).addClass( 'fl-color-picker-init' );
 
 		},
 
@@ -552,30 +562,37 @@ var FLBuilderColorPicker;
 		_prepareColorFields: function(){
 
 			var self = this;
-			
+
 			// append presets initial html and trigger that toggles the picker
-			$('.fl-color-picker-value').each( function(){
+			$( '.fl-color-picker-value', window.parent.document ).each( function(){
 
 				var $this 			= $( this ),
 					$colorValue 	= $this.val(),
 					$colorTrigger 	= $this.parent().find( '.fl-color-picker-color' ),
 					$parsedValue 	= flBuilderParseColorValue( $colorValue ),
 					$bgColor 		= '';
-						
+
 				if( $colorValue ){
 					// set initial color, check for alpha support
 					if ( $colorTrigger.hasClass('fl-color-picker-alpha-enabled') && $parsedValue.rgba ) {
 						$bgColor = $this.val().toString();
 					}
-					else if ( !$colorTrigger.hasClass('fl-color-picker-alpha-enabled') && $parsedValue.rgba ) {
+					else if (
+						! $this.hasClass( 'fl-react-color-picker-value' ) &&
+						! $colorTrigger.hasClass('fl-color-picker-alpha-enabled') &&
+						$parsedValue.rgba
+					) {
 						var $newColorValue = $colorValue.replace('rgba', 'rgb')
 							$newColorValue = $newColorValue.substr(0, $newColorValue.lastIndexOf(",")) + ')';
 
 						self._color._alpha = 1;
-						$bgColor = $newColorValue;						
-						$this.val($newColorValue);						
+						$bgColor = $newColorValue;
+						$this.val($newColorValue);
 					}
-					else {						
+					else if ( $parsedValue.value.startsWith( 'var' ) ) {
+						$bgColor = FLBuilderColor( $parsedValue.value ).toDisplay();
+					}
+					else {
 						$bgColor = '#' + $this.val().toString();
 					}
 
@@ -603,15 +620,24 @@ var FLBuilderColorPicker;
 						'<div class="fl-color-picker-presets-open-label fl-color-picker-active">' + this.options.labels.colorPresets + ' <span class="fl-color-picker-icon-arrow-up"></span></div>' +
 						'<div class="fl-color-picker-presets-close-label">' + this.options.labels.colorPicker + ' <span class="fl-color-picker-icon-arrow-down"></span></div>' +
 					'</div>' +
-					'<ul class="fl-color-picker-presets-list"></ul>' +
+					'<div class="fl-color-picker-presets-list-wrap">' +
+						'<div class="fl-color-picker-presets-label">Static Colors</div>' +
+						'<ul class="fl-color-picker-presets-list"></ul>' +
+						'<div class="fl-color-picker-globals-label" data-type="bb">Global Colors</div>' +
+						'<ul class="fl-color-picker-globals-list" data-type="bb"></ul>' +
+						'<div class="fl-color-picker-globals-label" data-type="theme">Theme Colors</div>' +
+						'<ul class="fl-color-picker-globals-list" data-type="theme"></ul>' +
+						'<div class="fl-color-picker-globals-label" data-type="wp">WordPress Colors</div>' +
+						'<ul class="fl-color-picker-globals-list" data-type="wp"></ul>' +
+					'</div>' +
 				'</div>';
-	
-			this._hexHtml = '<input type="text" class="fl-color-picker-input" maxlength="7" placeholder="' + this.options.labels.placeholder + '">' +
+
+			this._hexHtml = '<input type="text" class="fl-color-picker-input" placeholder="' + this.options.labels.placeholder + '">' +
 					   '<div class="fl-color-picker-preset-add"></div>';
 
 			this._presetsTpl = '<li class="fl-color-picker-preset"><span class="fl-color-picker-preset-color"></span> <span class="fl-color-picker-preset-label"></span> <span class="fl-color-picker-preset-remove fl-color-picker-icon-remove"></span></li>';
 
-			this._noPresetsTpl = '<li class="fl-color-picker-no-preset"><span class="fl-color-picker-preset-label">' + this.options.labels.noPresets + '</span></li>';
+			this._noPresetsTpl = '<div class="fl-color-picker-no-preset"><span class="fl-color-picker-preset-label">' + this.options.labels.noPresets + '</span></div>';
 
 		},
 
@@ -639,21 +665,149 @@ var FLBuilderColorPicker;
 		 *
 		 * @see    _addPresetView
 		 * @since  1.6.4
-		 * @method _buildUI
+		 * @method _buildPresetsUI
 		 */
-		_buildUI: function(){
+		_buildPresetsUI: function(){
 			var self = this;
-			self._presetsList = this._ui.find( '.fl-color-picker-presets-list' );
-			self._presetsList.html('');
+			var globals = this.options.globals();
+			var hasGlobals = false;
 
+			$( '.fl-color-picker-presets-list' ).empty();
+			$( '.fl-color-picker-globals-list' ).empty();
+
+			// Color Presets
 			if( this.options.presets.length > 0 ){
 				$.each( this.options.presets, function( index, val ) {
 					self._addPresetView( val );
-				});				
+				});
 			} else {
-				self._presetsList.append( this._noPresetsTpl );			
+				$( '.fl-color-picker-presets-label' ).hide();
+				$( '.fl-color-picker-presets-list' ).hide();
 			}
 
+			// Global Colors
+			if ( Array.isArray( globals.bb ) ) {
+				globals.bb = globals.bb.filter( function( config ) {
+					return !! config.color;
+				} )
+			}
+
+			for ( var key in globals ) {
+				if( globals[ key ].length > 0 ){
+					hasGlobals = true;
+					$.each( globals[ key ], function( index, val ) {
+						self._addGlobalColorView( key, val );
+					});
+				} else {
+					$( '.fl-color-picker-globals-label[data-type="' + key + '"]' ).hide();
+					$( '.fl-color-picker-globals-list[data-type="' + key + '"]' ).hide();
+				}
+			}
+
+			if ( this.options.presets.length === 0 && ! hasGlobals ) {
+				$( '.fl-color-picker-presets-list-wrap' ).append( this._noPresetsTpl );
+			}
+		},
+
+		/**
+		 * Helper function to build a view for each global color.
+		 *
+		 * @since  2.8
+		 * @param  {Object} config
+		 * @return void
+		 */
+		_addGlobalColorView: function( key, config ){
+			var tpl = $( this._presetsTpl );
+			var color = config.color;
+
+			if ( ! color.match( /^(var|rgb|hs(l|v))a?\(/ ) && ! color.startsWith( '#' ) ) {
+				color = '#' + color;
+			}
+
+			tpl
+				.data( 'color', config )
+				.find( '.fl-color-picker-preset-color' )
+					.css({ backgroundColor: FLBuilderColor( color ).toDisplay() })
+					.end()
+				.find( '.fl-color-picker-preset-label' )
+					.html( config.name ? config.name : config.label );
+
+			$( '.fl-color-picker-globals-label[data-type="' + key + '"]' )
+				.attr( 'data-has-colors', 1 );
+
+			$( '.fl-color-picker-globals-list[data-type="' + key + '"]' )
+				.attr( 'data-has-colors', 1 )
+				.append( tpl );
+		},
+
+		/**
+		 * Shows or hides the global colors view for a specific field
+		 * depending on if that field supports field connections.
+		 *
+		 * @since  2.8
+		 * @param  {Object} field
+		 * @return void
+		 */
+		_toggleGlobalColorView: function( field ) {
+			var labels = this._ui.find( '.fl-color-picker-globals-label[data-has-colors]' );
+			var lists = this._ui.find( '.fl-color-picker-globals-list[data-has-colors]' );
+			var isGlobalColorField = !! field.find( '.fl-global-color-field' ).length;
+			var hasConnection = !! field.find( '.fl-field-connection' ).length;
+
+			if ( isGlobalColorField || ! hasConnection ) {
+				labels.hide();
+				lists.hide();
+			} else {
+				labels.show();
+				lists.show();
+			}
+		},
+
+		/**
+		 * Bind events for global color presets.
+		 *
+		 * @since  2.8
+		 * @return void
+		 */
+		_globalColorControls: function() {
+			var self = this;
+			var presetsWrap = self._ui.find( '.fl-color-picker-presets-list-wrap' );
+			var list = $( '.fl-color-picker-globals-list' );
+			var prefixes = {
+				bb: 'Global',
+				wp: 'WordPress',
+				theme: 'Theme'
+			};
+
+			list.off( 'click' ).on( 'click', '.fl-color-picker-preset', function() {
+				var item = $( this );
+				var field = self._currentElement.parents( '.fl-field' );
+				var isCompound = !! field.find( '.fl-field-connection-compound' ).length;
+				var input = isCompound ? self._currentElement : field;
+				var colorConfig = item.data( 'color' );
+				var color = colorConfig.color;
+
+				if ( ! color.match( /^(var|rgb|hs(l|v))a?\(/ ) && ! color.startsWith( '#' ) ) {
+					color = '#' + color;
+				} else {
+					color = FLBuilderColor( color ).toDisplay();
+				}
+
+				var property = colorConfig.uid ? 'global_color_' + colorConfig.uid : 'theme_color_' + colorConfig.slug;
+				var label = FLBuilderConfig.globalColorLabels[ property ];
+
+				var config = {
+					property : property,
+					object : 'site',
+					field  :'color',
+					settings : null
+				};
+
+				presetsWrap.slideToggle( 500 );
+				self._togglePicker();
+
+				FLThemeBuilderFieldConnections._connectField( input, label, config );
+			} );
 		},
 
 		/**
@@ -664,25 +818,22 @@ var FLBuilderColorPicker;
 		 * @return void
 		 */
 		_addPresetView: function( val ){
-
-			var hasEmpty = this._presetsList.find( '.fl-color-picker-no-preset' );
-
-			if( hasEmpty.length > 0 ){
-				hasEmpty.remove();
-			}
+			$( '.fl-color-picker-presets-label' ).show();
+			$( '.fl-color-picker-presets-list' ).show();
+			$( '.fl-color-picker-no-preset' ).remove();
 
 			var tpl   = $( this._presetsTpl ),
-				color = Color( val );
+				color = FLBuilderColor( val );
 
 			tpl
 				.attr( 'data-color', val )
 				.find( '.fl-color-picker-preset-color' )
-					.css({ backgroundColor: color.toString() })
+					.css({ backgroundColor: color.toDisplay() })
 					.end()
 				.find( '.fl-color-picker-preset-label' )
 					.html( color.toString() );
 
-			this._presetsList.append( tpl );		
+			$( '.fl-color-picker-presets-list' ).append( tpl );
 		},
 
 		/**
@@ -720,16 +871,20 @@ var FLBuilderColorPicker;
 					var $this = $(this);
 					self._currentElement = $this.parent().find('.fl-color-picker-value');
 
+					self._toggleGlobalColorView( $this.parents( '.fl-field' ) );
+
 					self._ui.position({
 						my: 'left top',
 						at: 'left bottom',
 						of: $this,
-						collision: 'flipfit',
+						collision: 'flip',
+						within: window.parent,
 						using: function( position, feedback ){
-							self._togglePicker( position );
+							if ( ! self._ui.hasClass( 'fl-color-picker-active' )  ) {
+								self._togglePicker( position );
+							}
 						}
-					})
-					
+					});
 				} )
 				.on( 'click', '.fl-color-picker-clear', function(){
 					var $this = $(this);
@@ -748,10 +903,27 @@ var FLBuilderColorPicker;
 				} );
 
 			// logic to hide picker when the user clicks outside it
-			$( document ).on( 'mousedown', function( event ) {
-				if ( 0 === $( event.target ).closest( '.fl-color-picker-ui' ).length ) {
-                    $( '.fl-color-picker-ui.fl-color-picker-active' ).removeClass( 'fl-color-picker-active' );
-                }
+			$( window.parent.document ).add( document ).on( 'mousedown', function( event ) {
+				var isPicker = $( event.target ).closest( '.fl-color-picker-ui' ).length;
+
+				if ( ! isPicker ) {
+					presets = self._ui.find( '.fl-color-picker-presets' );
+					presetsCloseLabel = presets.find( '.fl-color-picker-presets-close-label' );
+					presetsList = presets.find( '.fl-color-picker-presets-list' );
+
+					if ( presetsCloseLabel.hasClass( 'fl-color-picker-active' ) ) {
+						list = presetsList.find('li').find('span.fl-color-picker-preset-label');
+						if ( list.length > 0 ) {
+							presets = [];
+							$.each(list,function(i,v){
+								presets.push( $(v).text() );
+							})
+							$(FLBuilder.colorPicker).trigger( 'presetSorted', { presets: presets } );
+						}
+					}
+					$( '.fl-color-picker-ui.fl-color-picker-active', window.parent.document )
+						.removeClass( 'fl-color-picker-active' );
+				}
 			});
 
 		},
@@ -770,7 +942,9 @@ var FLBuilderColorPicker;
 				presets 	      = self._ui.find( '.fl-color-picker-presets' ),
 				presetsOpenLabel  = presets.find( '.fl-color-picker-presets-open-label' ),
 				presetsCloseLabel = presets.find( '.fl-color-picker-presets-close-label' ),
+				presetsWrap 	  = presets.find( '.fl-color-picker-presets-list-wrap' ),
 				presetsList 	  = presets.find( '.fl-color-picker-presets-list' );
+
 
 			// add preset
 			addPreset
@@ -780,31 +954,47 @@ var FLBuilderColorPicker;
 				} );
 
 			// presets toggle
-			presetsList
+			presetsWrap
 				.css({ height: ( self.element.innerHeight() + self._iris.innerHeight() + 14 ) + 'px' })
 				.hide();
-			
+
+			presetsList.sortable();
+
 			presets
 				.off( 'click' )
 				.on( 'click', '.fl-color-picker-presets-toggle', function(){
+
+					if ( presetsCloseLabel.hasClass( 'fl-color-picker-active' ) ) {
+						list = presetsList.find('li').find('span.fl-color-picker-preset-label');
+						if ( list.length > 0 ) {
+							presets = [];
+							$.each(list,function(i,v){
+								presets.push( $(v).text() );
+							})
+							$(FLBuilder.colorPicker).trigger( 'presetSorted', { presets: presets } );
+						}
+					}
 					presetsOpenLabel.toggleClass('fl-color-picker-active');
 					presetsCloseLabel.toggleClass('fl-color-picker-active');
-					presetsList.slideToggle( 500 );
+					presetsWrap.slideToggle( 500 );
 				} )
+
+			presetsList
 				// set preset as current color
+				.off( 'click' )
 				.on( 'click', '.fl-color-picker-preset', function( e ){
-					var currentColor = new Color( $( this ).data( 'color' ).toString() );
-					
+					var currentColor = new FLBuilderColor( $( this ).data( 'color' ).toString() );
+
 					self._setColor( currentColor );
 					self._currentElement
 						.parent()
 						.find( '.fl-color-picker-color' )
-						.css({ backgroundColor: currentColor.toString() })
+						.css({ backgroundColor: currentColor.toDisplay() })
 						.removeClass('fl-color-picker-empty');
 
 					presetsOpenLabel.toggleClass('fl-color-picker-active');
 					presetsCloseLabel.toggleClass('fl-color-picker-active');
-					presetsList.slideToggle( 500 );
+					presetsWrap.slideToggle( 500 );
 				})
 				// removes a preset
 				.on( 'click', '.fl-color-picker-preset-remove', function( e ){
@@ -829,17 +1019,17 @@ var FLBuilderColorPicker;
 					FLBuilderColorPresets.splice( index, 1 );
 					this.options.presets = FLBuilderColorPresets;
 
-					this._presetsList
+					$( '.fl-color-picker-presets-list' )
 						.find('.fl-color-picker-preset[data-color="'+ color +'"]' )
 						.slideUp( function(){
 							$( this ).remove();
 						});
-
 				}
 
 				if( FLBuilderColorPresets.length < 1 ){
-					this._presetsList.append( this._noPresetsTpl );
-				}							
+					$( '.fl-color-picker-presets-label' ).hide();
+					$( '.fl-color-picker-presets-list' ).hide();
+				}
 
 				// CALLBACK FOR PRESET REMOVED
 				$(this).trigger( 'presetRemoved', { presets: FLBuilderColorPresets } );
@@ -857,14 +1047,24 @@ var FLBuilderColorPicker;
 		 * @since  1.6.4
 		 */
 		_addPreset: function( preset ){
-			var color = preset.toString().replace( /^#/, '' );
+
+			if( ! this._CheckValidColor( preset ) ) {
+				alert( this.options.labels.noneColorSelected );
+				return false;
+			}
+			// Stored with the leading # intact. FLBuilderModel::get_color_presets()
+			// normalizes bare hex on read, so stripping it here would leave this
+			// array — and the dupe check below — in a different format from the
+			// presets it was seeded with.
+			// _CheckValidColor above already guarantees a #, rgb, hsl or var prefix.
+			var color = preset.toString().trim();
 
 			// check if color is empty
 			if( color === '' ){
 				alert( this.options.labels.noneColorSelected );
 			// check if the color is already added
 			} else if( FLBuilderColorPresets.indexOf( color ) > -1 ){
-				alert( this.options.labels.alreadySaved.replace( '%s', '#' + color ) );
+				alert( this.options.labels.alreadySaved.replace( '%s', color ) );
 			// add color to presets, fires visual feedback and triggers an event
 			} else {
 
@@ -875,8 +1075,34 @@ var FLBuilderColorPicker;
 				this.options.presets = FLBuilderColorPresets;
 
 				// CALLBACK FOR COLOR ADDED
-				$(this).trigger( 'presetAdded', { presets: FLBuilderColorPresets } );			
+				$(this).trigger( 'presetAdded', { presets: FLBuilderColorPresets } );
 			}
+		},
+
+		/**
+		 * Validates a color string, supports all types.
+		 * If not hex, rgba? or hsl then return false.
+		 * @return {Boolean}
+		 */
+		_CheckValidColor: function(color) {
+
+			// first check we are valid.
+			if( ! color.match( /^#/ ) && ! color.match( /^rgb/ ) && ! color.match( /^hsl/ )  && ! color.match( /^var/ ) ) {
+				return false;
+			}
+
+			var e = window.parent.document.getElementById( 'divValidColor' );
+			if ( !e ) {
+				e = window.parent.document.createElement( 'div' );
+				e.id = 'divValidColor';
+			}
+			e.style.borderColor = '';
+			e.style.borderColor = color;
+			var tmpcolor = e.style.borderColor;
+			if ( tmpcolor.length == 0 ) {
+				return false;
+			}
+			return true;
 		},
 
 		/**
@@ -889,30 +1115,15 @@ var FLBuilderColorPicker;
 		_togglePicker: function( position ){
 			var self = this;
 
-			// logic for correct order of things
-			if( this._ui.hasClass( 'fl-color-picker-active' ) ){
-				// if the picker is open, hides first, then changes the position
+			if ( this._ui.hasClass( 'fl-color-picker-active' ) ) {
 				this._ui.removeClass( 'fl-color-picker-active' );
-
-				if( position ){
-					setTimeout(	function(){
-						self._ui.css( position );
-						self._ui.addClass( 'fl-color-picker-active' );
-						self._setColor( self._currentElement.val() );
-					}, 200 );					
-				}
-
 			} else {
 				if( position ){
 					self._ui.css( position );
 				}
-				// if the picker is closed, changes position first, then shows it
-				setTimeout(	function(){
-					self._ui.addClass( 'fl-color-picker-active' );
-					self._setColor( self._currentElement.val() );
-				}, 200 );
+				self._setColor( self._currentElement.val() ); // Must happen first.
+				self._ui.addClass( 'fl-color-picker-active' );
 			}
-
 		},
 
 		/**
@@ -1039,7 +1250,7 @@ var FLBuilderColorPicker;
 				totalPadding = 20,
 				innerWidth = opts.border ? opts.width - totalPadding : opts.width,
 				controlsHeight;
-				//paletteCount = $.isArray( opts.palettes ) ? opts.palettes.length : self._palettes.length,
+				//paletteCount = Array.isArray( opts.palettes ) ? opts.palettes.length : self._palettes.length,
 				//paletteMargin, paletteWidth, paletteContainerWidth;
 
 			if ( reset ) {
@@ -1088,8 +1299,9 @@ var FLBuilderColorPicker;
 			var self = this,
 				debounceTimeout = 100,
 				callback = function( event ){
-					var color = new Color( input.val() ),
-						val = input.val().replace( /^#/, '' );
+					var color = new FLBuilderColor( input.val() ),
+						val = input.val().replace( /^#/, '' ),
+						isPickerEmpty = self._currentElement.hasClass( 'fl-color-picker-empty' );
 
 					input.removeClass( 'iris-error' );
 					// we gave a bad color
@@ -1100,8 +1312,8 @@ var FLBuilderColorPicker;
 						}
 					} else {
 
-						if ( color.toString() !== self._color.toString() ) {
-	
+						if ( color.toString() !== self._color.toString() || ( '' !== self._color.toString() && isPickerEmpty ) ) {
+
 							if( event.type === 'keyup' ){
 								if( val.match( /^[0-9a-fA-F]{3}$/ ) )
 									return;
@@ -1111,16 +1323,16 @@ var FLBuilderColorPicker;
 								self._currentElement
 									.parent()
 									.find( '.fl-color-picker-color' )
-									.css({ backgroundColor: Color( val ).toString() })
+									.css({ backgroundColor: FLBuilderColor( val ).toDisplay() })
 									.removeClass( 'fl-color-picker-empty' );
 
 								self._currentElement
 									.val( val )
 									.trigger( 'change' );
-								
+
 							} else if( event.type === 'paste' ){
 								val = event.originalEvent.clipboardData.getData( 'text' ).replace( /^#/, '' );
-								hex = Color( val ).toString();
+								hex = FLBuilderColor( val ).toString();
 
 								self._setColor( val );
 								input.val( hex );
@@ -1128,19 +1340,21 @@ var FLBuilderColorPicker;
 								self._currentElement
 									.parent()
 									.find( '.fl-color-picker-color' )
-									.css({ backgroundColor: hex })
+									.css({ backgroundColor: FLBuilderColor( hex ).toDisplay() })
 									.removeClass( 'fl-color-picker-empty' );
 
 								self._currentElement
 									.val( val )
 									.trigger( 'change' );
 
-								return false;			
+								return false;
 							}
 
 						}
 					}
 				};
+
+			self._currentElement = input.parent().find( '.fl-color-picker-value' );
 
 			input.on( 'change', callback ).on( 'keyup', self._debounce( callback, debounceTimeout ) );
 
@@ -1190,7 +1404,7 @@ var FLBuilderColorPicker;
 			}).on( 'mousedown mouseup', function( event ) {
 				var focusClass = 'ui-state-focus';
 				event.preventDefault();
-				if (event.type === 'mousedown' ) {
+				if ( event.type === 'mousedown' ) {
 					self.picker.find( '.' + focusClass ).removeClass( focusClass ).blur();
 					$(this).addClass( focusClass ).focus();
 				} else {
@@ -1277,17 +1491,27 @@ var FLBuilderColorPicker;
 		_setColor: function( value ) {
 			var self = this,
 				oldValue = self.options.color,
+				defaultColor = '#ff0000',
 				doDimensions = false,
 				hexLessColor,
 				newColor,
 				method;
+
+			// Set default if value is empty.
+			if ( '' === value ) {
+				value = defaultColor;
+				self.default = true;
+			}
+			else {
+				self.default = false;
+			}
 
 			// ensure the new value is set. We can reset to oldValue if some check wasn't met.
 			self.options.color = value;
 			// cast to string in case we have a number
 			value = '' + value;
 			hexLessColor = value.replace( /^#/, '' );
-			newColor = new Color( value ).setHSpace( self.options.mode );
+			newColor = new FLBuilderColor( value ).setHSpace( self.options.mode );
 			if ( newColor.error ) {
 				self.options.color = oldValue;
 			} else {
@@ -1352,6 +1576,11 @@ var FLBuilderColorPicker;
 				type = controlOpts[self.active] || 'external',
 				oldHue = self.hue;
 
+			// Clear CSS variables when the controls are used.
+			if ( self.active !== 'external' ) {
+				self._color._var = null;
+			}
+
 			if ( self.active === 'strip' ) {
 				// take no action on any of the square sliders if we adjusted the strip
 				actions = [];
@@ -1395,19 +1624,26 @@ var FLBuilderColorPicker;
 				self.element.removeClass( 'iris-error' );
 				if ( self.element.val() !== self._color.toString() ) {
 					self.element.val( self._color.toString() );
-
-					if( this._currentElement ){
+				}
+				if( this._currentElement ){
+					// Check if picker is not a default or an empty.
+					if ( ! self.default || (self.default && 'external' !== self.active ) ) {
 						this._currentElement
 							.val( self._color.toString().replace( /^#/, '' ) )
 							.parent()
 							.find( '.fl-color-picker-color' )
-							.css({ backgroundColor: self._color.toString() })
+							.css({ backgroundColor: self._color.toDisplay() })
 							.removeClass( 'fl-color-picker-empty' );
-
-						self._wrapper.find('.fl-alpha-slider-offset').css('background-color', self._color.toString());	
-						this._currentElement.trigger( 'change' );
+					}
+					else {
+						this._currentElement.val( '' );
 					}
 
+					self._wrapper.find('.fl-alpha-slider-offset').css('background-color', self._color.toDisplay());
+
+					if ( self._ui.hasClass( 'fl-color-picker-active' ) ) {
+						this._currentElement.trigger( 'change' );
+					}
 				}
 			}
 
@@ -1452,25 +1688,26 @@ var FLBuilderColorPicker;
 		 *
 		 * @since  1.8.5
 		 * @method _buildAlphaUI
-		 */		
+		 */
 		_buildAlphaUI: function() {
 			var self = this;
-			
+
 			self._wrapper.on( 'click', '.fl-color-picker-color', function(){
 				var $this 			= $(this),
 					$currentColor   = self._currentElement.val();
 
 				if ( $this.hasClass('fl-color-picker-alpha-enabled') ) {
-					
+
 					// Add alpha if not exists
 					if (self._ui.find('.fl-alpha-wrap').length <= 0) {
-						$(self._alphaHtml).insertAfter( self._iris );	
+						$(self._alphaHtml).insertAfter( self._iris );
 					}
 
 					self.picker.addClass('fl-color-alpha-enabled');
 					self._pickerAlphaControls();
 				}
 				else {
+					self.picker.removeClass('fl-color-alpha-enabled');
 					self._ui.find('.fl-alpha-wrap').remove();
 				}
 			});
@@ -1487,7 +1724,7 @@ var FLBuilderColorPicker;
 			var self 		= this,
 				el 	 		= self._currentElement,
 				picker 		= flBuilderParseColorValue( el.val() ),
-				floatValue  = parseFloat( picker.alpha / 100 ),	
+				floatValue  = parseFloat( picker.alpha / 100 ),
 				wrapper 	= self._wrapper,
                 container  	= self._ui,
                 alphaWrap   = container.find('.fl-alpha-wrap'),
@@ -1519,7 +1756,7 @@ var FLBuilderColorPicker;
 
               		// Initializes alpha values
 	                alphaOffset.css({ backgroundColor: picker.value });
-	                
+
 	                // Clear alpha values
 	                wrapper.on('click', '.fl-color-picker-clear', function() {
 	                  	self._color._alpha = 1;
@@ -1531,11 +1768,11 @@ var FLBuilderColorPicker;
               	// slider: options
               	value: picker.alpha,
               	step: 1,
-             	min: 1,
+             	min: 0,
               	max: 100
             });
 		},
-		
+
 	};
 
 }( jQuery ));
@@ -1545,7 +1782,7 @@ var FLBuilderColorPicker;
  *
  * Color.js - v0.9.11 - 2013-08-09
  * https://github.com/Automattic/Color.js
- * Copyright (c) 2013 Matt Wiebe; Licensed GPLv2 
+ * Copyright (c) 2013 Matt Wiebe; Licensed GPLv2
 */
 (function(global, undef) {
 
@@ -1559,6 +1796,7 @@ var FLBuilderColorPicker;
 	Color.fn = Color.prototype = {
 		_color: 0,
 		_alpha: 1,
+		_var: null,
 		error: false,
 		// for preserving hue/sat in fromHsl().toHsl() flows
 		_hsl: { h: 0, s: 0, l: 0 },
@@ -1610,13 +1848,18 @@ var FLBuilderColorPicker;
 
 		fromCSS: function( color ) {
 			var list,
-				leadingRE = /^(rgb|hs(l|v))a?\(/;
+				leadingRE = /^(var|rgb|hs(l|v))a?\(/;
 			this.error = false;
 
 			// whitespace and semicolon trim
 			color = color.replace(/^\s+/, '').replace(/\s+$/, '').replace(/;$/, '');
 
 			if ( color.match(leadingRE) && color.match(/\)$/) ) {
+
+				if ( color.match( /^var/ ) ) {
+					return this.fromVar( color );
+				}
+
 				list = color.replace(/(\s|%)/g, '').replace(leadingRE, '').replace(/,?\);?$/, '').split(',');
 
 				if ( list.length < 3 )
@@ -1748,6 +1991,24 @@ var FLBuilderColorPicker;
 			}, true ); // true preserves hue/sat
 
 		},
+
+		fromVar: function( color ) {
+			var body = jQuery( 'body' );
+			var temp = jQuery( '<div />' );
+
+			temp.css( {
+				'color': color,
+				'display': 'none'
+			} );
+
+			this._var = color;
+			body.append( temp );
+			color = this.fromCSS( getComputedStyle( temp[0] ).color );
+			temp.remove();
+
+			return color;
+		},
+
 		// everything comes down to fromInt
 		fromInt: function( color, preserve ) {
 			this._color = parseInt( color, 10 );
@@ -1790,6 +2051,10 @@ var FLBuilderColorPicker;
 
 		toString: function() {
 
+			if ( this._var ) {
+				return this._var;
+			}
+
 			if ( this._alpha < 1 ) {
 	        	return this.toCSS('rgba', this._alpha).replace(/\s+/g, '');
 		    }
@@ -1804,6 +2069,24 @@ var FLBuilderColorPicker;
 				}
 			}
 			return '#' + hex;
+		},
+
+		toDisplay: function() {
+			var value = '';
+
+			if ( this._var ) {
+				var body = jQuery( 'body' );
+				var temp = jQuery( '<div />' );
+
+				temp.css( { 'color': this._var, 'display': 'none' } );
+				body.append( temp );
+				value = getComputedStyle( temp[0] ).color;
+				temp.remove();
+			} else {
+				value = this.toString();
+			}
+
+			return value;
 		},
 
 		toCSS: function( type, alpha ) {
@@ -2135,9 +2418,11 @@ var FLBuilderColorPicker;
 	}
 
 	// play nicely with Node + browser
-	if ( typeof exports === 'object' )
+	if ( typeof exports === 'object' ) {
 		module.exports = Color;
-	else
-		global.Color = Color;
+	} else {
+		global.FLBuilderColor = Color;
+		global.Color = Color; // Add for backwards compatibility.
+	}
 
 }(this));

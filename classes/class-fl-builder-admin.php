@@ -17,13 +17,16 @@ final class FLBuilderAdmin {
 		$basename = plugin_basename( FL_BUILDER_FILE );
 
 		// Activation
-		register_activation_hook( FL_BUILDER_FILE,           __CLASS__ . '::activate' );
+		register_activation_hook( FL_BUILDER_FILE, __CLASS__ . '::activate' );
 
 		// Actions
-		add_action( 'admin_init',                            __CLASS__ . '::show_activate_notice' );
+		add_action( 'admin_init', __CLASS__ . '::show_activate_notice' );
+		add_action( 'admin_init', __CLASS__ . '::sanity_checks' );
+		add_action( 'fl_after_license_form', __CLASS__ . '::check_curl', 11 );
 
 		// Filters
-		add_filter( 'plugin_action_links_' . $basename,      __CLASS__ . '::render_plugin_action_links' );
+		add_filter( 'plugin_action_links_' . $basename, __CLASS__ . '::render_plugin_action_links' );
+		add_filter( 'plugin_row_meta', __CLASS__ . '::render_settings_link', 10, 3 );
 	}
 
 	/**
@@ -38,11 +41,14 @@ final class FLBuilderAdmin {
 		global $wp_version;
 
 		// Check for WordPress 3.5 and above.
-		if ( ! version_compare( $wp_version, '3.5', '>=' ) ) {
-			self::show_activate_error( __( 'The <strong>Page Builder</strong> plugin requires WordPress version 3.5 or greater. Please update WordPress before activating the plugin.', 'fl-builder' ) );
+		if ( ! version_compare( $wp_version, '6.6', '>=' ) ) {
+			self::show_activate_error( __( 'The <strong>Beaver Builder</strong> plugin requires WordPress version 6.6 or greater. Please update WordPress before activating the plugin.', 'fl-builder' ) );
 		}
 
-		// Allow extensions to hook activation.
+		/**
+		 * Allow extensions to hook activation.
+		 * @see fl_builder_activate
+		 */
 		$activate = apply_filters( 'fl_builder_activate', true );
 
 		// Should we continue with activation?
@@ -51,11 +57,12 @@ final class FLBuilderAdmin {
 			// Check for multisite.
 			if ( is_multisite() ) {
 				$url = FLBuilderModel::get_upgrade_url( array(
-					'utm_medium' => 'bb-pro',
-					'utm_source' => 'plugins-admin-page',
+					'utm_medium'   => 'bb-pro',
+					'utm_source'   => 'plugins-admin-page',
 					'utm_campaign' => 'no-multisite-support',
 				) );
-				self::show_activate_error( sprintf( __( 'This version of the <strong>Page Builder</strong> plugin is not compatible with WordPress Multisite. <a%s>Please upgrade</a> to the Multisite version of this plugin.', 'fl-builder' ), ' href="' . $url . '" target="_blank"' ) );
+				/* translators: %s: upgrade url */
+				self::show_activate_error( sprintf( __( 'This version of the <strong>Beaver Builder</strong> plugin is not compatible with WordPress Multisite. <a%s>Please upgrade</a> to the Multisite version of this plugin.', 'fl-builder' ), ' href="' . $url . '" target="_blank"' ) );
 			}
 
 			// Success! Run the install.
@@ -64,12 +71,39 @@ final class FLBuilderAdmin {
 			// Trigger the activation notice.
 			self::trigger_activate_notice();
 
-			// Allow add-ons to hook into activation.
+			/**
+			 * Allow add-ons to hook into activation.
+			 * @see fl_builder_activated
+			 */
 			do_action( 'fl_builder_activated' );
 
 			// Flush the rewrite rules.
 			flush_rewrite_rules();
 		}
+	}
+
+	/**
+	 * Restrict builder settings accessibility based on the defined capability.
+	 *
+	 * @since 2.0.6
+	 * @return void
+	 */
+	static public function current_user_can_access_settings() {
+		return current_user_can( self::admin_settings_capability() );
+	}
+
+	/**
+	 * Define capability.
+	 *
+	 * @since 2.0.6
+	 * @return string
+	 */
+	static public function admin_settings_capability() {
+		/**
+		 * Default admin settings capability ( manage_options )
+		 * @see fl_builder_admin_settings_capability
+		 */
+		return apply_filters( 'fl_builder_admin_settings_capability', 'manage_options' );
 	}
 
 	/**
@@ -83,7 +117,41 @@ final class FLBuilderAdmin {
 	static public function show_activate_error( $message ) {
 		deactivate_plugins( FLBuilderModel::plugin_basename(), false, is_network_admin() );
 
-		die( $message );
+		wp_die( $message );
+	}
+
+	/**
+	 * @since 2.1.3
+	 */
+	static public function sanity_checks() {
+
+		if ( true !== FL_BUILDER_LITE ) {
+			// fetch the plugin install folder this should be bb-plugin
+			$folder = rtrim( FLBuilderModel::plugin_basename(), '/fl-builder.php' );
+
+			if ( 'bb-plugin' != $folder ) {
+				/* translators: %s: folder path */
+				$error = sprintf( __( 'Install Error! We detected that Beaver Builder appears to be installed in a folder called <kbd>%s</kbd>.<br />For automatic updates to work the plugin must be installed in the folder <kbd>bb-plugin</kbd>.', 'fl-builder' ), $folder );
+				FLBuilderAdminSettings::add_error( $error );
+			}
+		}
+
+		//Check for one.com htaccess file in uploads that breaks everything.
+		$upload_dir = wp_upload_dir();
+		$file       = trailingslashit( $upload_dir['basedir'] ) . '.htaccess';
+		if ( file_exists( $file ) ) {
+			$htaccess = file_get_contents( $file );
+			if ( false !== strpos( $htaccess, 'Block javascript except for visualcomposer (VC) plugin' ) ) {
+				FLBuilderAdminSettings::add_error(
+				/* translators: %s formatted .htaccess */
+				sprintf( __( 'Install Error! You appear to have a %s file in your uploads folder that will block all javascript files resulting in 403 errors. If you did not add this file please consult your host.', 'fl-builder' ), '<code>.htaccess</code>' ) );
+			}
+		}
+
+		/**
+		 * Fires after the builder's startup sanity checks have completed on admin init.
+		 */
+		do_action( 'fl_builder_after_sanity_checks' );
 	}
 
 	/**
@@ -94,7 +162,7 @@ final class FLBuilderAdmin {
 	 * @return void
 	 */
 	static public function trigger_activate_notice() {
-		if ( current_user_can( 'delete_users' ) ) {
+		if ( self::current_user_can_access_settings() ) {
 			set_transient( '_fl_builder_activation_admin_notice', true, 30 );
 		}
 	}
@@ -135,13 +203,19 @@ final class FLBuilderAdmin {
 	 */
 	static public function activate_notice() {
 		if ( FL_BUILDER_LITE !== true ) {
-			$hash    = '#license';
-			$message = __( 'Page Builder activated! <a%s>Click here</a> to enable remote updates.', 'fl-builder' );
+			$hash = '#license';
+			/* translators: %s: link to license page */
+			$message = __( 'Beaver Builder activated! <a%s>Click here</a> to enable remote updates.', 'fl-builder' );
 		} else {
-			$hash    = '#welcome';
-			$message = __( 'Page Builder activated! <a%s>Click here</a> to get started.', 'fl-builder' );
+			$hash = '#welcome';
+			/* translators: %s: link to welcome page */
+			$message = __( 'Beaver Builder activated! <a%s>Click here</a> to get started.', 'fl-builder' );
 		}
 
+		/**
+		 * Url to redirect to on activation
+		 * @see fl_builder_activate_redirect_url
+		 */
 		$url = apply_filters( 'fl_builder_activate_redirect_url', admin_url( '/options-general.php?page=fl-builder-settings' . $hash ) );
 
 		echo '<div class="updated" style="background: #d3ebc1;">';
@@ -176,16 +250,99 @@ final class FLBuilderAdmin {
 	 * @return array
 	 */
 	static public function render_plugin_action_links( $actions ) {
+
+		/**
+		 * Some bad plugins set $actions to '' or false to remove all plugin actions
+		 * when it should be an empty array, in later PHP versions this results in a fatal error.
+		 */
+		if ( ! is_array( $actions ) ) {
+			$actions = array();
+		}
 		if ( FL_BUILDER_LITE === true ) {
-			$url = FLBuilderModel::get_upgrade_url( array(
-				'utm_medium' => 'bb-lite',
-				'utm_source' => 'plugins-admin-page',
+			$url       = FLBuilderModel::get_upgrade_url( array(
+				'utm_medium'   => 'bb-lite',
+				'utm_source'   => 'plugins-admin-page',
 				'utm_campaign' => 'plugins-admin-upgrade',
 			) );
 			$actions[] = '<a href="' . $url . '" style="color:#3db634;" target="_blank">' . _x( 'Upgrade', 'Plugin action link label.', 'fl-builder' ) . '</a>';
 		}
 
+		if ( is_network_admin() ) {
+			$url = network_admin_url( '/settings.php?page=fl-builder-multisite-settings' );
+		} else {
+			$url = admin_url( '/options-general.php?page=fl-builder-settings' );
+		}
+
+		$actions[] = '<a href="' . $url . '">' . __( 'Settings', 'fl-builder' ) . '</a>';
+
 		return $actions;
+	}
+
+	/**
+	 * Show Settings link in plugin action links
+	 */
+	public static function render_settings_link( $plugin_meta, $plugin_file, $plugin_data ) {
+
+		if ( 'fl-builder.php' !== basename( $plugin_file ) ) {
+			return $plugin_meta;
+		}
+
+		if ( ! FLBuilderModel::is_white_labeled() ) {
+			$url           = FLBuilderModel::get_store_url( 'change-logs', array(
+				'utm_medium'   => 'bb-pro',
+				'utm_source'   => 'plugins-admin-page',
+				'utm_campaign' => 'plugins-admin-changelog',
+			) );
+			$plugin_meta[] = '<a href="' . $url . '" target="_blank">' . _x( 'Change Log', 'Plugin action link label.', 'fl-builder' ) . '</a>';
+		}
+
+		return $plugin_meta;
+	}
+
+	/**
+	 * If Curl module is not installed, inform user on license page as updates are likely to not work.
+	 * @since 2.2.2
+	 */
+	static public function check_curl() {
+
+		$curl = ( function_exists( 'curl_version' ) ) ? true : false;
+
+		if ( ! $curl ) {
+			$text     = __( "We've detected that your server does not have the PHP cURL extension installed. Ask your hosting provider to install it so you'll be able to perform automatic updates without error.", 'fl-builder' );
+			$link     = 'https://docs.wpbeaverbuilder.com/beaver-builder/troubleshooting/common-issues/error-when-trying-to-install-update';
+			$link_txt = __( 'See our Knowledge Base for more info.', 'fl-builder' );
+			printf( '<div class="curl-alert"><p>%s</p><p><a target="_blank" href="%s">%s</a></p></div>', $text, $link, $link_txt );
+		}
+	}
+
+	static public function render_form_lite() {
+
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$plugin_slug       = 'bb-plugin/fl-builder.php';
+		$installed_plugins = get_plugins();
+		$installed         = array_key_exists( $plugin_slug, $installed_plugins ) || in_array( $plugin_slug, $installed_plugins, true );
+		$plugins_link      = sprintf( "<a href='%s'>%s</a>", admin_url( 'plugins.php' ), __( 'Plugins Page', 'fl-builder' ) );
+		$docs_link         = sprintf( "<a target='_blank' href='%s'>%s</a>", 'https://docs.wpbeaverbuilder.com/beaver-builder/getting-started/install/', __( 'Documentation', 'fl-builder' ) );
+		?>
+		<div id="fl-upgrade-lite-form" class="fl-upgrade-page-content">
+
+			<h3 class="fl-settings-form-header"><?php _e( 'Beaver Builder (Lite version)', 'fl-builder' ); ?></h3>
+			<?php if ( $installed ) : ?>
+				<p><?php _e( "We have detected that a premium version of Beaver Builder plugin is installed but not activated, so you're still using the free version of Beaver Builder.", 'fl-builder' ); ?></p>
+				<?php // translators: %s: Link to plugins page ?>
+				<p><?php printf( __( 'You can activate the premium version on the %s.', 'fl-builder' ), $plugins_link ); ?></p>
+				<?php // translators: %s: Link to docs page ?>
+				<p><?php printf( __( 'For detailed instructions to activate and license the premium version, see the %s.', 'fl-builder' ), $docs_link ); ?></p>
+
+			<?php else : ?>
+			<p><?php _e( 'You currently have the free Beaver Builder plugin activated, no license is required.', 'fl-builder' ); ?></p>
+				<?php // translators: %s: Link to docs page ?>
+			<p><?php printf( __( 'If you have purchased a premium version of Beaver Builder, see our %s for step-by-step upgrade instructions.', 'fl-builder' ), $docs_link ); ?></p>
+		<?php endif; ?>
+		</div>
+			<?php
 	}
 
 	/**

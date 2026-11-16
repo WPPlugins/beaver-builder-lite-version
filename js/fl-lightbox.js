@@ -6,11 +6,9 @@
 	 * @class FLLightbox
 	 * @since 1.0
 	 */
-	FLLightbox = function(settings)
+	FLLightbox = function( settings )
 	{
-		this._init(settings);
-		this._render();
-		this._bind();
+		this._init( settings );
 	};
 
 	/**
@@ -22,11 +20,80 @@
 	 * @method closeParent
 	 * @param {Object} child An HTML element or jQuery reference to an element.
 	 */
-	FLLightbox.closeParent = function(child)
+	FLLightbox.closeParent = function( child )
 	{
-		var instanceId = $(child).closest('.fl-lightbox-wrap').attr('data-instance-id');
+		var instanceId = $( child ).closest( '.fl-lightbox-wrap' ).attr( 'data-instance-id' );
+		if ( ! _.isUndefined( instanceId ) ) {
+			FLLightbox._instances[ instanceId ].close();
+		}
+	};
 
-		FLLightbox._instances[instanceId].close();
+	/**
+	 * Returns the classname for the resize control in lightbox headers.
+	 *
+	 * @since 2.0
+	 * @static
+	 * @method getResizableControlClass
+	 * @return {String}
+	 */
+	FLLightbox.getResizableControlClass = function()
+	{
+		var resizable = $( '.fl-lightbox-resizable', window.parent.document ).eq( 0 ),
+			className = 'far fa-window-maximize';
+
+		if ( resizable.length && resizable.hasClass( 'fl-lightbox-width-full' ) ) {
+			className = 'far fa-window-minimize';
+		}
+
+		return className;
+	};
+
+	/**
+	 * Unbinds events for all lightbox instances.
+	 *
+	 * @since 2.0
+	 * @static
+	 * @method unbindAll
+	 */
+	FLLightbox.unbindAll = function()
+	{
+		var id;
+
+		for ( id in FLLightbox._instances ) {
+			FLLightbox._instances[ id ]._unbind();
+		}
+	};
+
+	/**
+	 * Binds events for all lightbox instances.
+	 *
+	 * @since 2.0
+	 * @static
+	 * @method bindAll
+	 */
+	FLLightbox.bindAll = function()
+	{
+		var id;
+
+		for ( id in FLLightbox._instances ) {
+			FLLightbox._instances[ id ]._bind();
+		}
+	};
+
+	/**
+	 * Close all lightbox instances.
+	 *
+	 * @since 2.0
+	 * @static
+	 * @method closeAll
+	 */
+	FLLightbox.closeAll = function()
+	{
+		var id;
+
+		for ( id in FLLightbox._instances ) {
+			FLLightbox._instances[ id ].close();
+		}
 	};
 
 	/**
@@ -77,6 +144,15 @@
 		_visible: false,
 
 		/**
+		 * Whether closing the lightbox is allowed or not.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @property {Boolean} _allowClosing
+		 */
+		_allowClosing: true,
+
+		/**
 		 * A timeout used to throttle the resize event.
 		 *
 		 * @since 1.0
@@ -86,16 +162,6 @@
 		_resizeTimer: null,
 
 		/**
-		 * A flag for whether this instance should be
-		 * draggable or not.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @property {Boolean} _draggable
-		 */
-		_draggable: false,
-
-		/**
 		 * Default config object.
 		 *
 		 * @since 1.0
@@ -103,10 +169,12 @@
 		 * @property {Object}  _defaults
 		 * @property {String}  _defaults.className 		- A custom classname to add to the wrapper div.
 		 * @property {Boolean} _defaults.destroyOnClose - Flag for whether the instance should be destroyed when closed.
+		 * @property {Boolean} _defaults.resizable 		- Flag for Whether this instance should be resizable or not.
 		 */
 		_defaults: {
 			className: '',
-			destroyOnClose: false
+			destroyOnClose: false,
+			resizable: false
 		},
 
 		/**
@@ -119,7 +187,15 @@
 		 */
 		open: function(content)
 		{
-			this._node.find('.fl-lightbox').attr( 'style', '' );
+			var lightbox = this._node.find( '.fl-lightbox' ),
+				isPinned = ( lightbox.closest( '.fl-builder-ui-pinned' ).length ),
+				settings = this._getPositionSettings();
+
+			if ( ! isPinned && settings && this._defaults.resizable ) {
+				lightbox.css( settings );
+			}
+
+			this._bind();
 			this._node.show();
 			this._visible = true;
 
@@ -131,6 +207,8 @@
 			}
 
 			this.trigger('open');
+
+			FLBuilder.triggerHook('didShowLightbox', this);
 		},
 
 		/**
@@ -141,14 +219,49 @@
 		 */
 		close: function()
 		{
-			this.trigger('beforeClose');
+			var parent = this._node.data('parent');
+
+			if ( ! this._allowClosing ) {
+				return;
+			}
+
+			this.trigger('beforeCloseLightbox');
+			this._unbind();
 			this._node.hide();
 			this._visible = false;
 			this.trigger('close');
 
+			FLBuilder.triggerHook('didHideLightbox');
+
+			if ( this._defaults.resizable && _.isUndefined( parent ) ) {
+				FLBuilder.triggerHook('didHideAllLightboxes');
+			}
+
 			if(this._defaults.destroyOnClose) {
 				this.destroy();
 			}
+		},
+
+		/**
+		 * Disables closing the lightbox.
+		 *
+		 * @since 2.0
+		 * @method disableClose
+		 */
+		disableClose: function()
+		{
+			this._allowClosing = false;
+		},
+
+		/**
+		 * Enables closing the lightbox.
+		 *
+		 * @since 2.0
+		 * @method enableClose
+		 */
+		enableClose: function()
+		{
+			this._allowClosing = true;
 		},
 
 		/**
@@ -161,8 +274,12 @@
 		 */
 		setContent: function(content)
 		{
+			this.empty();
 			this._node.find('.fl-lightbox-content').html(content);
 			this._resize();
+			if( $( '.fl-builder-content-panel-button', window.parent.document ).length == 0 ) {
+				$( '.fl-builder-panel-drag-handle', window.parent.document ).show();
+			}
 		},
 
 		/**
@@ -174,8 +291,8 @@
 		 */
 		empty: function()
 		{
+			this._node.find('.fl-lightbox-content *').off();
 			this._node.find('.fl-lightbox-content').empty();
-			this._node.find('.fl-lightbox').removeClass('fl-lightbox-expanded');
 		},
 
 		/**
@@ -197,10 +314,11 @@
 		 * @since 1.0
 		 * @method off
 		 * @param {String} event The type of event to unbind.
+		 * @param {Function} callback
 		 */
-		off: function(event)
+		off: function(event, callback)
 		{
-			this._node.off(event);
+			this._node.off(event, callback);
 		},
 
 		/**
@@ -217,44 +335,6 @@
 		},
 
 		/**
-		 * Enable or disable dragging for the lightbox.
-		 *
-		 * @since 1.0
-		 * @method draggable
-		 * @param {Boolean} toggle Whether the lightbox should be draggable or not.
-		 */
-		draggable: function(toggle)
-		{
-			var mask     = this._node.find('.fl-lightbox-mask'),
-				lightbox = this._node.find('.fl-lightbox');
-
-			toggle = typeof toggle === 'undefined' ? false : toggle;
-
-			if(this._draggable) {
-				lightbox.draggable('destroy');
-			}
-
-			if(toggle) {
-
-				this._unbind();
-				this._draggable = true;
-				mask.hide();
-
-				lightbox.draggable({
-					cursor: 'move',
-					handle: toggle.handle || ''
-				});
-			}
-			else {
-				mask.show();
-				this._bind();
-				this._draggable = false;
-			}
-
-			this._resize();
-		},
-
-		/**
 		 * Destroy the lightbox by removing all elements, events
 		 * and object references.
 		 *
@@ -263,84 +343,13 @@
 		 */
 		destroy: function()
 		{
-			$(window).off('resize.fl-lightbox-' + this._id);
-
+			this.empty();
+			this._node.find('*').off();
 			this._node.empty();
 			this._node.remove();
 
 			FLLightbox._instances[this._id] = 'undefined';
 			try{ delete FLLightbox._instances[this._id]; } catch(e){}
-		},
-
-		/**
-		 * Render the expand/contract of lightbox
-		 *
-		 * @method renderResize
-		 * @param {String}
-		 */
-		renderResize: function(method)
-		{
-			if(typeof method !== 'undefined') {
-				var	activeNode 		= this._getActiveNode();
-					lightbox  		= activeNode.find('.fl-lightbox'),
-					boxFields 		= lightbox.find('.fl-builder-settings-fields'),
-					win       		= $(window),
-					winHeight 		= win.height(),
-					winWidth  		= win.width(),
-					boxHeaderHeight = lightbox.find('.fl-lightbox-header').height(),
-					boxTabsHeight 	= lightbox.find('.fl-builder-settings-tabs').height(),
-					boxFooterHeight = lightbox.find('.fl-lightbox-footer').height(),
-					boxFieldHeight  = (winHeight - (boxHeaderHeight + boxTabsHeight + boxFooterHeight + 103)),
-					editor          = typeof tinymce !== 'undefined' && tinymce.EditorManager.activeEditor ? tinymce : null,
-					editorId 		= editor ? editor.EditorManager.activeEditor.id : 'flhiddeneditor',
-					editorIframeEl 	= lightbox.find('#'+ editorId +'_ifr'),
-					editorTextarea 	= lightbox.find('#'+ editorId),
-					codeField 		= lightbox.find('.fl-code-field .ace_editor');
-
-				if(method == 'expand' || method == 'window_resize') {
-					if(method == 'window_resize' && !lightbox.hasClass('fl-lightbox-expanded')) {
-						return false;
-					}
-
-					boxFields.css('height', boxFieldHeight + 'px');
-
-					if(method == 'expand') {
-						lightbox.addClass('fl-lightbox-expanded');
-						lightbox.draggable('disable');
-					}
-
-					if(editorIframeEl.length > 0) {
-						editorIframeEl.css('height', (boxFieldHeight - 145) + 'px');
-					}
-
-					if(editorTextarea.length > 0) {
-						editorTextarea.css('height', (boxFieldHeight - 145) + 'px');
-					}
-
-					if(codeField.length > 0) {
-						codeField.css('height', (boxFieldHeight - 60) + 'px');
-					}
-
-				}
-				else {
-					// Contract lightbox
-					setTimeout($.proxy(this._resize, this), 250);
-
-					lightbox.removeClass('fl-lightbox-expanded');
-					boxFields.removeAttr('style');
-
-					if(editorId !== null) {
-						editorIframeEl.css('height', '232px');
-						editorTextarea.css('height', '232px');
-					}
-
-					if(codeField.length > 0) {
-						codeField.css('height', '360px');
-					}
-
-					lightbox.draggable('enable');
-				}
-			}
 		},
 
 		/**
@@ -363,6 +372,8 @@
 			this._defaults = $.extend({}, this._defaults, settings);
 			this._id = new Date().getTime() + i;
 			FLLightbox._instances[this._id] = this;
+			this._render();
+			this._resizable();
 		},
 
 		/**
@@ -374,11 +385,9 @@
 		 */
 		_render: function()
 		{
-			this._node = $('<div class="fl-lightbox-wrap" data-instance-id="'+ this._id +'"><div class="fl-lightbox-mask"></div><div class="fl-lightbox"><div class="fl-lightbox-content-wrap"><div class="fl-lightbox-content"></div></div></div></div>');
-
-			this._node.addClass(this._defaults.className);
-
-			$('body').append(this._node);
+			this._node = $( '<div class="fl-lightbox-wrap" data-instance-id="'+ this._id +'"><div class="fl-lightbox-mask"></div><div class="fl-lightbox"><div class="fl-lightbox-content-wrap"><div class="fl-lightbox-content"></div></div></div></div>' );
+			this._node.addClass( this._defaults.className );
+			$( 'body', window.parent.document ).append( this._node );
 		},
 
 		/**
@@ -390,7 +399,7 @@
 		 */
 		_bind: function()
 		{
-			$(window).on('resize.fl-lightbox-' + this._id, $.proxy(this._delayedResize, this));
+			$( window.parent ).on( 'resize.fl-lightbox-' + this._id, this._delayedResize.bind( this ) );
 		},
 
 		/**
@@ -402,7 +411,55 @@
 		 */
 		_unbind: function()
 		{
-			$(window).off('resize.fl-lightbox-' + this._id);
+			$( window.parent ).off( 'resize.fl-lightbox-' + this._id );
+		},
+
+		/**
+		 * Enable resizing for the lightbox.
+		 *
+		 * @since 2.0
+		 * @method _resizable
+		 */
+		_resizable: function()
+		{
+			var body	  = $( 'body', window.parent.document ),
+				mask      = this._node.find( '.fl-lightbox-mask' ),
+				lightbox  = this._node.find( '.fl-lightbox' ),
+				resizable = $( '.fl-lightbox-resizable', window.parent.document ).eq( 0 ),
+				rootEl    = getComputedStyle(document.documentElement),
+				minWidth  = parseInt( rootEl.getPropertyValue('--fl-builder-panel-min-width') ),
+				minHeight = parseInt( rootEl.getPropertyValue('--fl-builder-panel-min-height') );
+
+			if ( this._defaults.resizable ) {
+
+				mask.hide();
+				lightbox.addClass( 'fl-lightbox-resizable' );
+				lightbox.on( 'click', '.fl-lightbox-resize-toggle', this._resizeClicked.bind( this ) );
+
+				lightbox.draggable( {
+					cursor		: 'move',
+					handle		: '.fl-lightbox-header',
+					iframeFix	: true
+				} ).resizable( {
+					handles		: 'all',
+					minHeight	: minHeight,
+					minWidth	: minWidth,
+					start		: this._resizeStart.bind( this ),
+					stop		: this._resizeStop.bind( this )
+				} );
+
+				if ( resizable.length && resizable.hasClass( 'fl-lightbox-width-full' ) ) { // Setup nested
+					lightbox.addClass( 'fl-lightbox-width-full' );
+					lightbox.draggable( 'disable' );
+				} else { // Setup the main parent lightbox
+					this._restorePosition();
+				}
+			}
+			else {
+				mask.show();
+			}
+
+			this._resize();
 		},
 
 		/**
@@ -414,11 +471,9 @@
 		 */
 		_delayedResize: function()
 		{
-			clearTimeout(this._resizeTimer);
+			clearTimeout( this._resizeTimer );
 
-			this._resizeTimer = setTimeout($.proxy(this._resize, this), 250);
-
-			this.renderResize('window_resize');
+			this._resizeTimer = setTimeout( this._resize.bind( this ), 250 );
 		},
 
 		/**
@@ -430,78 +485,282 @@
 		 */
 		_resize: function()
 		{
-			if(this._visible) {
+			var lightbox    = this._node.find( '.fl-lightbox' ),
+				boxTop      = parseInt( this._node.css( 'padding-top' ) ),
+				boxBottom   = parseInt( this._node.css( 'padding-bottom' ) ),
+				boxLeft     = parseInt( this._node.css( 'padding-left' ) ),
+				boxRight    = parseInt( this._node.css( 'padding-right' ) ),
+				boxHeight   = lightbox.height(),
+				boxWidth    = lightbox.width(),
+				win         = $( window.parent ),
+				winHeight   = win.height() - boxTop - boxBottom,
+				winWidth    = win.width() - boxLeft - boxRight,
+				top         = '0px';
 
-				var lightbox  = this._node.find('.fl-lightbox'),
-					boxHeight = lightbox.height(),
-					boxWidth  = lightbox.width(),
-					win       = $(window),
-					winHeight = win.height(),
-					winWidth  = win.width(),
-					top       = '0px',
-					left      = ((winWidth - boxWidth)/2 - 30) + 'px';
+			if ( ! this._defaults.resizable ) {
 
-				// Zero out margins and position.
-				lightbox.css({
-					'margin' : '0px',
-					'top'    : 'auto',
-					'left'   : 'auto'
-				});
-
-				// Get the top position.
-				if(winHeight - 80 > boxHeight) {
-					top = ((winHeight - boxHeight)/2 - 40) + 'px';
+				if ( winHeight > boxHeight ) {
+					top = ( ( winHeight - boxHeight - 46 ) / 2 ) + 'px';
 				}
 
-				// Set the positions.
-				if(this._draggable) {
-					lightbox.css('top', top);
-					lightbox.css('left', FLBuilderConfig.isRtl ? '-' + left : left);
+				lightbox.attr( 'style', '' ).css( 'margin', top + ' auto 0' );
+			}
+			else {
+
+				if ( boxWidth <= 600 ) {
+					lightbox.addClass( 'fl-lightbox-width-slim' );
+				} else {
+					lightbox.removeClass( 'fl-lightbox-width-slim' );
 				}
-				else {
-					lightbox.css('margin-top', top);
-					lightbox.css('margin-left', 'auto');
-					lightbox.css('margin-right', 'auto');
+
+				if ( boxWidth < 450 ) {
+					lightbox.addClass( 'fl-lightbox-width-micro' );
+				} else {
+					lightbox.removeClass( 'fl-lightbox-width-micro' );
 				}
+
+				this._resizeEditors();
+			}
+
+			this.trigger( 'resized' );
+		},
+
+		/**
+		 * Callback for when a user lightbox resize starts.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @method _resizeStart
+		 */
+		_resizeStart: function()
+		{
+			$( 'body', window.parent.document ).addClass( 'fl-builder-resizable-is-resizing' );
+			$( '.fl-builder-lightbox:visible', window.parent.document ).append( '<div class="fl-builder-resizable-iframe-fix"></div>' );
+
+			FLBuilder._destroyOverlayEvents();
+			FLBuilder._removeAllOverlays();
+		},
+
+		/**
+		 * Callback for when a user lightbox resize stops.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @method _resizeStop
+		 */
+		_resizeStop: function( e, ui )
+		{
+			var lightbox = $( '.fl-lightbox-resizable:visible', window.parent.document );
+
+			if ( parseInt( lightbox.css( 'top' ) ) < 0 ) {
+				lightbox.css( 'top', '0' );
+			}
+
+			this._savePosition();
+
+			$( 'body', window.parent.document ).removeClass( 'fl-builder-resizable-is-resizing' );
+			$( '.fl-builder-resizable-iframe-fix', window.parent.document ).remove();
+
+			FLBuilder._bindOverlayEvents();
+		},
+
+		/**
+		 * Resize to full or back to standard when the resize icon is clicked.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @method _expandLightbox
+		 */
+		_resizeClicked: function()
+		{
+			var lightboxes = $( '.fl-lightbox-resizable', window.parent.document ),
+				controls   = lightboxes.find( '.fl-lightbox-resize-toggle' ),
+				lightbox   = this._node.find( '.fl-lightbox' );
+
+			if ( lightbox.hasClass( 'fl-lightbox-width-full' ) ) {
+				this._resizeExitFull();
+			} else {
+				this._resizeEnterFull();
+			}
+
+			this._resize();
+		},
+
+		/**
+		 * Resize to the full size lightbox.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @method _resizeEnterFull
+		 */
+		_resizeEnterFull: function()
+		{
+			var lightboxes = $( '.fl-lightbox-resizable', window.parent.document ),
+				controls   = lightboxes.find( '.fl-lightbox-resize-toggle' ),
+				lightbox   = this._node.find( '.fl-lightbox' );
+
+			controls.removeClass( 'fa-window-maximize' ).addClass( 'fa-window-minimize' );
+			lightboxes.addClass( 'fl-lightbox-width-full' );
+			lightboxes.draggable( 'disable' );
+			lightboxes.resizable( 'disable' );
+		},
+
+		/**
+		 * Resize to the standard size lightbox.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @method _resizeEnterFull
+		 */
+		_resizeExitFull: function()
+		{
+			var lightboxes = $( '.fl-lightbox-resizable', window.parent.document ),
+				controls   = lightboxes.find( '.fl-lightbox-resize-toggle' ),
+				lightbox   = this._node.find( '.fl-lightbox' );
+
+			controls.removeClass( 'fa-window-minimize' ).addClass( 'fa-window-maximize' );
+			lightboxes.removeClass( 'fl-lightbox-width-full' );
+			lightboxes.draggable( 'enable' );
+			lightboxes.resizable( 'enable' );
+		},
+
+		/**
+		 * Resizes text and code editor fields.
+		 *
+		 * @since 2.0
+		 * @method _resizeEditors
+		 */
+		_resizeEditors: function()
+		{
+			$( '.fl-lightbox-resizable', window.parent.document ).each( function() {
+
+				var	lightbox 	 = $( this ),
+					fieldsHeight = lightbox.find( '.fl-builder-settings-fields' ).height(),
+					editors		 = lightbox.find( '.mce-edit-area > iframe, textarea.wp-editor-area, .ace_editor' ),
+					editor 		 = null;
+
+				if ( fieldsHeight < 350 ) {
+					fieldsHeight = 350;
+				}
+
+				editors.each( function() {
+
+					editor = $( this );
+
+					if ( editor.hasClass( 'ace_editor' ) ) {
+						editor.height( fieldsHeight - 60 );
+						editor.closest( '.fl-field' ).data( 'editor' ).resize();
+					} else if ( editor.closest( '.mce-container-body' ).find( '.mce-toolbar-grp .mce-toolbar.mce-last' ).is( ':visible' ) ) {
+						editor.height( fieldsHeight - 175 );
+					} else {
+						editor.height( fieldsHeight - 150 );
+					}
+				} );
+			} );
+		},
+
+		/**
+		 * Save the lightbox position for the current user.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @method _savePosition
+		 */
+		_savePosition: function()
+		{
+			var lightbox = this._node.find( '.fl-lightbox' ),
+				data     = {
+					width  	: lightbox.width(),
+					height 	: lightbox.height(),
+					top  	: parseInt( lightbox.css( 'top' ) ) < 0 ? '0px' : lightbox.css( 'top' ),
+					left  	: lightbox.css( 'left' )
+				};
+
+			if ( lightbox.closest( '.fl-builder-ui-pinned' ).length ) {
+				return;
+			}
+
+			FLBuilderConfig.userSettings.lightbox = data;
+
+			FLBuilder.ajax( {
+				action : 'save_lightbox_position',
+				data   : data
+			} );
+		},
+
+		/**
+		 * Restores the lightbox position for the current user.
+		 *
+		 * @since 2.0
+		 * @access private
+		 * @method _restorePosition
+		 */
+		_restorePosition: function()
+		{
+			var lightbox = this._node.find( '.fl-lightbox' ),
+				settings = this._getPositionSettings();
+			if ( settings ) {
+				lightbox.css( settings );
+			} else {
+				lightbox.css( {
+					top  : 25,
+					left : FLBuilderConfig.isRtl ? '-' + 25 : 25
+				} );
 			}
 		},
 
 		/**
-		 * Closes the lightbox when the esc key is pressed.
-		 * Currently not in use.
+		 * Get the user settings for the lightbox position.
 		 *
-		 * @since 1.0
+		 * Resize the height to 500px if the lightbox height is
+		 * taller than the window and the window is taller than
+		 * 546px (500px for lightbox min-height and 46px for the
+		 * builder bar height).
+		 *
+		 * @since 2.0
 		 * @access private
-		 * @method _onKeypress
-		 * @param {Object} e An event object.
+		 * @method _getPositionSettings
+		 * @return {Object|Boolean}
 		 */
-		_onKeypress: function(e)
+		_getPositionSettings: function()
 		{
-			if(e.which == 27 && this._visible) {
-				this.close();
+			var settings = FLBuilderConfig.userSettings.lightbox;
+
+			if ( ! settings ) {
+				return false;
 			}
-		},
+			var winHeight = window.parent.innerHeight,
+				isRTL  = FLBuilderConfig.isRtl,
+				height = parseInt( settings.height ),
+				top    = parseInt( settings.top ),
+				wleft  = parseInt( settings.left ),
+				wtop   = parseInt( settings.top ),
+				width  = parseInt( settings.width );
 
-		/**
-		 * Get the current active lightbox from multiple instances.
-		 *
-		 * @since 1.0
-		 * @access private
-		 * @method _getActiveNode
-		 * @return {object} Current node
-		 */
-		_getActiveNode: function()
-		{
-			var activeNode = this._node;
+			// settings are off the screen to the right
+			if( ! isRTL && (wleft + width + 100) > screen.width ) {
+				settings.left = screen.width - width - 250;
+			}
 
-			$.each(FLLightbox._instances, function(i, obj){
-				if($(obj._node).is(':visible')) {
-					activeNode = $(obj._node);
+			// settings are off the screen to the left
+			if ( ! isRTL && wleft < 0 ) {
+				settings.left = 50;
+			}
+
+			wleft = parseInt( settings.left );
+			if ( isRTL && wleft > 0 ) {
+				settings.left = -25;
+			}
+
+			if ( ( height > winHeight && winHeight > 546 ) || top + height > winHeight ) {
+				if ( height > winHeight ) {
+					settings.height = winHeight - 50;
 				}
-			});
+				settings.top = 0;
+			}
 
-			return activeNode;
-		}
+			return settings;
+		},
 	};
 
 })(jQuery);
